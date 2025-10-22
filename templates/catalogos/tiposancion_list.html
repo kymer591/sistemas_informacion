@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>⚖️ Tipos de Sanción</h2>
+        <a href="{% url 'tiposancion_create' %}" class="btn btn-primary">
+            ➕ Agregar Sanción
+        </a>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <table class="table table-striped table-hover">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Nombre</th>
+                        <th>Gravedad</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for sancion in sanciones %}
+                    <tr>
+                        <td>{{ sancion.nombre }}</td>
+                        <td>
+                            {% if sancion.gravedad == 'leve' %}
+                                <span class="badge bg-warning text-dark">Leve</span>
+                            {% elif sancion.gravedad == 'grave' %}
+                                <span class="badge bg-danger">Grave</span>
+                            {% else %}
+                                <span class="badge bg-dark">Muy Grave</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if sancion.activo %}
+                                <span class="badge bg-success">Activo</span>
+                            {% else %}
+                                <span class="badge bg-secondary">Inactivo</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <a href="{% url 'tiposancion_update' sancion.pk %}" class="btn btn-sm btn-warning">
+                                ✏️ Editar
+                            </a>
+                            <a href="{% url 'tiposancion_delete' sancion.pk %}" class="btn btn-sm btn-danger">
+                                🗑️ Eliminar
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4" class="text-center text-muted">
+                            No hay tipos de sanción registrados
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

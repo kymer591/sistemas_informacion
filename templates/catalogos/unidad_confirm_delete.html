@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-warning">
+                    <h4 class="mb-0">⚠️ Confirmar Eliminación</h4>
+                </div>
+                <div class="card-body">
+                    <p>¿Estás seguro de que deseas eliminar la unidad?</p>
+                    <p><strong>{{ object.codigo }} - {{ object.nombre }}</strong></p>
+                    
+                    {% if object.personal_policial_set.exists %}
+                    <div class="alert alert-danger">
+                        ⚠️ Esta unidad tiene personal asignado. No se puede eliminar.
+                    </div>
+                    <a href="{% url 'unidad_list' %}" class="btn btn-secondary">
+                        ↩️ Volver
+                    </a>
+                    {% else %}
+                    <form method="post">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger">
+                            🗑️ Sí, Eliminar
+                        </button>
+                        <a href="{% url 'unidad_list' %}" class="btn btn-secondary">
+                            ↩️ Cancelar
+                        </a>
+                    </form>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
