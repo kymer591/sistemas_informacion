@@ -5,3 +5,6 @@ from .models import SistemaConfig
 class SistemaConfigAdmin(admin.ModelAdmin):
     list_display = ['nombre_institucion', 'mantenimiento', 'tiempo_sesion']
     list_editable = ['mantenimiento']
+    
+    def has_add_permission(self, request):
+        return not SistemaConfig.objects.exists()

@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-warning">
+                    <h4 class="mb-0">⚠️ Confirmar Eliminación</h4>
+                </div>
+                <div class="card-body">
+                    <p>¿Estás seguro de que deseas eliminar el tipo de estado?</p>
+                    <p>
+                        <span class="badge" style="background-color: {{ object.color }}">
+                            {{ object.nombre }}
+                        </span>
+                    </p>
+                    
+                    <form method="post">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger">
+                            🗑️ Sí, Eliminar
+                        </button>
+                        <a href="{% url 'tipoestado_list' %}" class="btn btn-secondary">
+                            ↩️ Cancelar
+                        </a>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
