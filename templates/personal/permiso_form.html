@@ -1,0 +1,97 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block app_navbar %}
+    {% include 'includes/permisos_navbar.html' %}
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-3">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="mb-0">
+                        {% if object %}✏️ Editar Permiso{% else %}🏖️ Nuevo Permiso/Licencia{% endif %}
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h6>👤 Información del Personal</h6>
+                                {{ form.personal|as_crispy_field }}
+                                {{ form.tipo_permiso|as_crispy_field }}
+                            </div>
+                            <div class="col-md-6">
+                                <h6>📅 Fechas del Permiso</h6>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        {{ form.fecha_inicio|as_crispy_field }}
+                                    </div>
+                                    <div class="col-md-6">
+                                        {{ form.fecha_fin|as_crispy_field }}
+                                    </div>
+                                </div>
+                                <div class="alert alert-info mt-2">
+                                    <small>
+                                        <strong>💡 Info:</strong> Los días se calcularán automáticamente
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row mt-3">
+                            <div class="col-md-12">
+                                <h6>📝 Detalles del Permiso</h6>
+                                {{ form.motivo|as_crispy_field }}
+                            </div>
+                        </div>
+
+                        <div class="row mt-3">
+                            <div class="col-md-6">
+                                <h6>📎 Documentación</h6>
+                                {{ form.numero_oficio|as_crispy_field }}
+                                {{ form.documento_adjunto|as_crispy_field }}
+                                {% if object and object.documento_adjunto %}
+                                <div class="mt-2">
+                                    <small class="text-muted">
+                                        Archivo actual: 
+                                        <a href="{{ object.documento_adjunto.url }}" target="_blank">
+                                            {{ object.documento_adjunto.name }}
+                                        </a>
+                                    </small>
+                                </div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6">
+                                <div class="alert alert-warning">
+                                    <h6>📋 Tipos de Permiso:</h6>
+                                    <ul class="mb-0">
+                                        <li><strong>Administrativo:</strong> Trámites personales</li>
+                                        <li><strong>Médico:</strong> Consultas o tratamiento</li>
+                                        <li><strong>Personal:</strong> Asuntos particulares</li>
+                                        <li><strong>Comisión:</strong> Servicio oficial</li>
+                                        <li><strong>Vacaciones:</strong> Descanso anual</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mt-4">
+                            <button type="submit" class="btn btn-success">
+                                💾 {% if object %}Actualizar{% else %}Crear{% endif %} Permiso
+                            </button>
+                            <a href="{% url 'permiso_list' %}" class="btn btn-secondary">
+                                ↩️ Cancelar
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

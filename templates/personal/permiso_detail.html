@@ -1,0 +1,141 @@
+{% extends 'base.html' %}
+
+{% block app_navbar %}
+    {% include 'includes/permisos_navbar.html' %}
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-3">
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">🏖️ Detalle del Permiso</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>Personal:</strong><br>
+                            <a href="{% url 'personal_detail' permiso.personal.pk %}">
+                                {{ permiso.personal.nombre_completo }}
+                            </a></p>
+                            
+                            <p><strong>Tipo de Permiso:</strong><br>
+                            {{ permiso.get_tipo_permiso_display }}</p>
+                            
+                            <p><strong>Estado:</strong><br>
+                            {% if permiso.estado == 'pendiente' %}
+                                <span class="badge bg-warning">Pendiente</span>
+                            {% elif permiso.estado == 'aprobado' %}
+                                <span class="badge bg-success">Aprobado</span>
+                            {% elif permiso.estado == 'rechazado' %}
+                                <span class="badge bg-danger">Rechazado</span>
+                            {% else %}
+                                <span class="badge bg-secondary">{{ permiso.estado }}</span>
+                            {% endif %}</p>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <p><strong>Fecha Solicitud:</strong><br>
+                            {{ permiso.fecha_solicitud|date:"d/m/Y H:i" }}</p>
+                            
+                            <p><strong>Período:</strong><br>
+                            {{ permiso.fecha_inicio }} al {{ permiso.fecha_fin }}</p>
+                            
+                            <p><strong>Días Solicitados:</strong><br>
+                            <span class="badge bg-primary fs-6">{{ permiso.dias_solicitados }} días</span></p>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-3">
+                        <p><strong>Motivo:</strong></p>
+                        <div class="border p-3 bg-light rounded">
+                            {{ permiso.motivo|linebreaks }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Documentación -->
+            {% if permiso.documento_adjunto or permiso.numero_oficio %}
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h6 class="mb-0">📎 Documentación</h6>
+                </div>
+                <div class="card-body">
+                    {% if permiso.numero_oficio %}
+                    <p><strong>N° Oficio:</strong> {{ permiso.numero_oficio }}</p>
+                    {% endif %}
+                    
+                    {% if permiso.documento_adjunto %}
+                    <p><strong>Documento Adjunto:</strong><br>
+                    <a href="{{ permiso.documento_adjunto.url }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                        📄 Descargar Documento
+                    </a></p>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="col-md-6">
+            <!-- Aprobación -->
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0">✅ Proceso de Aprobación</h6>
+                </div>
+                <div class="card-body">
+                    {% if permiso.estado == 'aprobado' %}
+                        <div class="alert alert-success">
+                            <p><strong>Aprobado por:</strong> {{ permiso.aprobado_por.username }}</p>
+                            <p><strong>Fecha Aprobación:</strong> {{ permiso.fecha_aprobacion|date:"d/m/Y H:i" }}</p>
+                            {% if permiso.observaciones_aprobacion %}
+                            <p><strong>Observaciones:</strong><br>
+                            {{ permiso.observaciones_aprobacion }}</p>
+                            {% endif %}
+                        </div>
+                    {% elif permiso.estado == 'rechazado' %}
+                        <div class="alert alert-danger">
+                            <p><strong>Rechazado por:</strong> {{ permiso.aprobado_por.username }}</p>
+                            <p><strong>Fecha Rechazo:</strong> {{ permiso.fecha_aprobacion|date:"d/m/Y H:i" }}</p>
+                            {% if permiso.observaciones_aprobacion %}
+                            <p><strong>Motivo Rechazo:</strong><br>
+                            {{ permiso.observaciones_aprobacion }}</p>
+                            {% endif %}
+                        </div>
+                    {% else %}
+                        <div class="alert alert-warning">
+                            <p><strong>Estado:</strong> Pendiente de aprobación</p>
+                            <a href="{% url 'permiso_aprobar' permiso.pk %}" class="btn btn-warning">
+                                ⚡ Procesar Solicitud
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Acciones -->
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h6 class="mb-0">🛠️ Acciones</h6>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="{% url 'permiso_list' %}" class="btn btn-secondary">
+                            ↩️ Volver al Listado
+                        </a>
+                        {% if permiso.estado == 'pendiente' %}
+                        <a href="{% url 'permiso_update' permiso.pk %}" class="btn btn-warning">
+                            ✏️ Editar Solicitud
+                        </a>
+                        {% endif %}
+                        <a href="{% url 'kardex_create' permiso.personal.pk %}" class="btn btn-info">
+                            📒 Agregar al Kardex
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

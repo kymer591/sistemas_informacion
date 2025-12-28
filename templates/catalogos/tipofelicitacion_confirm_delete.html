@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block app_navbar %}
+    {% include 'includes/catalogos_navbar.html' %}
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-warning">
+                    <h4 class="mb-0">⚠️ Confirmar Eliminación</h4>
+                </div>
+                <div class="card-body">
+                    <p>¿Estás seguro de que deseas eliminar el tipo de felicitación?</p>
+                    <p>
+                        <strong>{{ object.nombre }}</strong><br>
+                        <small class="text-muted">{{ object.descripcion|default:"Sin descripción" }}</small>
+                    </p>
+                    
+                    <form method="post">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger">
+                            🗑️ Sí, Eliminar
+                        </button>
+                        <a href="{% url 'tipofelicitacion_list' %}" class="btn btn-secondary">
+                            ↩️ Cancelar
+                        </a>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

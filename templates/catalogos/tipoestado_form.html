@@ -1,6 +1,10 @@
 {% extends 'base.html' %}
 {% load crispy_forms_tags %}
 
+{% block app_navbar %}
+    {% include 'includes/catalogos_navbar.html' %}
+{% endblock %}
+
 {% block content %}
 <div class="container-fluid">
     <div class="row justify-content-center">
@@ -17,11 +21,7 @@
                         {{ form|crispy }}
                         
                         <div class="alert alert-info">
-                            <strong>💡 Colores sugeridos:</strong><br>
-                            • Activo: #28a745 (Verde)<br>
-                            • Licencia: #17a2b8 (Azul)<br>
-                            • Suspendido: #6c757d (Gris)<br>
-                            • Baja: #dc3545 (Rojo)
+                            <strong>💡 Tip:</strong> Usa códigos de color HEX como #007bff (azul), #28a745 (verde), #dc3545 (rojo)
                         </div>
                         
                         <div class="mt-3">

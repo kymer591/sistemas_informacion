@@ -1,0 +1,24 @@
+<nav class="app-navbar">
+    <div class="container-fluid">
+        <div class="d-flex align-items-center">
+            <h5 class="mb-0 me-4">📁 Catálogos del Sistema</h5>
+            <div class="btn-group" role="group">
+                <a href="{% url 'grado_list' %}" class="btn btn-outline-primary btn-sm {% if 'grado' in request.path %}active{% endif %}">
+                    ⭐ Grados
+                </a>
+                <a href="{% url 'unidad_list' %}" class="btn btn-outline-primary btn-sm {% if 'unidad' in request.path %}active{% endif %}">
+                    🏢 Unidades
+                </a>
+                <a href="{% url 'tipoestado_list' %}" class="btn btn-outline-primary btn-sm {% if 'estado' in request.path %}active{% endif %}">
+                    📝 Estados
+                </a>
+                <a href="{% url 'tiposancion_list' %}" class="btn btn-outline-primary btn-sm {% if 'sancion' in request.path %}active{% endif %}">
+                    ⚖️ Sanciones
+                </a>
+                <a href="{% url 'tipofelicitacion_list' %}" class="btn btn-outline-primary btn-sm {% if 'felicitacion' in request.path %}active{% endif %}">
+                    🌟 Felicitaciones
+                </a>
+            </div>
+        </div>
+    </div>
+</nav>

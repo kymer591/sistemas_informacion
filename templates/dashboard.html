@@ -3,119 +3,241 @@
 {% block title %}Dashboard - UTEPPI{% endblock %}
 
 {% block content %}
-<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-    <h1 class="h2">
-        <i class="fas fa-tachometer-alt"></i> Dashboard
-    </h1>
-    <div class="btn-toolbar mb-2 mb-md-0">
-        <div class="btn-group me-2">
-            <button type="button" class="btn btn-sm btn-outline-secondary">
-                <i class="fas fa-sync-alt"></i> Actualizar
-            </button>
+<div class="container-fluid">
+    <!-- Encabezado -->
+    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <h1 class="h2">
+            📊 Dashboard del Sistema
+        </h1>
+        <div class="btn-toolbar mb-2 mb-md-0">
+            <div class="btn-group me-2">
+                <span class="btn btn-sm btn-outline-secondary">
+                    👋 Bienvenido, {{ user.username }}
+                </span>
+            </div>
         </div>
     </div>
-</div>
 
-<!-- Estadísticas Rápidas -->
-<div class="row">
-    <div class="col-xl-3 col-md-6 mb-4">
-        <div class="card card-dashboard border-left-primary h-100">
-            <div class="card-body">
-                <div class="row no-gutters align-items-center">
-                    <div class="col mr-2">
-                        <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
-                            Personal Activo
+    <!-- Tarjetas de Estadísticas -->
+    <div class="row">
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                Total de Personal
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ total_personal }}</div>
                         </div>
-                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{ total_personal }}</div>
+                        <div class="col-auto">
+                            <i class="fas fa-users fa-2x text-gray-300">👥</i>
+                        </div>
                     </div>
-                    <div class="col-auto">
-                        <i class="fas fa-users fa-2x text-gray-300"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-success shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                Personal Activo
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ personal_activo }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-user-check fa-2x text-gray-300">✅</i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-info shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                En Licencia
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ personal_licencia }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-umbrella-beach fa-2x text-gray-300">🏖️</i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-warning shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                Unidades Activas
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ personal_por_unidad|length }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-building fa-2x text-gray-300">🏢</i>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <div class="col-xl-3 col-md-6 mb-4">
-        <div class="card card-dashboard border-left-success h-100">
-            <div class="card-body">
-                <div class="row no-gutters align-items-center">
-                    <div class="col mr-2">
-                        <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
-                            En Licencia
-                        </div>
-                        <div class="h5 mb-0 font-weight-bold text-gray-800">0</div>
+    <!-- Gráficos y Tablas -->
+    <div class="row">
+        <!-- Personal por Unidad -->
+        <div class="col-xl-6 col-lg-6">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">👥 Personal por Unidad</h6>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-sm">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Unidad</th>
+                                    <th>Cantidad</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for unidad in personal_por_unidad %}
+                                <tr>
+                                    <td>{{ unidad.nombre }}</td>
+                                    <td><span class="badge bg-primary">{{ unidad.total }}</span></td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="2" class="text-center text-muted">No hay datos</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
                     </div>
-                    <div class="col-auto">
-                        <i class="fas fa-umbrella-beach fa-2x text-gray-300"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Personal por Grado -->
+        <div class="col-xl-6 col-lg-6">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">⭐ Personal por Grado</h6>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-sm">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Grado</th>
+                                    <th>Cantidad</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for grado in personal_por_grado %}
+                                <tr>
+                                    <td>{{ grado.abreviatura }}</td>
+                                    <td><span class="badge bg-success">{{ grado.total }}</span></td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="2" class="text-center text-muted">No hay datos</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <div class="col-xl-3 col-md-6 mb-4">
-        <div class="card card-dashboard border-left-info h-100">
-            <div class="card-body">
-                <div class="row no-gutters align-items-center">
-                    <div class="col mr-2">
-                        <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
-                            Pendientes
-                        </div>
-                        <div class="h5 mb-0 font-weight-bold text-gray-800">0</div>
+    <!-- Últimos registros de Kardex -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">📝 Últimos Registros de Kardex</h6>
+                </div>
+                <div class="card-body">
+                    {% if ultimos_registros %}
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-sm">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Fecha</th>
+                                    <th>Personal</th>
+                                    <th>Tipo</th>
+                                    <th>Descripción</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for registro in ultimos_registros %}
+                                <tr>
+                                    <td>{{ registro.fecha_registro }}</td>
+                                    <td>
+                                        <a href="{% url 'personal_detail' registro.personal.pk %}">
+                                            {{ registro.personal.nombre_completo }}
+                                        </a>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-info">{{ registro.get_tipo_registro_display }}</span>
+                                    </td>
+                                    <td>{{ registro.descripcion|truncatewords:10 }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
                     </div>
-                    <div class="col-auto">
-                        <i class="fas fa-clipboard-list fa-2x text-gray-300"></i>
-                    </div>
+                    {% else %}
+                    <p class="text-muted text-center">No hay registros recientes</p>
+                    {% endif %}
                 </div>
             </div>
         </div>
     </div>
 
-    <div class="col-xl-3 col-md-6 mb-4">
-        <div class="card card-dashboard border-left-warning h-100">
-            <div class="card-body">
-                <div class="row no-gutters align-items-center">
-                    <div class="col mr-2">
-                        <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
-                            Unidades
+    <!-- Acciones Rápidas -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">🚀 Acciones Rápidas</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3 mb-2">
+                            <a href="{% url 'personal_list' %}" class="btn btn-primary w-100">
+                                👥 Gestión de Personal
+                            </a>
                         </div>
-                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{ total_unidades }}</div>
-                    </div>
-                    <div class="col-auto">
-                        <i class="fas fa-building fa-2x text-gray-300"></i>
+                        <div class="col-md-3 mb-2">
+                            <a href="{% url 'grado_list' %}" class="btn btn-success w-100">
+                                📁 Catálogos
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-2">
+                            <a href="{% url 'personal_create' %}" class="btn btn-info w-100">
+                                ➕ Agregar Personal
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-2">
+                            <a href="/admin" class="btn btn-warning w-100">
+                                ⚙️ Admin Django
+                            </a>
+                        </div>
                     </div>
                 </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Contenido según Rol -->
-<div class="row">
-    <div class="col-12">
-        <div class="card">
-            <div class="card-header">
-                <h5 class="card-title">
-                    <i class="fas fa-user-shield"></i> Bienvenido, {{ user.username }}
-                </h5>
-            </div>
-            <div class="card-body">
-                <h6>Tu rol: <span class="badge bg-primary">{{ user.get_rol_display }}</span></h6>
-                
-                {% if user.rol == 'admin' %}
-                    <p class="text-success">
-                        <i class="fas fa-crown"></i> Tienes acceso completo al sistema.
-                    </p>
-                {% elif user.rol == 'encargado' %}
-                    <p class="text-info">
-                        <i class="fas fa-user-tie"></i> Puedes gestionar la información del personal.
-                    </p>
-                {% else %}
-                    <p class="text-secondary">
-                        <i class="fas fa-user"></i> Puedes consultar tu información personal.
-                    </p>
-                {% endif %}
             </div>
         </div>
     </div>

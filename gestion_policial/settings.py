@@ -33,6 +33,7 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
+AUTH_USER_MODEL = 'core.Usuario' 
 
 # Application definition
 
@@ -44,11 +45,13 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
      # Third party
+    #'django_bootstrap5',
     'crispy_forms',
     'crispy_bootstrap5',
     # Local apps
     'core',
     'catalogos',
+    'personal',
     
 ]
 

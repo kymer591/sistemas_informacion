@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block app_navbar %}
+    {% include 'includes/felicitaciones_navbar.html' %}
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-3">
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="mb-0">
+                        {% if object %}✏️ Editar Felicitación{% else %}⭐ Nueva Felicitación/Reconocimiento{% endif %}
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h6>👤 Información del Personal</h6>
+                                {{ form.personal|as_crispy_field }}
+                                {{ form.tipo_felicitacion|as_crispy_field }}
+                                {{ form.fecha_felicitacion|as_crispy_field }}
+                            </div>
+                            <div class="col-md-6">
+                                <h6>📎 Documentación</h6>
+                                {{ form.documento_referencia|as_crispy_field }}
+                                {{ form.observaciones|as_crispy_field }}
+                                
+                                <div class="alert alert-info mt-3">
+                                    <h6>⭐ Tipos de Reconocimiento:</h6>
+                                    <ul class="mb-0">
+                                        <li><strong>Por Servicio:</strong> Buen desempeño continuo</li>
+                                        <li><strong>Por Mérito:</strong> Actos destacados específicos</li>
+                                        <li><strong>Por Antigüedad:</strong> Años de servicio</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row mt-3">
+                            <div class="col-md-12">
+                                <h6>🎖️ Motivo del Reconocimiento</h6>
+                                {{ form.motivo|as_crispy_field }}
+                            </div>
+                        </div>
+
+                        <div class="mt-4">
+                            <button type="submit" class="btn btn-success">
+                                💾 {% if object %}Actualizar{% else %}Registrar{% endif %} Felicitación
+                            </button>
+                            <a href="{% url 'felicitacion_list' %}" class="btn btn-secondary">
+                                ↩️ Cancelar
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

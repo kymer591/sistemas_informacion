@@ -1,0 +1,73 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block app_navbar %}
+<nav class="app-navbar">
+    <div class="container-fluid">
+        <div class="d-flex align-items-center">
+            <h5 class="mb-0 me-4">➕ Nuevo Registro de Kardex - {{ persona.nombre_completo }}</h5>
+            <div class="btn-group" role="group">
+                <a href="{% url 'kardex_list' persona.pk %}" class="btn btn-outline-info btn-sm">
+                    📒 Ver Kardex
+                </a>
+                <a href="{% url 'personal_detail' persona.pk %}" class="btn btn-outline-secondary btn-sm">
+                    👁️ Ver Personal
+                </a>
+            </div>
+        </div>
+    </div>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-3">
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <div class="card">
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h6>Información Básica</h6>
+                                {{ form.tipo_registro|as_crispy_field }}
+                                {{ form.fecha_registro|as_crispy_field }}
+                                {{ form.descripcion|as_crispy_field }}
+                            </div>
+                            <div class="col-md-6">
+                                <h6>Documentación</h6>
+                                {{ form.documento_referencia|as_crispy_field }}
+                                {{ form.observaciones|as_crispy_field }}
+                            </div>
+                        </div>
+                        
+                        <div class="row mt-3">
+                            <div class="col-md-6">
+                                <h6>Cambios de Grado</h6>
+                                {{ form.grado_anterior|as_crispy_field }}
+                                {{ form.grado_nuevo|as_crispy_field }}
+                            </div>
+                            <div class="col-md-6">
+                                <h6>Cambios de Unidad/Estado</h6>
+                                {{ form.unidad_anterior|as_crispy_field }}
+                                {{ form.unidad_nueva|as_crispy_field }}
+                                {{ form.estado_anterior|as_crispy_field }}
+                                {{ form.estado_nuevo|as_crispy_field }}
+                            </div>
+                        </div>
+                        
+                        <div class="mt-4">
+                            <button type="submit" class="btn btn-success">
+                                💾 Guardar Registro
+                            </button>
+                            <a href="{% url 'kardex_list' persona.pk %}" class="btn btn-secondary">
+                                ↩️ Cancelar
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,71 +1,52 @@
 <nav class="col-md-3 col-lg-2 d-md-block sidebar collapse bg-dark">
     <div class="position-sticky pt-3">
         <h6 class="sidebar-heading px-3 mt-4 mb-1 text-white">
-            <span>MENÚ PRINCIPAL</span>
+            <span>NAVEGACIÓN PRINCIPAL</span>
         </h6>
         
         <ul class="nav flex-column">
             <li class="nav-item">
-                <a class="nav-link text-white {% if request.resolver_match.url_name == 'dashboard' %}active bg-primary{% endif %}" 
+                <a class="nav-link text-white {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}" 
                    href="{% url 'dashboard' %}">
                     📊 Dashboard
                 </a>
             </li>
             
-            {% if user.is_authenticated %}
             <li class="nav-item">
-                <a class="nav-link text-white" href="#">
-                    👥 Gestión de Personal
+                <a class="nav-link text-white {% if 'catalogos' in request.path %}active{% endif %}" 
+                   href="{% url 'grado_list' %}">
+                    📁 Catálogos
                 </a>
             </li>
-            
+
             <li class="nav-item">
-                <a class="nav-link text-white" href="#">
-                    📋 Consultas
+                <a class="nav-link text-white {% if 'personal' in request.path %}active{% endif %}" 
+                   href="{% url 'personal_list' %}">
+                    👥 Personal
                 </a>
             </li>
-            
+
             <li class="nav-item">
                 <a class="nav-link text-white" href="#">
                     📈 Reportes
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link text-white" href="{% url 'grado_list' %}">
-                    ⭐ Grados
+                <a class="nav-link text-white {% if 'permisos' in request.path %}active{% endif %}" 
+                href="{% url 'permiso_list' %}">
+                    🏖️ Permisos
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link text-white" href="{% url 'unidad_list' %}">
-                    🏢 Unidades
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link text-white" href="{% url 'tipoestado_list' %}">
-                    📝 Estados
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link text-white" href="{% url 'tiposancion_list' %}">
+                <a class="nav-link text-white {% if 'sanciones' in request.path %}active{% endif %}" 
+                href="{% url 'sancion_list' %}">
                     ⚖️ Sanciones
                 </a>
             </li>
-            {% endif %}
-        </ul>
-
-        <h6 class="sidebar-heading px-3 mt-4 mb-1 text-white">
-            <span>MI INFORMACIÓN</span>
-        </h6>
-        
-        <ul class="nav flex-column mb-2">
             <li class="nav-item">
-                <a class="nav-link text-white" href="#">
-                    🆔 Mi Kardex
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link text-white" href="#">
-                    📜 Mi Historial
+                <a class="nav-link text-white {% if 'felicitaciones' in request.path %}active{% endif %}" 
+                href="{% url 'felicitacion_list' %}">
+                    ⭐ Felicitaciones
                 </a>
             </li>
         </ul>

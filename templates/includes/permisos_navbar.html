@@ -1,0 +1,15 @@
+<nav class="app-navbar">
+    <div class="container-fluid">
+        <div class="d-flex align-items-center">
+            <h5 class="mb-0 me-4">🏖️ Permisos y Licencias</h5>
+            <div class="btn-group" role="group">
+                <a href="{% url 'permiso_list' %}" class="btn btn-outline-info btn-sm {% if request.resolver_match.url_name == 'permiso_list' %}active{% endif %}">
+                    📋 Lista de Permisos
+                </a>
+                <a href="{% url 'permiso_create' %}" class="btn btn-outline-success btn-sm {% if request.resolver_match.url_name == 'permiso_create' %}active{% endif %}">
+                    ➕ Nuevo Permiso
+                </a>
+            </div>
+        </div>
+    </div>
+</nav>

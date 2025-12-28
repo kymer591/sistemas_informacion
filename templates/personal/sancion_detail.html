@@ -1,0 +1,143 @@
+{% extends 'base.html' %}
+
+{% block app_navbar %}
+    {% include 'includes/sanciones_navbar.html' %}
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-3">
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="mb-0">⚖️ Detalle de la Sanción</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>Personal:</strong><br>
+                            <a href="{% url 'personal_detail' sancion.personal.pk %}">
+                                {{ sancion.personal.nombre_completo }}
+                            </a></p>
+                            
+                            <p><strong>Tipo de Sanción:</strong><br>
+                            {{ sancion.tipo_sancion.nombre }}</p>
+                            
+                            <p><strong>Gravedad:</strong><br>
+                            {% if sancion.tipo_sancion.gravedad == 'leve' %}
+                                <span class="badge bg-warning text-dark">Leve</span>
+                            {% elif sancion.tipo_sancion.gravedad == 'grave' %}
+                                <span class="badge bg-danger">Grave</span>
+                            {% else %}
+                                <span class="badge bg-dark">Muy Grave</span>
+                            {% endif %}</p>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <p><strong>Fecha Sanción:</strong><br>
+                            {{ sancion.fecha_sancion }}</p>
+                            
+                            <p><strong>Estado:</strong><br>
+                            {% if sancion.estado == 'activa' %}
+                                <span class="badge bg-danger">Activa</span>
+                            {% elif sancion.estado == 'cumplida' %}
+                                <span class="badge bg-success">Cumplida</span>
+                            {% else %}
+                                <span class="badge bg-secondary">Anulada</span>
+                            {% endif %}</p>
+                            
+                            <p><strong>Período:</strong><br>
+                            {{ sancion.fecha_inicio }}
+                            {% if sancion.fecha_fin %}
+                                <br><small>al {{ sancion.fecha_fin }}</small>
+                            {% endif %}</p>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-3">
+                        <p><strong>Motivo:</strong></p>
+                        <div class="border p-3 bg-light rounded">
+                            {{ sancion.motivo|linebreaks }}
+                        </div>
+                    </div>
+                    
+                    {% if sancion.observaciones %}
+                    <div class="mt-3">
+                        <p><strong>Observaciones:</strong></p>
+                        <div class="border p-3 bg-light rounded">
+                            {{ sancion.observaciones|linebreaks }}
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Documentación -->
+            {% if sancion.documento_referencia %}
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h6 class="mb-0">📎 Documentación</h6>
+                </div>
+                <div class="card-body">
+                    <p><strong>Documento Referencia:</strong> {{ sancion.documento_referencia }}</p>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="col-md-6">
+            <!-- Información de Registro -->
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0">📋 Información de Registro</h6>
+                </div>
+                <div class="card-body">
+                    <p><strong>Registrado por:</strong> {{ sancion.registrado_por.username|default:"Sistema" }}</p>
+                    <p><strong>Fecha Registro:</strong> {{ sancion.fecha_registro|date:"d/m/Y H:i" }}</p>
+                    
+                    {% if sancion.registrado_por %}
+                    <p><strong>Usuario:</strong> {{ sancion.registrado_por.get_full_name|default:sancion.registrado_por.username }}</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Acciones -->
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h6 class="mb-0">🛠️ Acciones</h6>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="{% url 'sancion_list' %}" class="btn btn-secondary">
+                            ↩️ Volver al Listado
+                        </a>
+                        <a href="{% url 'sancion_update' sancion.pk %}" class="btn btn-warning">
+                            ✏️ Editar Sanción
+                        </a>
+                        <a href="{% url 'kardex_create' sancion.personal.pk %}" class="btn btn-info">
+                            📒 Agregar al Kardex
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Kardex Automático -->
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h6 class="mb-0">💡 Sugerencia</h6>
+                </div>
+                <div class="card-body">
+                    <p class="small text-muted">
+                        <strong>¿Registrar en el Kardex?</strong><br>
+                        Esta sanción puede ser registrada automáticamente en el 
+                        historial del personal para mantener un seguimiento completo.
+                    </p>
+                    <a href="{% url 'kardex_create' sancion.personal.pk %}" class="btn btn-sm btn-outline-info w-100">
+                        📒 Agregar al Kardex del Personal
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

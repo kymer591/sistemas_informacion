@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block app_navbar %}
+    {% include 'includes/permisos_navbar.html' %}
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-3">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-warning">
+                    <h4 class="mb-0">✅ Procesar Solicitud de Permiso</h4>
+                </div>
+                <div class="card-body">
+                    <!-- Información del permiso -->
+                    <div class="alert alert-info">
+                        <h6>Solicitud a procesar:</h6>
+                        <p><strong>Personal:</strong> {{ object.personal.nombre_completo }}</p>
+                        <p><strong>Tipo:</strong> {{ object.get_tipo_permiso_display }}</p>
+                        <p><strong>Período:</strong> {{ object.fecha_inicio }} al {{ object.fecha_fin }}</p>
+                        <p><strong>Días:</strong> {{ object.dias_solicitados }} días</p>
+                    </div>
+
+                    <form method="post">
+                        {% csrf_token %}
+                        {{ form|crispy }}
+                        
+                        <div class="alert alert-warning mt-3">
+                            <strong>⚠️ Atención:</strong> Esta acción no se puede deshacer.
+                        </div>
+
+                        <div class="mt-4">
+                            <button type="submit" class="btn btn-success">
+                                💾 Guardar Decisión
+                            </button>
+                            <a href="{% url 'permiso_detail' object.pk %}" class="btn btn-secondary">
+                                ↩️ Cancelar
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

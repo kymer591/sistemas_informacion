@@ -1,4 +1,9 @@
 {% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block app_navbar %}
+    {% include 'includes/catalogos_navbar.html' %}
+{% endblock %}
 
 {% block content %}
 <div class="container-fluid">
@@ -24,11 +29,9 @@
                     {% for estado in estados %}
                     <tr>
                         <td>{{ estado.nombre }}</td>
-                        <td>{{ estado.color }}</td>
+                        <td><code>{{ estado.color }}</code></td>
                         <td>
-                            <span class="badge" style="background-color:{{ estado.color }};">
-                                {{ estado.nombre }}
-                            </span>
+                            <div style="width: 30px; height: 20px; background-color: {{ estado.color }}; border: 1px solid #ccc;"></div>
                         </td>
                         <td>
                             <a href="{% url 'tipoestado_update' estado.pk %}" class="btn btn-sm btn-warning">

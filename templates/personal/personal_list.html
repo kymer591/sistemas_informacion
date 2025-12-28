@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block app_navbar %}
+    {% include 'includes/personal_navbar.html' %}
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>👥 Personal Policial</h2>
+        <a href="{% url 'personal_create' %}" class="btn btn-primary">
+            ➕ Agregar Personal
+        </a>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <table class="table table-striped table-hover">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Código</th>
+                        <th>Nombre Completo</th>
+                        <th>Grado</th>
+                        <th>Unidad</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for persona in personal %}
+                    <tr>
+                        <td><strong>{{ persona.codigo_identificacion }}</strong></td>
+                        <td>{{ persona.nombre_completo }}</td>
+                        <td>{{ persona.grado.abreviatura }}</td>
+                        <td>{{ persona.unidad.codigo }}</td>
+                        <td>
+                            <span class="badge" style="background-color: {{ persona.estado_actual.color }};">
+                                {{ persona.estado_actual.nombre }}
+                            </span>
+                        </td>
+                        <td>
+                            <a href="{% url 'personal_detail' persona.pk %}" class="btn btn-sm btn-info">
+                                👁️ Ver
+                            </a>
+                            <a href="{% url 'personal_update' persona.pk %}" class="btn btn-sm btn-warning">
+                                ✏️ Editar
+                            </a>
+                            <a href="{% url 'personal_delete' persona.pk %}" class="btn btn-sm btn-danger">
+                                🗑️ Eliminar
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="text-center text-muted">
+                            No hay personal registrado
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

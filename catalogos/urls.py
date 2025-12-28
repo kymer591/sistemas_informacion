@@ -25,4 +25,10 @@ urlpatterns = [
     path('sanciones/nueva/', views.TipoSancionCreateView.as_view(), name='tiposancion_create'),
     path('sanciones/editar/<int:pk>/', views.TipoSancionUpdateView.as_view(), name='tiposancion_update'),
     path('sanciones/eliminar/<int:pk>/', views.TipoSancionDeleteView.as_view(), name='tiposancion_delete'),
+
+    # Felicitaciones
+    path('felicitaciones/', views.TipoFelicitacionListView.as_view(), name='tipofelicitacion_list'),
+    path('felicitaciones/nueva/', views.TipoFelicitacionCreateView.as_view(), name='tipofelicitacion_create'),
+    path('felicitaciones/editar/<int:pk>/', views.TipoFelicitacionUpdateView.as_view(), name='tipofelicitacion_update'),
+    path('felicitaciones/eliminar/<int:pk>/', views.TipoFelicitacionDeleteView.as_view(), name='tipofelicitacion_delete'),
 ]

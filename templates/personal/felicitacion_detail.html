@@ -1,0 +1,122 @@
+{% extends 'base.html' %}
+
+{% block app_navbar %}
+    {% include 'includes/felicitaciones_navbar.html' %}
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-3">
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0">⭐ Detalle de la Felicitación</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>Personal:</strong><br>
+                            <a href="{% url 'personal_detail' felicitacion.personal.pk %}">
+                                {{ felicitacion.personal.nombre_completo }}
+                            </a></p>
+                            
+                            <p><strong>Tipo de Reconocimiento:</strong><br>
+                            {{ felicitacion.tipo_felicitacion.nombre }}</p>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <p><strong>Fecha Felicitación:</strong><br>
+                            {{ felicitacion.fecha_felicitacion }}</p>
+                            
+                            <p><strong>Fecha Registro:</strong><br>
+                            {{ felicitacion.fecha_registro|date:"d/m/Y H:i" }}</p>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-3">
+                        <p><strong>Motivo del Reconocimiento:</strong></p>
+                        <div class="border p-3 bg-light rounded">
+                            {{ felicitacion.motivo|linebreaks }}
+                        </div>
+                    </div>
+                    
+                    {% if felicitacion.observaciones %}
+                    <div class="mt-3">
+                        <p><strong>Observaciones Adicionales:</strong></p>
+                        <div class="border p-3 bg-light rounded">
+                            {{ felicitacion.observaciones|linebreaks }}
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Documentación -->
+            {% if felicitacion.documento_referencia %}
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h6 class="mb-0">📎 Documentación</h6>
+                </div>
+                <div class="card-body">
+                    <p><strong>Documento Referencia:</strong> {{ felicitacion.documento_referencia }}</p>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="col-md-6">
+            <!-- Información de Registro -->
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0">📋 Información de Registro</h6>
+                </div>
+                <div class="card-body">
+                    <p><strong>Registrado por:</strong> {{ felicitacion.registrado_por.username|default:"Sistema" }}</p>
+                    <p><strong>Fecha Registro:</strong> {{ felicitacion.fecha_registro|date:"d/m/Y H:i" }}</p>
+                    
+                    {% if felicitacion.registrado_por %}
+                    <p><strong>Usuario:</strong> {{ felicitacion.registrado_por.get_full_name|default:felicitacion.registrado_por.username }}</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Acciones -->
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h6 class="mb-0">🛠️ Acciones</h6>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="{% url 'felicitacion_list' %}" class="btn btn-secondary">
+                            ↩️ Volver al Listado
+                        </a>
+                        <a href="{% url 'felicitacion_update' felicitacion.pk %}" class="btn btn-warning">
+                            ✏️ Editar Felicitación
+                        </a>
+                        <a href="{% url 'kardex_create' felicitacion.personal.pk %}" class="btn btn-info">
+                            📒 Agregar al Kardex
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Kardex Automático -->
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h6 class="mb-0">💡 Sugerencia</h6>
+                </div>
+                <div class="card-body">
+                    <p class="small text-muted">
+                        <strong>¿Registrar en el Kardex?</strong><br>
+                        Este reconocimiento puede ser registrado en el historial 
+                        del personal para mantener un registro completo de sus méritos.
+                    </p>
+                    <a href="{% url 'kardex_create' felicitacion.personal.pk %}" class="btn btn-sm btn-outline-warning w-100">
+                        📒 Agregar al Kardex del Personal
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

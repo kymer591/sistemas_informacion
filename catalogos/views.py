@@ -1,7 +1,8 @@
 from django.urls import reverse_lazy
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView
 from django.contrib.auth.mixins import LoginRequiredMixin
-from .models import Grado, Unidad, TipoEstado, TipoSancion
+from .models import Grado, Unidad, TipoEstado, TipoSancion, TipoFelicitacion
+
 
 # ===== GRADOS =====
 class GradoListView(LoginRequiredMixin, ListView):
@@ -58,32 +59,27 @@ class UnidadDeleteView(LoginRequiredMixin, DeleteView):
     login_url = 'login'
 
 # ===== TIPOS DE ESTADO =====
-class TipoEstadoListView(LoginRequiredMixin, ListView):
+class TipoEstadoListView(ListView):
     model = TipoEstado
     template_name = 'catalogos/tipoestado_list.html'
     context_object_name = 'estados'
-    login_url = 'login'
 
-class TipoEstadoCreateView(LoginRequiredMixin, CreateView):
+class TipoEstadoCreateView(CreateView):
     model = TipoEstado
     template_name = 'catalogos/tipoestado_form.html'
     fields = ['nombre', 'color']
     success_url = reverse_lazy('tipoestado_list')
-    login_url = 'login'
 
-class TipoEstadoUpdateView(LoginRequiredMixin, UpdateView):
+class TipoEstadoUpdateView(UpdateView):
     model = TipoEstado
     template_name = 'catalogos/tipoestado_form.html'
     fields = ['nombre', 'color']
     success_url = reverse_lazy('tipoestado_list')
-    login_url = 'login'
 
-class TipoEstadoDeleteView(LoginRequiredMixin, DeleteView):
+class TipoEstadoDeleteView(DeleteView):
     model = TipoEstado
     template_name = 'catalogos/tipoestado_confirm_delete.html'
     success_url = reverse_lazy('tipoestado_list')
-    login_url = 'login'
-
 # ===== TIPOS DE SANCIÓN =====
 class TipoSancionListView(LoginRequiredMixin, ListView):
     model = TipoSancion
@@ -110,3 +106,26 @@ class TipoSancionDeleteView(LoginRequiredMixin, DeleteView):
     template_name = 'catalogos/tiposancion_confirm_delete.html'
     success_url = reverse_lazy('tiposancion_list')
     login_url = 'login'
+
+# Agrega estas clases después de las vistas de TipoSancion
+class TipoFelicitacionListView(ListView):
+    model = TipoFelicitacion
+    template_name = 'catalogos/tipofelicitacion_list.html'
+    context_object_name = 'felicitaciones'
+
+class TipoFelicitacionCreateView(CreateView):
+    model = TipoFelicitacion
+    template_name = 'catalogos/tipofelicitacion_form.html'
+    fields = ['nombre', 'descripcion']
+    success_url = reverse_lazy('tipofelicitacion_list')
+
+class TipoFelicitacionUpdateView(UpdateView):
+    model = TipoFelicitacion
+    template_name = 'catalogos/tipofelicitacion_form.html'
+    fields = ['nombre', 'descripcion']
+    success_url = reverse_lazy('tipofelicitacion_list')
+
+class TipoFelicitacionDeleteView(DeleteView):
+    model = TipoFelicitacion
+    template_name = 'catalogos/tipofelicitacion_confirm_delete.html'
+    success_url = reverse_lazy('tipofelicitacion_list')

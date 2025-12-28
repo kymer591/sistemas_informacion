@@ -1,4 +1,9 @@
 {% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block app_navbar %}
+    {% include 'includes/catalogos_navbar.html' %}
+{% endblock %}
 
 {% block content %}
 <div class="container-fluid">
@@ -11,9 +16,8 @@
                 <div class="card-body">
                     <p>¿Estás seguro de que deseas eliminar el tipo de estado?</p>
                     <p>
-                        <span class="badge" style="background-color: {{ object.color }}">
-                            {{ object.nombre }}
-                        </span>
+                        <strong>{{ object.nombre }}</strong>
+                        <div style="width: 30px; height: 20px; background-color: {{ object.color }}; display: inline-block; margin-left: 10px; border: 1px solid #ccc;"></div>
                     </p>
                     
                     <form method="post">

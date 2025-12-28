@@ -1,0 +1,88 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block app_navbar %}
+    {% include 'includes/sanciones_navbar.html' %}
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-3">
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="mb-0">
+                        {% if object %}✏️ Editar Sanción{% else %}⚖️ Nueva Sanción Aplicada{% endif %}
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h6>👤 Información del Personal</h6>
+                                {{ form.personal|as_crispy_field }}
+                                {{ form.tipo_sancion|as_crispy_field }}
+                            </div>
+                            <div class="col-md-6">
+                                <h6>📅 Fechas de la Sanción</h6>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        {{ form.fecha_sancion|as_crispy_field }}
+                                    </div>
+                                    <div class="col-md-6">
+                                        {{ form.estado|as_crispy_field }}
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        {{ form.fecha_inicio|as_crispy_field }}
+                                    </div>
+                                    <div class="col-md-6">
+                                        {{ form.fecha_fin|as_crispy_field }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row mt-3">
+                            <div class="col-md-12">
+                                <h6>📝 Motivo y Detalles</h6>
+                                {{ form.motivo|as_crispy_field }}
+                                {{ form.observaciones|as_crispy_field }}
+                            </div>
+                        </div>
+
+                        <div class="row mt-3">
+                            <div class="col-md-6">
+                                <h6>📎 Documentación</h6>
+                                {{ form.documento_referencia|as_crispy_field }}
+                            </div>
+                            <div class="col-md-6">
+                                <div class="alert alert-warning">
+                                    <h6>⚖️ Niveles de Gravedad:</h6>
+                                    <ul class="mb-0">
+                                        <li><strong>Leve:</strong> Amonestaciones verbales/escritas</li>
+                                        <li><strong>Grave:</strong> Suspensiones temporales</li>
+                                        <li><strong>Muy Grave:</strong> Destituciones</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mt-4">
+                            <button type="submit" class="btn btn-success">
+                                💾 {% if object %}Actualizar{% else %}Registrar{% endif %} Sanción
+                            </button>
+                            <a href="{% url 'sancion_list' %}" class="btn btn-secondary">
+                                ↩️ Cancelar
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

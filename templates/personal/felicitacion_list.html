@@ -1,0 +1,164 @@
+{% extends 'base.html' %}
+
+{% block app_navbar %}
+    {% include 'includes/felicitaciones_navbar.html' %}
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-3">
+    <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h6 class="mb-0">⭐ Registro de Felicitaciones y Reconocimientos</h6>
+            <div class="btn-group">
+                <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                    🔍 Filtrar por Tipo
+                </button>
+                <ul class="dropdown-menu">
+                    <li><a class="dropdown-item" href="?">Todos los Tipos</a></li>
+                    {% for tipo in tipos_felicitacion %}
+                    <li><a class="dropdown-item" href="?tipo={{ tipo.id }}">
+                        {{ tipo.nombre }}
+                    </a></li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+        <div class="card-body">
+            {% if felicitaciones %}
+            <div class="table-responsive">
+                <table class="table table-striped table-hover">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Personal</th>
+                            <th>Tipo de Reconocimiento</th>
+                            <th>Fecha</th>
+                            <th>Motivo</th>
+                            <th>Documento</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for felicitacion in felicitaciones %}
+                        <tr>
+                            <td>
+                                <a href="{% url 'personal_detail' felicitacion.personal.pk %}">
+                                    {{ felicitacion.personal.nombre_completo }}
+                                </a>
+                                <br>
+                                <small class="text-muted">{{ felicitacion.personal.grado.abreviatura }}</small>
+                            </td>
+                            <td>
+                                <span class="badge bg-warning text-dark">
+                                    {{ felicitacion.tipo_felicitacion.nombre }}
+                                </span>
+                            </td>
+                            <td>{{ felicitacion.fecha_felicitacion }}</td>
+                            <td>
+                                <span title="{{ felicitacion.motivo }}">
+                                    {{ felicitacion.motivo|truncatewords:8 }}
+                                </span>
+                            </td>
+                            <td>
+                                {% if felicitacion.documento_referencia %}
+                                    <span class="badge bg-success">📎 Sí</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">No</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <a href="{% url 'felicitacion_detail' felicitacion.pk %}" class="btn btn-sm btn-info" title="Ver detalle">
+                                    👁️
+                                </a>
+                                <a href="{% url 'felicitacion_update' felicitacion.pk %}" class="btn btn-sm btn-warning" title="Editar">
+                                    ✏️
+                                </a>
+                                <a href="{% url 'kardex_create' felicitacion.personal.pk %}" class="btn btn-sm btn-success" title="Agregar al Kardex">
+                                    📒
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Estadísticas rápidas -->
+            <div class="row mt-4">
+                <div class="col-md-4">
+                    <div class="card bg-light">
+                        <div class="card-body text-center">
+                            <h5 class="card-title">{{ felicitaciones|length }}</h5>
+                            <p class="card-text">Total de Reconocimientos</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card bg-light">
+                        <div class="card-body text-center">
+                            <h5 class="card-title">
+                                {% with personal_unique=felicitaciones|dictsort:"personal_id" %}
+                                    {{ personal_unique|length }}
+                                {% endwith %}
+                            </h5>
+                            <p class="card-text">Personal Reconocido</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card bg-light">
+                        <div class="card-body text-center">
+                            <h5 class="card-title">
+                                {% now "Y" %}
+                            </h5>
+                            <p class="card-text">Año Actual</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {% else %}
+            <div class="text-center text-muted py-5">
+                <div class="mb-3">
+                    <span style="font-size: 3rem;">⭐</span>
+                </div>
+                <h5>No hay felicitaciones registradas</h5>
+                <p class="mb-4">Comienza reconociendo el buen trabajo del personal.</p>
+                <a href="{% url 'felicitacion_create' %}" class="btn btn-warning btn-lg">
+                    ➕ Registrar Primera Felicitación
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Información adicional -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0">💡 Tipos de Reconocimiento Disponibles</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        {% for tipo in tipos_felicitacion %}
+                        <div class="col-md-4 mb-2">
+                            <div class="d-flex align-items-center">
+                                <span class="badge bg-warning me-2">⭐</span>
+                                <span>{{ tipo.nombre }}</span>
+                            </div>
+                        </div>
+                        {% empty %}
+                        <div class="col-12 text-center text-muted">
+                            <p>No hay tipos de felicitación configurados.</p>
+                            <a href="/admin/catalogos/tipofelicitacion/" class="btn btn-sm btn-outline-primary">
+                                ⚙️ Configurar en Admin
+                            </a>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

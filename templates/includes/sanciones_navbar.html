@@ -1,0 +1,15 @@
+<nav class="app-navbar">
+    <div class="container-fluid">
+        <div class="d-flex align-items-center">
+            <h5 class="mb-0 me-4">⚖️ Sanciones Aplicadas</h5>
+            <div class="btn-group" role="group">
+                <a href="{% url 'sancion_list' %}" class="btn btn-outline-danger btn-sm {% if request.resolver_match.url_name == 'sancion_list' %}active{% endif %}">
+                    📋 Lista de Sanciones
+                </a>
+                <a href="{% url 'sancion_create' %}" class="btn btn-outline-danger btn-sm {% if request.resolver_match.url_name == 'sancion_create' %}active{% endif %}">
+                    ➕ Nueva Sanción
+                </a>
+            </div>
+        </div>
+    </div>
+</nav>

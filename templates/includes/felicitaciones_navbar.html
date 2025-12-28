@@ -1,0 +1,15 @@
+<nav class="app-navbar">
+    <div class="container-fluid">
+        <div class="d-flex align-items-center">
+            <h5 class="mb-0 me-4">⭐ Felicitaciones y Reconocimientos</h5>
+            <div class="btn-group" role="group">
+                <a href="{% url 'felicitacion_list' %}" class="btn btn-outline-warning btn-sm {% if request.resolver_match.url_name == 'felicitacion_list' %}active{% endif %}">
+                    📋 Lista de Felicitaciones
+                </a>
+                <a href="{% url 'felicitacion_create' %}" class="btn btn-outline-warning btn-sm {% if request.resolver_match.url_name == 'felicitacion_create' %}active{% endif %}">
+                    ➕ Nueva Felicitación
+                </a>
+            </div>
+        </div>
+    </div>
+</nav>

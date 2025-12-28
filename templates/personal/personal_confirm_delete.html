@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block app_navbar %}
+    {% include 'includes/personal_navbar.html' %}
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-danger text-white">
+                    <h4 class="mb-0">⚠️ Confirmar Eliminación</h4>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-warning">
+                        <h5>¡Atención!</h5>
+                        <p>Estás a punto de eliminar permanentemente al personal:</p>
+                    </div>
+                    
+                    <div class="text-center mb-4">
+                        <h4>{{ object.nombre_completo }}</h4>
+                        <p class="text-muted">{{ object.grado.nombre }} - {{ object.unidad.nombre }}</p>
+                        <p><strong>Código:</strong> {{ object.codigo_identificacion }}</p>
+                        <p><strong>CI:</strong> {{ object.ci }} {{ object.expedido }}</p>
+                    </div>
+
+                    <div class="alert alert-danger">
+                        <strong>❌ Esta acción no se puede deshacer.</strong><br>
+                        Se eliminarán todos los datos asociados a este personal.
+                    </div>
+                    
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-danger btn-lg">
+                                🗑️ Sí, Eliminar Permanentemente
+                            </button>
+                            <a href="{% url 'personal_list' %}" class="btn btn-secondary">
+                                ↩️ Cancelar y Volver
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
