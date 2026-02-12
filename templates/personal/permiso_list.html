@@ -78,9 +78,11 @@
             {% else %}
             <div class="text-center text-muted py-4">
                 <p>No hay solicitudes de permisos registradas.</p>
+                {% if user.puede_crear %}
                 <a href="{% url 'permiso_create' %}" class="btn btn-primary">
                     ➕ Crear Primera Solicitud
                 </a>
+                {% endif %}
             </div>
             {% endif %}
         </div>

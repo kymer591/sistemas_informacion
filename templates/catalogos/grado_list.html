@@ -9,9 +9,13 @@
 <div class="container-fluid">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2>📊 Grados Policiales</h2>
+        
+        <!-- Solo Admin y Oficial Admin pueden crear -->
+        {% if user.puede_crear %}
         <a href="{% url 'grado_create' %}" class="btn btn-primary">
             ➕ Agregar Grado
         </a>
+        {% endif %}
     </div>
 
     <div class="card">
@@ -40,12 +44,19 @@
                             {% endif %}
                         </td>
                         <td>
+                            <!-- EDITAR - Solo Admin y Oficial Admin -->
+                            {% if user.puede_editar %}
                             <a href="{% url 'grado_update' grado.pk %}" class="btn btn-sm btn-warning">
                                 ✏️ Editar
                             </a>
+                            {% endif %}
+                            
+                            <!-- ELIMINAR - Solo Admin -->
+                            {% if user.puede_eliminar %}
                             <a href="{% url 'grado_delete' grado.pk %}" class="btn btn-sm btn-danger">
                                 🗑️ Eliminar
                             </a>
+                            {% endif %}
                         </td>
                     </tr>
                     {% empty %}

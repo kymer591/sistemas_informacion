@@ -3,12 +3,17 @@
         <div class="d-flex align-items-center">
             <h5 class="mb-0 me-4">👥 Gestión de Personal</h5>
             <div class="btn-group" role="group">
+                <!-- Lista - TODOS -->
                 <a href="{% url 'personal_list' %}" class="btn btn-outline-success btn-sm {% if request.resolver_match.url_name == 'personal_list' %}active{% endif %}">
                     👤 Lista de Personal
                 </a>
+                
+                <!-- Agregar - Solo Admin y Oficial Admin -->
+                {% if user.puede_crear %}
                 <a href="{% url 'personal_create' %}" class="btn btn-outline-success btn-sm {% if request.resolver_match.url_name == 'personal_create' %}active{% endif %}">
                     ➕ Agregar Personal
                 </a>
+                {% endif %}
             </div>
         </div>
     </div>

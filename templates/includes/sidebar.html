@@ -5,6 +5,7 @@
         </h6>
         
         <ul class="nav flex-column">
+            <!-- Dashboard - TODOS -->
             <li class="nav-item">
                 <a class="nav-link text-white {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}" 
                    href="{% url 'dashboard' %}">
@@ -12,6 +13,7 @@
                 </a>
             </li>
             
+            <!-- Catálogos - TODOS -->
             <li class="nav-item">
                 <a class="nav-link text-white {% if 'catalogos' in request.path %}active{% endif %}" 
                    href="{% url 'grado_list' %}">
@@ -19,36 +21,73 @@
                 </a>
             </li>
 
+            <!-- Personal - TODOS -->
             <li class="nav-item">
-                <a class="nav-link text-white {% if 'personal' in request.path %}active{% endif %}" 
+                <a class="nav-link text-white {% if 'personal' in request.path and 'permisos' not in request.path and 'sanciones' not in request.path and 'felicitaciones' not in request.path %}active{% endif %}" 
                    href="{% url 'personal_list' %}">
                     👥 Personal
                 </a>
             </li>
 
+            <!-- Reportes - TODOS -->
             <li class="nav-item">
                 <a class="nav-link text-white" href="#">
                     📈 Reportes
                 </a>
             </li>
+
+            <!-- Permisos - TODOS -->
             <li class="nav-item">
                 <a class="nav-link text-white {% if 'permisos' in request.path %}active{% endif %}" 
-                href="{% url 'permiso_list' %}">
+                   href="{% url 'permiso_list' %}">
                     🏖️ Permisos
                 </a>
             </li>
+
+            <!-- Sanciones - Solo Admin y Oficial Admin -->
+            {% if user.puede_gestionar_sanciones %}
             <li class="nav-item">
                 <a class="nav-link text-white {% if 'sanciones' in request.path %}active{% endif %}" 
-                href="{% url 'sancion_list' %}">
+                   href="{% url 'sancion_list' %}">
                     ⚖️ Sanciones
                 </a>
             </li>
+            {% endif %}
+
+            <!-- Felicitaciones - TODOS -->
             <li class="nav-item">
                 <a class="nav-link text-white {% if 'felicitaciones' in request.path %}active{% endif %}" 
-                href="{% url 'felicitacion_list' %}">
+                   href="{% url 'felicitacion_list' %}">
                     ⭐ Felicitaciones
                 </a>
             </li>
+
+            <hr class="my-3 bg-secondary">
+
+            <!-- Asignar Roles - Solo Admin -->
+            {% if user.es_administrador %}
+            <li class="nav-item">
+                <a class="nav-link text-white {% if 'asignar-roles' in request.path %}active{% endif %}" 
+                   href="{% url 'asignar_rol_list' %}">
+                    🔐 Asignar Roles
+                </a>
+            </li>
+            {% endif %}
         </ul>
+
+        <!-- Información del usuario al final -->
+        <div class="px-3 mt-4 pt-3 border-top border-secondary">
+            <small class="text-white-50 d-block mb-2">Sesión actual:</small>
+            <div class="text-white">
+                <strong>{{ user.username }}</strong><br>
+                {% if user.es_administrador %}
+                    <span class="badge bg-danger mt-1">🔴 Administrador</span>
+                {% elif user.es_oficial_administrativo %}
+                    <span class="badge bg-warning text-dark mt-1">🟡 Oficial Admin</span>
+                {% else %}
+                    <span class="badge bg-info mt-1">🔵 Consulta</span>
+                {% endif %}
+            </div>
+        </div>
     </div>
 </nav>

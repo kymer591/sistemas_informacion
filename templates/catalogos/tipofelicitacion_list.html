@@ -9,9 +9,11 @@
 <div class="container-fluid">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2>⭐ Tipos de Felicitación</h2>
+        {% if user.puede_crear %}
         <a href="{% url 'tipofelicitacion_create' %}" class="btn btn-primary">
             ➕ Agregar Felicitación
         </a>
+        {% endif %}
     </div>
 
     <div class="card">
@@ -30,12 +32,16 @@
                         <td><strong>{{ felicitacion.nombre }}</strong></td>
                         <td>{{ felicitacion.descripcion|default:"-" }}</td>
                         <td>
+                            {% if user.puede_editar %}
                             <a href="{% url 'tipofelicitacion_update' felicitacion.pk %}" class="btn btn-sm btn-warning">
                                 ✏️ Editar
                             </a>
+                            {% endif %}
+                            {% if user.puede_eliminar %}
                             <a href="{% url 'tipofelicitacion_delete' felicitacion.pk %}" class="btn btn-sm btn-danger">
                                 🗑️ Eliminar
                             </a>
+                            {% endif %}
                         </td>
                     </tr>
                     {% empty %}

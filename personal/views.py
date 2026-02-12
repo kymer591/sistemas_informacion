@@ -1,19 +1,54 @@
+"""
+Ejemplo de vistas actualizadas con el nuevo sistema de control de acceso
+Archivo: personal/views.py (ACTUALIZADO)
+"""
+
 from django.urls import reverse_lazy
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView, DetailView
-from .models import PersonalPolicial, PermisoLicencia
-from .models import SancionAplicada, FelicitacionAplicada
-from catalogos.models import TipoFelicitacion
 from django.utils import timezone
-from core.mixins import AdminRequiredMixin, EncargadoRequiredMixin, PolicialRequiredMixin
 
+from .models import (
+    PersonalPolicial, 
+    PermisoLicencia,
+    SancionAplicada, 
+    FelicitacionAplicada,
+    KardexDigital
+)
+from catalogos.models import TipoFelicitacion
+
+# IMPORTAR MIXINS ACTUALIZADOS
+from core.mixins import (
+    AdminRequiredMixin,
+    OficialAdministrativoRequiredMixin,
+    UsuarioAutorizadoRequiredMixin,
+    PuedeCrearMixin,
+    PuedeEditarMixin,
+    PuedeEliminarMixin,
+    PuedeAprobarPermisosMixin,
+    PuedeGestionarSancionesMixin
+)
+
+
+# ==========================================
 # VISTAS PARA PERSONAL
-class PersonalListView(EncargadoRequiredMixin, ListView):
+# ==========================================
+
+class PersonalListView(UsuarioAutorizadoRequiredMixin, ListView):
+    """
+    Lista de personal policial
+    Acceso: Todos los roles (solo consulta)
+    """
     model = PersonalPolicial
     template_name = 'personal/personal_list.html'
     context_object_name = 'personal'
     ordering = ['grado__orden', 'apellido_paterno']
 
-class PersonalCreateView(EncargadoRequiredMixin, CreateView):
+
+class PersonalCreateView(PuedeCrearMixin, CreateView):
+    """
+    Crear nuevo personal
+    Acceso: Administrador + Oficial Administrativo
+    """
     model = PersonalPolicial
     template_name = 'personal/personal_form.html'
     fields = [
@@ -25,7 +60,12 @@ class PersonalCreateView(EncargadoRequiredMixin, CreateView):
     ]
     success_url = reverse_lazy('personal_list')
 
-class PersonalUpdateView(EncargadoRequiredMixin, UpdateView):
+
+class PersonalUpdateView(PuedeEditarMixin, UpdateView):
+    """
+    Editar personal existente
+    Acceso: Administrador + Oficial Administrativo
+    """
     model = PersonalPolicial
     template_name = 'personal/personal_form.html'
     fields = [
@@ -37,20 +77,36 @@ class PersonalUpdateView(EncargadoRequiredMixin, UpdateView):
     ]
     success_url = reverse_lazy('personal_list')
 
-class PersonalDetailView(PolicialRequiredMixin, DetailView):
+
+class PersonalDetailView(UsuarioAutorizadoRequiredMixin, DetailView):
+    """
+    Ver detalle de personal
+    Acceso: Todos los roles
+    """
     model = PersonalPolicial
     template_name = 'personal/personal_detail.html'
     context_object_name = 'persona'
 
-class PersonalDeleteView(AdminRequiredMixin, DeleteView):
+
+class PersonalDeleteView(PuedeEliminarMixin, DeleteView):
+    """
+    Eliminar personal
+    Acceso: Solo Administrador
+    """
     model = PersonalPolicial
     template_name = 'personal/personal_confirm_delete.html'
     success_url = reverse_lazy('personal_list')
 
-# VISTAS PARA KARDEX
-from .models import KardexDigital
 
-class KardexPersonalListView(EncargadoRequiredMixin, ListView):
+# ==========================================
+# VISTAS PARA KARDEX
+# ==========================================
+
+class KardexPersonalListView(UsuarioAutorizadoRequiredMixin, ListView):
+    """
+    Lista de registros del kardex de un personal
+    Acceso: Todos los roles
+    """
     model = KardexDigital
     template_name = 'personal/kardex_list.html'
     context_object_name = 'registros'
@@ -64,7 +120,12 @@ class KardexPersonalListView(EncargadoRequiredMixin, ListView):
         context['persona'] = PersonalPolicial.objects.get(pk=self.kwargs['personal_id'])
         return context
 
-class KardexCreateView(EncargadoRequiredMixin, CreateView):
+
+class KardexCreateView(PuedeCrearMixin, CreateView):
+    """
+    Crear nuevo registro en el kardex
+    Acceso: Administrador + Oficial Administrativo
+    """
     model = KardexDigital
     template_name = 'personal/kardex_form.html'
     fields = [
@@ -90,14 +151,27 @@ class KardexCreateView(EncargadoRequiredMixin, CreateView):
         context['persona'] = PersonalPolicial.objects.get(pk=self.kwargs['personal_id'])
         return context
 
+
+# ==========================================
 # VISTAS PARA PERMISOS
-class PermisoListView(EncargadoRequiredMixin, ListView):
+# ==========================================
+
+class PermisoListView(UsuarioAutorizadoRequiredMixin, ListView):
+    """
+    Lista de permisos y licencias
+    Acceso: Todos los roles
+    """
     model = PermisoLicencia
     template_name = 'personal/permiso_list.html'
     context_object_name = 'permisos'
     ordering = ['-fecha_solicitud']
 
-class PermisoCreateView(EncargadoRequiredMixin, CreateView):
+
+class PermisoCreateView(PuedeCrearMixin, CreateView):
+    """
+    Crear nueva solicitud de permiso
+    Acceso: Administrador + Oficial Administrativo
+    """
     model = PermisoLicencia
     template_name = 'personal/permiso_form.html'
     fields = [
@@ -110,7 +184,12 @@ class PermisoCreateView(EncargadoRequiredMixin, CreateView):
         form.instance.solicitado_por = self.request.user
         return super().form_valid(form)
 
-class PermisoUpdateView(EncargadoRequiredMixin, UpdateView):
+
+class PermisoUpdateView(PuedeEditarMixin, UpdateView):
+    """
+    Editar solicitud de permiso
+    Acceso: Administrador + Oficial Administrativo
+    """
     model = PermisoLicencia
     template_name = 'personal/permiso_form.html'
     fields = [
@@ -119,7 +198,12 @@ class PermisoUpdateView(EncargadoRequiredMixin, UpdateView):
     ]
     success_url = reverse_lazy('permiso_list')
 
-class PermisoAprobarView(EncargadoRequiredMixin, UpdateView):
+
+class PermisoAprobarView(PuedeAprobarPermisosMixin, UpdateView):
+    """
+    Aprobar o rechazar solicitud de permiso
+    Acceso: Administrador + Oficial Administrativo
+    """
     model = PermisoLicencia
     template_name = 'personal/permiso_aprobar.html'
     fields = ['estado', 'observaciones_aprobacion']
@@ -133,19 +217,37 @@ class PermisoAprobarView(EncargadoRequiredMixin, UpdateView):
     def get_success_url(self):
         return reverse_lazy('permiso_list')
 
-class PermisoDetailView(EncargadoRequiredMixin, DetailView):
+
+class PermisoDetailView(UsuarioAutorizadoRequiredMixin, DetailView):
+    """
+    Ver detalle de permiso
+    Acceso: Todos los roles
+    """
     model = PermisoLicencia
     template_name = 'personal/permiso_detail.html'
     context_object_name = 'permiso'
 
+
+# ==========================================
 # VISTAS PARA SANCIONES
-class SancionListView(AdminRequiredMixin, ListView):
+# ==========================================
+
+class SancionListView(PuedeGestionarSancionesMixin, ListView):
+    """
+    Lista de sanciones
+    Acceso: Administrador + Oficial Administrativo
+    """
     model = SancionAplicada
     template_name = 'personal/sancion_list.html'
     context_object_name = 'sanciones'
     ordering = ['-fecha_sancion']
 
-class SancionCreateView(AdminRequiredMixin, CreateView):
+
+class SancionCreateView(PuedeGestionarSancionesMixin, CreateView):
+    """
+    Crear nueva sanción
+    Acceso: Administrador + Oficial Administrativo
+    """
     model = SancionAplicada
     template_name = 'personal/sancion_form.html'
     fields = [
@@ -158,7 +260,12 @@ class SancionCreateView(AdminRequiredMixin, CreateView):
         form.instance.registrado_por = self.request.user
         return super().form_valid(form)
 
-class SancionUpdateView(AdminRequiredMixin, UpdateView):
+
+class SancionUpdateView(PuedeGestionarSancionesMixin, UpdateView):
+    """
+    Editar sanción
+    Acceso: Administrador + Oficial Administrativo
+    """
     model = SancionAplicada
     template_name = 'personal/sancion_form.html'
     fields = [
@@ -167,13 +274,26 @@ class SancionUpdateView(AdminRequiredMixin, UpdateView):
     ]
     success_url = reverse_lazy('sancion_list')
 
-class SancionDetailView(AdminRequiredMixin, DetailView):
+
+class SancionDetailView(PuedeGestionarSancionesMixin, DetailView):
+    """
+    Ver detalle de sanción
+    Acceso: Administrador + Oficial Administrativo
+    """
     model = SancionAplicada
     template_name = 'personal/sancion_detail.html'
     context_object_name = 'sancion'
 
+
+# ==========================================
 # VISTAS PARA FELICITACIONES
-class FelicitacionListView(AdminRequiredMixin, ListView):
+# ==========================================
+
+class FelicitacionListView(UsuarioAutorizadoRequiredMixin, ListView):
+    """
+    Lista de felicitaciones
+    Acceso: Todos los roles
+    """
     model = FelicitacionAplicada
     template_name = 'personal/felicitacion_list.html'
     context_object_name = 'felicitaciones'
@@ -191,7 +311,12 @@ class FelicitacionListView(AdminRequiredMixin, ListView):
         context['tipos_felicitacion'] = TipoFelicitacion.objects.all()
         return context
 
-class FelicitacionCreateView(AdminRequiredMixin, CreateView):
+
+class FelicitacionCreateView(PuedeCrearMixin, CreateView):
+    """
+    Crear nueva felicitación
+    Acceso: Administrador + Oficial Administrativo
+    """
     model = FelicitacionAplicada
     template_name = 'personal/felicitacion_form.html'
     fields = [
@@ -204,7 +329,12 @@ class FelicitacionCreateView(AdminRequiredMixin, CreateView):
         form.instance.registrado_por = self.request.user
         return super().form_valid(form)
 
-class FelicitacionUpdateView(AdminRequiredMixin, UpdateView):
+
+class FelicitacionUpdateView(PuedeEditarMixin, UpdateView):
+    """
+    Editar felicitación
+    Acceso: Administrador + Oficial Administrativo
+    """
     model = FelicitacionAplicada
     template_name = 'personal/felicitacion_form.html'
     fields = [
@@ -213,7 +343,12 @@ class FelicitacionUpdateView(AdminRequiredMixin, UpdateView):
     ]
     success_url = reverse_lazy('felicitacion_list')
 
-class FelicitacionDetailView(AdminRequiredMixin, DetailView):
+
+class FelicitacionDetailView(UsuarioAutorizadoRequiredMixin, DetailView):
+    """
+    Ver detalle de felicitación
+    Acceso: Todos los roles
+    """
     model = FelicitacionAplicada
     template_name = 'personal/felicitacion_detail.html'
     context_object_name = 'felicitacion'

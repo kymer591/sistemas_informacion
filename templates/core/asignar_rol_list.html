@@ -1,0 +1,146 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container-fluid mt-3">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>🔐 Asignar Roles de Acceso al Sistema</h2>
+        <a href="{% url 'dashboard' %}" class="btn btn-secondary">
+            ↩️ Volver
+        </a>
+    </div>
+
+    <!-- Buscador -->
+    <div class="card mb-3">
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-10">
+                    <input type="text" 
+                           name="buscar" 
+                           class="form-control" 
+                           placeholder="🔍 Buscar por nombre, apellido o CI..."
+                           value="{{ buscar }}">
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-primary w-100">
+                        Buscar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Lista de personal -->
+    <div class="card">
+        <div class="card-body">
+            <table class="table table-striped table-hover">
+                <thead class="table-dark">
+                    <tr>
+                        <th>CI</th>
+                        <th>Nombre Completo</th>
+                        <th>Grado</th>
+                        <th>Unidad</th>
+                        <th>Acceso al Sistema</th>
+                        <th>Rol Actual</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for persona in personal %}
+                    <tr>
+                        <td><strong>{{ persona.ci }}</strong></td>
+                        <td>{{ persona.nombre_completo }}</td>
+                        <td>{{ persona.grado.abreviatura }}</td>
+                        <td>{{ persona.unidad.codigo }}</td>
+                        <td>
+                            {% if persona.usuario_relacionado %}
+                                <span class="badge bg-success">✅ Tiene acceso</span>
+                            {% else %}
+                                <span class="badge bg-secondary">❌ Sin acceso</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if persona.usuario_relacionado %}
+                                {% if persona.usuario_relacionado.rol == 'admin' %}
+                                    <span class="badge bg-danger">🔴 Admin</span>
+                                {% elif persona.usuario_relacionado.rol == 'oficial_administrativo' %}
+                                    <span class="badge bg-warning text-dark">🟡 Oficial Admin</span>
+                                {% else %}
+                                    <span class="badge bg-info">🔵 Usuario Autorizado</span>
+                                {% endif %}
+                            {% else %}
+                                <span class="text-muted">-</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <a href="{% url 'asignar_rol' persona.pk %}" class="btn btn-sm btn-primary">
+                                {% if persona.usuario_relacionado %}
+                                    ✏️ Cambiar Rol
+                                {% else %}
+                                    ➕ Dar Acceso
+                                {% endif %}
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="text-center text-muted py-4">
+                            {% if buscar %}
+                                No se encontraron resultados para "{{ buscar }}"
+                            {% else %}
+                                No hay personal registrado
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Leyenda de roles -->
+    <div class="row mt-4">
+        <div class="col-md-4">
+            <div class="card border-danger">
+                <div class="card-header bg-danger text-white">
+                    <h6 class="mb-0">🔴 Administrador</h6>
+                </div>
+                <div class="card-body">
+                    <ul class="small mb-0">
+                        <li>Acceso completo al sistema</li>
+                        <li>Crear, editar y eliminar</li>
+                        <li>Gestionar usuarios y roles</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-warning">
+                <div class="card-header bg-warning">
+                    <h6 class="mb-0">🟡 Oficial Administrativo</h6>
+                </div>
+                <div class="card-body">
+                    <ul class="small mb-0">
+                        <li>Crear y editar registros</li>
+                        <li>Aprobar permisos y licencias</li>
+                        <li>NO puede eliminar</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-info">
+                <div class="card-header bg-info text-white">
+                    <h6 class="mb-0">🔵 Usuario Autorizado</h6>
+                </div>
+                <div class="card-body">
+                    <ul class="small mb-0">
+                        <li>Solo consulta de información</li>
+                        <li>Ver personal y reportes</li>
+                        <li>Sin permisos de modificación</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -9,9 +9,11 @@
 <div class="container-fluid">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2>⚖️ Tipos de Sanción</h2>
+        {% if user.puede_crear %}
         <a href="{% url 'tiposancion_create' %}" class="btn btn-primary">
             ➕ Agregar Sanción
         </a>
+        {% endif %}
     </div>
 
     <div class="card">
@@ -46,12 +48,16 @@
                             {% endif %}
                         </td>
                         <td>
+                            {% if user.puede_editar %}
                             <a href="{% url 'tiposancion_update' sancion.pk %}" class="btn btn-sm btn-warning">
                                 ✏️ Editar
                             </a>
+                            {% endif %}
+                            {% if user.puede_eliminar %}
                             <a href="{% url 'tiposancion_delete' sancion.pk %}" class="btn btn-sm btn-danger">
                                 🗑️ Eliminar
                             </a>
+                            {% endif %}
                         </td>
                     </tr>
                     {% empty %}

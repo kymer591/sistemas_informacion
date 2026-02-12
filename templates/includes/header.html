@@ -7,6 +7,15 @@
         <div class="navbar-nav ms-auto">
             <span class="navbar-text text-light me-3">
                 👋 {{ user.username }}
+                
+                <!-- Mostrar badge del rol -->
+                {% if user.es_administrador %}
+                    <span class="badge bg-danger ms-2">Admin</span>
+                {% elif user.es_oficial_administrativo %}
+                    <span class="badge bg-warning text-dark ms-2">Oficial Admin</span>
+                {% else %}
+                    <span class="badge bg-info ms-2">Consulta</span>
+                {% endif %}
             </span>
             <a class="btn btn-outline-light btn-sm" href="{% url 'logout' %}">
                 🚪 Cerrar Sesión

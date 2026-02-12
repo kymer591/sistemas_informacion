@@ -1,0 +1,81 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+<div class="container-fluid mt-3">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        {% if usuario_existe %}
+                            ✏️ Cambiar Rol de Acceso
+                        {% else %}
+                            ➕ Dar Acceso al Sistema
+                        {% endif %}
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <!-- Información del personal -->
+                    <div class="alert alert-info">
+                        <h5>👤 {{ persona.nombre_completo }}</h5>
+                        <p class="mb-0">
+                            <strong>CI:</strong> {{ persona.ci }} {{ persona.expedido }} |
+                            <strong>Grado:</strong> {{ persona.grado.nombre }} |
+                            <strong>Unidad:</strong> {{ persona.unidad.nombre }}
+                        </p>
+                    </div>
+
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h6>🔐 Credenciales de Acceso</h6>
+                                {{ form.username|as_crispy_field }}
+                                
+                                <div class="form-group">
+                                    <label>Contraseña</label>
+                                    {{ form.password }}
+                                    <small class="form-text text-muted">
+                                        {% if usuario_existe %}
+                                            Dejar vacío para mantener la contraseña actual
+                                        {% else %}
+                                            Si se deja vacío, se usará el CI como contraseña
+                                        {% endif %}
+                                    </small>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <h6>🎯 Asignación de Rol</h6>
+                                {{ form.rol|as_crispy_field }}
+                                
+                                {{ form.activo|as_crispy_field }}
+                                
+                                <div class="alert alert-warning mt-3">
+                                    <strong>⚠️ Permisos por rol:</strong>
+                                    <ul class="small mb-0 mt-2">
+                                        <li><strong>Admin:</strong> Acceso total</li>
+                                        <li><strong>Oficial Admin:</strong> Crear/editar</li>
+                                        <li><strong>Usuario:</strong> Solo ver</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-4">
+                            <button type="submit" class="btn btn-success btn-lg">
+                                💾 {% if usuario_existe %}Actualizar Rol{% else %}Dar Acceso{% endif %}
+                            </button>
+                            <a href="{% url 'asignar_rol_list' %}" class="btn btn-secondary">
+                                ↩️ Cancelar
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

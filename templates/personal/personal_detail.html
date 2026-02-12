@@ -119,6 +119,27 @@
                     </a>
                 </div>
             </div>
+            <!-- En personal_detail.html, añade esto donde quieras -->
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h6>🔐 Acceso al Sistema</h6>
+                </div>
+                <div class="card-body">
+                    {% if personal.usuario_acceso %}
+                        <p><strong>Usuario:</strong> {{ personal.usuario_acceso.username }}</p>
+                        <p><strong>Rol:</strong> 
+                            <span class="badge bg-info">{{ personal.usuario_acceso.get_rol_display }}</span>
+                        </p>
+                        {% if user.es_administrador %}
+                            <a href="{% url 'cambiar_rol' personal.pk %}" class="btn btn-sm btn-warning">
+                                ✏️ Cambiar Rol
+                            </a>
+                        {% endif %}
+                    {% else %}
+                        <p class="text-muted">Usuario no creado automáticamente</p>
+                    {% endif %}
+                </div>
+            </div>
         </div>
     </div>
 </div>

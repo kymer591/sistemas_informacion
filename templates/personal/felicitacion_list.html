@@ -123,9 +123,11 @@
                 </div>
                 <h5>No hay felicitaciones registradas</h5>
                 <p class="mb-4">Comienza reconociendo el buen trabajo del personal.</p>
+                {% if user.puede_crear %}
                 <a href="{% url 'felicitacion_create' %}" class="btn btn-warning btn-lg">
                     ➕ Registrar Primera Felicitación
                 </a>
+                {% endif %}
             </div>
             {% endif %}
         </div>

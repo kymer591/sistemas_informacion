@@ -1,0 +1,113 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container-fluid mt-3">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>👥 Gestión de Usuarios y Roles</h2>
+        <a href="{% url 'dashboard' %}" class="btn btn-secondary">
+            ↩️ Volver al Dashboard
+        </a>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <table class="table table-striped table-hover">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Usuario</th>
+                        <th>Nombre Completo</th>
+                        <th>Email</th>
+                        <th>Rol Actual</th>
+                        <th>Unidad</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for usuario in usuarios %}
+                    <tr>
+                        <td><strong>{{ usuario.username }}</strong></td>
+                        <td>{{ usuario.get_full_name|default:"-" }}</td>
+                        <td>{{ usuario.email|default:"-" }}</td>
+                        <td>
+                            {% if usuario.rol == 'admin' %}
+                                <span class="badge bg-danger">🔴 Administrador</span>
+                            {% elif usuario.rol == 'oficial_administrativo' %}
+                                <span class="badge bg-warning text-dark">🟡 Oficial Administrativo</span>
+                            {% else %}
+                                <span class="badge bg-info">🔵 Usuario Autorizado</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ usuario.unidad.codigo|default:"-" }}</td>
+                        <td>
+                            {% if usuario.activo %}
+                                <span class="badge bg-success">Activo</span>
+                            {% else %}
+                                <span class="badge bg-secondary">Inactivo</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <a href="{% url 'usuario_update' usuario.pk %}" class="btn btn-sm btn-primary">
+                                ✏️ Cambiar Rol
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="text-center text-muted">
+                            No hay usuarios registrados
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Información de roles -->
+    <div class="row mt-4">
+        <div class="col-md-4">
+            <div class="card border-danger">
+                <div class="card-header bg-danger text-white">
+                    <h6 class="mb-0">🔴 Administrador</h6>
+                </div>
+                <div class="card-body">
+                    <ul class="small mb-0">
+                        <li>Acceso completo</li>
+                        <li>Crear, editar, eliminar</li>
+                        <li>Gestionar usuarios</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-warning">
+                <div class="card-header bg-warning">
+                    <h6 class="mb-0">🟡 Oficial Administrativo</h6>
+                </div>
+                <div class="card-body">
+                    <ul class="small mb-0">
+                        <li>Crear y editar registros</li>
+                        <li>Aprobar permisos</li>
+                        <li>NO puede eliminar</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-info">
+                <div class="card-header bg-info text-white">
+                    <h6 class="mb-0">🔵 Usuario Autorizado</h6>
+                </div>
+                <div class="card-body">
+                    <ul class="small mb-0">
+                        <li>Solo consulta</li>
+                        <li>Ver información</li>
+                        <li>Sin modificaciones</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
