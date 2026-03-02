@@ -1,0 +1,271 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <!-- Encabezado -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2>👤 Mi Información Personal</h2>
+            <p class="text-muted">Bienvenido, {{ user.get_full_name|default:user.username }}</p>
+        </div>
+    </div>
+
+    <!-- Tarjeta de Información Personal -->
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">📋 Datos Personales</h5>
+                </div>
+                <div class="card-body text-center">
+                    <div class="mb-3">
+                        <div class="bg-light rounded-circle d-inline-flex align-items-center justify-content-center" 
+                             style="width: 100px; height: 100px;">
+                            <span class="fs-1">👤</span>
+                        </div>
+                    </div>
+                    <h4>{{ personal.nombre_completo }}</h4>
+                    <p class="text-muted mb-1">{{ personal.grado.nombre }}</p>
+                    <p class="text-muted">{{ personal.unidad.nombre }}</p>
+                    
+                    <div class="mt-3">
+                        <span class="badge fs-6" style="background-color: {{ personal.estado_actual.color }};">
+                            {{ personal.estado_actual.nombre }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Información de Contacto -->
+            <div class="card shadow mt-3">
+                <div class="card-header">
+                    <h6 class="mb-0">📞 Contacto</h6>
+                </div>
+                <div class="card-body">
+                    <p><strong>CI:</strong> {{ personal.ci }} {{ personal.expedido }}</p>
+                    <p><strong>Código:</strong> {{ personal.codigo_identificacion }}</p>
+                    <p><strong>Teléfono:</strong> {{ personal.telefono_personal|default:"No registrado" }}</p>
+                    <p><strong>Email:</strong> {{ personal.correo_institucional|default:"No registrado" }}</p>
+                    <p><strong>Fecha Ingreso:</strong> {{ personal.fecha_ingreso }}</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Columna derecha con información detallada -->
+        <div class="col-md-8">
+            <!-- Tabs de navegación -->
+            <ul class="nav nav-tabs" id="myTab" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="kardex-tab" data-bs-toggle="tab" data-bs-target="#kardex" type="button">
+                        📒 Mi Kardex
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="permisos-tab" data-bs-toggle="tab" data-bs-target="#permisos" type="button">
+                        🏖️ Mis Permisos
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="felicitaciones-tab" data-bs-toggle="tab" data-bs-target="#felicitaciones" type="button">
+                        ⭐ Mis Felicitaciones
+                    </button>
+                </li>
+                {% if sanciones %}
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="sanciones-tab" data-bs-toggle="tab" data-bs-target="#sanciones" type="button">
+                        ⚖️ Mis Sanciones
+                    </button>
+                </li>
+                {% endif %}
+            </ul>
+
+            <!-- Contenido de tabs -->
+            <div class="tab-content" id="myTabContent">
+                <!-- Kardex -->
+                <div class="tab-pane fade show active" id="kardex">
+                    <div class="card shadow-sm">
+                        <div class="card-body">
+                            <h5>📒 Historial de Kardex</h5>
+                            {% if kardex %}
+                            <div class="table-responsive">
+                                <table class="table table-sm">
+                                    <thead>
+                                        <tr>
+                                            <th>Fecha</th>
+                                            <th>Tipo</th>
+                                            <th>Descripción</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for registro in kardex %}
+                                        <tr>
+                                            <td>{{ registro.fecha_registro }}</td>
+                                            <td><span class="badge bg-info">{{ registro.get_tipo_registro_display }}</span></td>
+                                            <td>{{ registro.descripcion|truncatewords:15 }}</td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                            {% else %}
+                            <p class="text-muted text-center py-4">No hay registros en tu kardex</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Permisos -->
+                <div class="tab-pane fade" id="permisos">
+                    <div class="card shadow-sm">
+                        <div class="card-body">
+                            <h5>🏖️ Mis Permisos y Licencias</h5>
+                            {% if permisos %}
+                            <div class="table-responsive">
+                                <table class="table table-sm">
+                                    <thead>
+                                        <tr>
+                                            <th>Tipo</th>
+                                            <th>Fechas</th>
+                                            <th>Días</th>
+                                            <th>Estado</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for permiso in permisos %}
+                                        <tr>
+                                            <td>{{ permiso.get_tipo_permiso_display }}</td>
+                                            <td>{{ permiso.fecha_inicio }} al {{ permiso.fecha_fin }}</td>
+                                            <td><span class="badge bg-primary">{{ permiso.dias_solicitados }}</span></td>
+                                            <td>
+                                                {% if permiso.estado == 'aprobado' %}
+                                                    <span class="badge bg-success">Aprobado</span>
+                                                {% elif permiso.estado == 'pendiente' %}
+                                                    <span class="badge bg-warning">Pendiente</span>
+                                                {% else %}
+                                                    <span class="badge bg-danger">{{ permiso.estado }}</span>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                            {% else %}
+                            <p class="text-muted text-center py-4">No tienes permisos registrados</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Felicitaciones -->
+                <div class="tab-pane fade" id="felicitaciones">
+                    <div class="card shadow-sm">
+                        <div class="card-body">
+                            <h5>⭐ Mis Felicitaciones y Reconocimientos</h5>
+                            {% if felicitaciones %}
+                            <div class="table-responsive">
+                                <table class="table table-sm">
+                                    <thead>
+                                        <tr>
+                                            <th>Fecha</th>
+                                            <th>Tipo</th>
+                                            <th>Motivo</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for felicitacion in felicitaciones %}
+                                        <tr>
+                                            <td>{{ felicitacion.fecha_felicitacion }}</td>
+                                            <td><span class="badge bg-warning text-dark">{{ felicitacion.tipo_felicitacion.nombre }}</span></td>
+                                            <td>{{ felicitacion.motivo|truncatewords:10 }}</td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                            {% else %}
+                            <p class="text-muted text-center py-4">No tienes reconocimientos registrados</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sanciones -->
+                {% if sanciones %}
+                <div class="tab-pane fade" id="sanciones">
+                    <div class="card shadow-sm">
+                        <div class="card-body">
+                            <h5>⚖️ Mis Sanciones</h5>
+                            <div class="table-responsive">
+                                <table class="table table-sm">
+                                    <thead>
+                                        <tr>
+                                            <th>Fecha</th>
+                                            <th>Tipo</th>
+                                            <th>Estado</th>
+                                            <th>Período</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for sancion in sanciones %}
+                                        <tr>
+                                            <td>{{ sancion.fecha_sancion }}</td>
+                                            <td>{{ sancion.tipo_sancion.nombre }}</td>
+                                            <td>
+                                                {% if sancion.estado == 'cumplida' %}
+                                                    <span class="badge bg-success">Cumplida</span>
+                                                {% else %}
+                                                    <span class="badge bg-danger">{{ sancion.estado }}</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>{{ sancion.fecha_inicio }} - {{ sancion.fecha_fin|default:"Indefinido" }}</td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Estadísticas rápidas -->
+    <div class="row mt-4">
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h3>{{ kardex|length }}</h3>
+                    <p class="text-muted mb-0">Registros en Kardex</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h3>{{ permisos|length }}</h3>
+                    <p class="text-muted mb-0">Permisos Solicitados</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h3>{{ felicitaciones|length }}</h3>
+                    <p class="text-muted mb-0">Reconocimientos</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h3>{{ personal.fecha_ingreso|timesince }}</h3>
+                    <p class="text-muted mb-0">Tiempo de Servicio</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

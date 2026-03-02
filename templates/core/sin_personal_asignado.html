@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow border-warning">
+                <div class="card-header bg-warning">
+                    <h5 class="mb-0">⚠️ Personal No Asignado</h5>
+                </div>
+                <div class="card-body text-center">
+                    <div class="mb-4">
+                        <span style="font-size: 5rem;">👤</span>
+                    </div>
+                    
+                    <h4>Hola, {{ user.username }}</h4>
+                    <p class="text-muted mb-4">Tu usuario aún no está vinculado con un registro de personal.</p>
+                    
+                    <div class="alert alert-info">
+                        <h6><strong>ℹ️ Información Importante</strong></h6>
+                        <p class="mb-0">
+                            Para poder ver tu información personal, un administrador 
+                            debe vincular tu cuenta de usuario con tu registro en el 
+                            sistema de personal policial.
+                        </p>
+                    </div>
+
+                    <div class="card bg-light mt-4 mb-4">
+                        <div class="card-body">
+                            <h6 class="card-title">📋 Datos de tu Cuenta</h6>
+                            <ul class="list-unstyled mb-0 text-start">
+                                <li><strong>Usuario:</strong> {{ user.username }}</li>
+                                <li><strong>Nombre:</strong> {{ user.get_full_name|default:"No registrado" }}</li>
+                                <li><strong>Email:</strong> {{ user.email|default:"No registrado" }}</li>
+                                <li><strong>Rol:</strong> {{ user.get_rol_display }}</li>
+                                <li><strong>Estado:</strong> <span class="badge bg-success">Activo</span></li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="alert alert-warning">
+                        <strong>🔧 ¿Qué hacer?</strong>
+                        <p class="mb-0 mt-2">
+                            Contacta al administrador del sistema para que vincule 
+                            tu cuenta de usuario con tu registro de personal.
+                        </p>
+                    </div>
+
+                    <div class="mt-4">
+                        <a href="{% url 'logout' %}" class="btn btn-secondary">
+                            🚪 Cerrar Sesión
+                        </a>
+                    </div>
+                </div>
+                <div class="card-footer text-center text-muted">
+                    <small>
+                        <strong>Administrador:</strong> Sistema UTEPPI
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

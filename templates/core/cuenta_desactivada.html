@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow border-danger">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="mb-0">🔒 Cuenta Desactivada</h5>
+                </div>
+                <div class="card-body text-center">
+                    <div class="mb-4">
+                        <span style="font-size: 5rem;">🚫</span>
+                    </div>
+                    
+                    <h4>Lo sentimos, {{ user.get_full_name|default:user.username }}</h4>
+                    <p class="text-muted mb-4">Tu cuenta ha sido desactivada temporalmente.</p>
+                    
+                    <div class="alert alert-danger">
+                        <h6><strong>⚠️ Acceso Restringido</strong></h6>
+                        <p class="mb-0">
+                            Tu cuenta de usuario está actualmente <strong>desactivada</strong> 
+                            y no puedes acceder al sistema en este momento.
+                        </p>
+                    </div>
+
+                    <div class="card bg-light mt-4 mb-4">
+                        <div class="card-body">
+                            <h6 class="card-title">📋 Información de tu Cuenta</h6>
+                            <ul class="list-unstyled mb-0 text-start">
+                                <li><strong>Usuario:</strong> {{ user.username }}</li>
+                                <li><strong>Nombre:</strong> {{ user.get_full_name|default:"No registrado" }}</li>
+                                <li><strong>Email:</strong> {{ user.email|default:"No registrado" }}</li>
+                                <li><strong>Rol:</strong> {{ user.get_rol_display }}</li>
+                                <li><strong>Estado:</strong> <span class="badge bg-danger">Inactivo</span></li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="alert alert-info">
+                        <strong>💡 ¿Qué hacer?</strong>
+                        <p class="mb-0 mt-2">
+                            Si crees que esto es un error o necesitas reactivar tu cuenta, 
+                            por favor contacta al administrador del sistema.
+                        </p>
+                    </div>
+
+                    <div class="mt-4">
+                        <a href="{% url 'logout' %}" class="btn btn-secondary btn-lg">
+                            🚪 Cerrar Sesión
+                        </a>
+                    </div>
+                </div>
+                <div class="card-footer text-center text-muted">
+                    <small>
+                        <strong>Contacto:</strong> Administrador del Sistema UTEPPI<br>
+                        Estado actualizado: {{ user.fecha_actualizacion|date:"d/m/Y H:i" }}
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

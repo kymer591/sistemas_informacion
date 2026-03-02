@@ -110,8 +110,3 @@ class SistemaConfig(models.Model):
     
     def __str__(self):
         return f"Configuración - {self.nombre_institucion}"
-
-    def save(self, *args, **kwargs):
-        if SistemaConfig.objects.exists() and not self.pk:
-            return
-        super().save(*args, **kwargs)

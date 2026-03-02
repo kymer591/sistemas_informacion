@@ -39,8 +39,9 @@
                         <th>Nombre Completo</th>
                         <th>Grado</th>
                         <th>Unidad</th>
-                        <th>Acceso al Sistema</th>
-                        <th>Rol Actual</th>
+                        <th>Acceso</th>
+                        <th>Rol</th>
+                        <th>Estado</th>
                         <th>Acciones</th>
                     </tr>
                 </thead>
@@ -72,6 +73,31 @@
                             {% endif %}
                         </td>
                         <td>
+                            {% if persona.usuario_relacionado %}
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input toggle-usuario" 
+                                        type="checkbox" 
+                                        {% if persona.usuario_relacionado.activo %}checked{% endif %}
+                                        data-user-id="{{ persona.usuario_relacionado.id }}"
+                                        data-username="{{ persona.usuario_relacionado.username }}"
+                                        {% if persona.usuario_relacionado.id == user.id %}disabled{% endif %}
+                                        title="{% if persona.usuario_relacionado.activo %}Desactivar usuario (no podrá iniciar sesión){% else %}Activar usuario (permitir acceso){% endif %}">
+                                    <label class="form-check-label">
+                                        {% if persona.usuario_relacionado.activo %}
+                                            <span class="badge bg-success">✅ Activo</span>
+                                        {% else %}
+                                            <span class="badge bg-danger">🔒 Inactivo</span>
+                                        {% endif %}
+                                    </label>
+                                </div>
+                                {% if persona.usuario_relacionado.id == user.id %}
+                                    <small class="text-muted">(Tú mismo)</small>
+                                {% endif %}
+                            {% else %}
+                                <span class="text-muted">-</span>
+                            {% endif %}
+                        </td>
+                        <td>
                             <a href="{% url 'asignar_rol' persona.pk %}" class="btn btn-sm btn-primary">
                                 {% if persona.usuario_relacionado %}
                                     ✏️ Cambiar Rol
@@ -83,7 +109,7 @@
                     </tr>
                     {% empty %}
                     <tr>
-                        <td colspan="7" class="text-center text-muted py-4">
+                        <td colspan="8" class="text-center text-muted py-4">
                             {% if buscar %}
                                 No se encontraron resultados para "{{ buscar }}"
                             {% else %}
@@ -143,4 +169,88 @@
         </div>
     </div>
 </div>
+
+<!-- JavaScript para toggle -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const toggles = document.querySelectorAll('.toggle-usuario');
+    
+    toggles.forEach(toggle => {
+        toggle.addEventListener('change', function() {
+            const userId = this.dataset.userId;
+            const username = this.dataset.username;
+            const isActive = this.checked;
+            
+            // Confirmar acción
+            const accion = isActive ? 'activar' : 'desactivar';
+            if (!confirm(`¿Estás seguro de ${accion} al usuario ${username}?`)) {
+                // Revertir el toggle si cancela
+                this.checked = !isActive;
+                return;
+            }
+            
+            // Deshabilitar el toggle mientras se procesa
+            this.disabled = true;
+            
+            // Hacer la petición AJAX
+            fetch(`/toggle-usuario/${userId}/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}',
+                    'Content-Type': 'application/json',
+                },
+                credentials: 'same-origin'
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Actualizar el badge
+                    const label = this.nextElementSibling;
+                    const badge = label.querySelector('.badge');
+                    
+                    if (data.activo) {
+                        badge.className = 'badge bg-success';
+                        badge.textContent = 'Activo';
+                    } else {
+                        badge.className = 'badge bg-danger';
+                        badge.textContent = 'Inactivo';
+                    }
+                    
+                    // Mostrar mensaje de éxito
+                    showMessage(`Usuario ${data.username} ${data.activo ? 'activado' : 'desactivado'} correctamente`, 'success');
+                } else {
+                    // Error
+                    this.checked = !isActive; // Revertir
+                    showMessage(data.error || 'Error al cambiar estado', 'danger');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                this.checked = !isActive; // Revertir
+                showMessage('Error de conexión', 'danger');
+            })
+            .finally(() => {
+                this.disabled = false;
+            });
+        });
+    });
+    
+    function showMessage(message, type) {
+        // Crear alerta temporal
+        const alert = document.createElement('div');
+        alert.className = `alert alert-${type} alert-dismissible fade show position-fixed top-0 start-50 translate-middle-x mt-3`;
+        alert.style.zIndex = '9999';
+        alert.innerHTML = `
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
+        document.body.appendChild(alert);
+        
+        // Auto-cerrar después de 3 segundos
+        setTimeout(() => {
+            alert.remove();
+        }, 3000);
+    }
+});
+</script>
 {% endblock %}
