@@ -8,7 +8,7 @@
             <div class="card">
                 <div class="card-header bg-primary text-white">
                     <h4 class="mb-0">
-                        {% if usuario_existe %}
+                        {% if tiene_usuario %}
                             ✏️ Cambiar Rol de Acceso
                         {% else %}
                             ➕ Dar Acceso al Sistema
@@ -16,7 +16,9 @@
                     </h4>
                 </div>
                 <div class="card-body">
+
                     <!-- Información del personal -->
+                    <!-- FIX: se usa 'persona' que ahora sí está en el contexto -->
                     <div class="alert alert-info">
                         <h5>👤 {{ persona.nombre_completo }}</h5>
                         <p class="mb-0">
@@ -25,31 +27,39 @@
                             <strong>Unidad:</strong> {{ persona.unidad.nombre }}
                         </p>
                     </div>
-                    {% load crispy_forms_tags %}  <!-- Importante cargar las etiquetas crispy -->
 
                     <form method="post">
                         {% csrf_token %}
-                        
-                        <!-- Usamos |as_crispy_field para cada campo del formulario -->
+
                         {{ form.username|as_crispy_field }}
                         {{ form.password|as_crispy_field }}
                         {{ form.rol|as_crispy_field }}
-                        
-                        <!-- Puedes agregar información adicional si lo deseas -->
+                        {{ form.activo|as_crispy_field }}
+
                         {% if tiene_usuario %}
                             <div class="alert alert-info">
-                                Este personal ya tiene un usuario: <strong>{{ usuario.username }}</strong>.
-                                Si deseas cambiar la contraseña, escríbela arriba; de lo contrario déjala en blanco.
+                                Este personal ya tiene el usuario:
+                                <strong>{{ usuario.username }}</strong>.
+                                Deja la contraseña en blanco para no cambiarla.
                             </div>
                         {% else %}
                             <div class="alert alert-warning">
-                                Aún no tiene usuario. Se creará uno nuevo con los datos proporcionados.
+                                Aún no tiene usuario. Se creará uno nuevo.<br>
+                                Si dejas la contraseña en blanco se usará el
+                                <strong>CI invertido</strong> como contraseña temporal.
                             </div>
                         {% endif %}
-                        
-                        <button type="submit" class="btn btn-primary">Guardar</button>
-                        <a href="{% url 'asignar_rol' %}" class="btn btn-secondary">Cancelar</a>
+
+                        <div class="mt-3">
+                            <button type="submit" class="btn btn-primary">
+                                💾 Guardar
+                            </button>
+                            <a href="{% url 'asignar_rol_list' %}" class="btn btn-secondary">
+                                ↩️ Cancelar
+                            </a>
+                        </div>
                     </form>
+
                 </div>
             </div>
         </div>

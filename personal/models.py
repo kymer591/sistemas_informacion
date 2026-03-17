@@ -27,6 +27,22 @@ class PersonalPolicial(models.Model):
     telefono_personal = models.CharField(max_length=15, blank=True, null=True)
     telefono_emergencia = models.CharField(max_length=15, blank=True, null=True)
     correo_institucional = models.EmailField(blank=True, null=True)
+    direccion_domicilio = models.CharField(
+        max_length=300,
+        blank=True, null=True,
+        verbose_name='Dirección del domicilio'
+    )
+    cargo_actual = models.CharField(
+        max_length=200,
+        blank=True, null=True,
+        verbose_name='Cargo actual'
+    )
+    otra_profesion = models.CharField(
+        max_length=200,
+        blank=True, null=True,
+        verbose_name='Otra profesión (Licenciatura/Técnico)',
+        help_text='Profesión fuera de la institución policial'
+    )
     
     # Control
     foto = models.ImageField(upload_to='personal/fotos/', blank=True, null=True)
@@ -181,3 +197,44 @@ class FelicitacionAplicada(models.Model):
 
     def __str__(self):
         return f"Felicitación {self.personal} - {self.tipo_felicitacion.nombre}"
+
+class DestinoPolicial(models.Model):
+    TIPO_DESTINO_CHOICES = [
+        ('asignacion',   'Asignación de Unidad'),
+        ('comision',     'Comisión de Servicio'),
+        ('destacamento', 'Destacamento'),
+        ('capacitacion', 'Capacitación'),
+        ('temporal',     'Destino Temporal'),
+    ]
+
+    personal        = models.ForeignKey(PersonalPolicial, on_delete=models.CASCADE, related_name='destinos')
+    tipo_destino    = models.CharField(max_length=20, choices=TIPO_DESTINO_CHOICES)
+    unidad_destino  = models.ForeignKey('catalogos.Unidad', on_delete=models.PROTECT, null=True, blank=True, related_name='destinos_asignados')
+    lugar_destino   = models.CharField(max_length=200, help_text='Ciudad, departamento o lugar específico')
+    fecha_inicio    = models.DateField()
+    fecha_fin       = models.DateField(null=True, blank=True, help_text='Dejar vacío si es indefinido')
+    activo          = models.BooleanField(default=True)
+    descripcion     = models.TextField(help_text='Motivo o detalle del destino')
+    numero_resolucion = models.CharField(max_length=100, blank=True, null=True, help_text='N° de resolución o documento')
+    observaciones   = models.TextField(blank=True, null=True)
+    registrado_por  = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True)
+    fecha_registro  = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name        = 'Destino Policial'
+        verbose_name_plural = 'Destinos Policiales'
+        ordering            = ['-fecha_inicio']
+
+    def __str__(self):
+        return f"{self.personal} → {self.lugar_destino} ({self.get_tipo_destino_display()})"
+
+    @property
+    def duracion(self):
+        if self.fecha_fin:
+            delta = self.fecha_fin - self.fecha_inicio
+            return f"{delta.days} días"
+        return "Indefinido"
+
+    @property
+    def estado_badge(self):
+        return 'success' if self.activo else 'secondary'

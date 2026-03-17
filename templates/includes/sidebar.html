@@ -34,10 +34,19 @@
             </li>
 
             <li class="nav-item">
-                <a class="nav-link text-white" href="#">
+                <a class="nav-link text-white {% if 'reporte' in request.path %}active{% endif %}"
+                   href="{% url 'reportes:reporte_personal' %}">
                     📈 Reportes
                 </a>
             </li>
+            {% if user.es_administrador %}
+            <li class="nav-item">
+                <a class="nav-link text-white {% if 'bitacora' in request.path %}active{% endif %}"
+                href="{% url 'reportes:bitacora' %}">
+                    📋 Bitácora
+                </a>
+            </li>
+            {% endif %}
 
             <li class="nav-item">
                 <a class="nav-link text-white {% if 'permisos' in request.path %}active{% endif %}" 
@@ -59,6 +68,12 @@
                 <a class="nav-link text-white {% if 'felicitaciones' in request.path %}active{% endif %}" 
                    href="{% url 'felicitacion_list' %}">
                     ⭐ Felicitaciones
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link text-white {% if 'destinos' in request.path %}active{% endif %}"
+                href="{% url 'destino_list' %}">
+                    📍 Destinos
                 </a>
             </li>
 

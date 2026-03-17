@@ -1,0 +1,184 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container-fluid">
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h4 class="mb-0">📈 Reportes — Personal Policial</h4>
+            <small class="text-muted">Aplica filtros antes de descargar o exporta todo el personal</small>
+        </div>
+        <a href="{% url 'reportes:exportar_personal_excel' %}{% if query_string %}?{{ query_string }}{% endif %}"
+           class="btn btn-success btn-lg">
+            ⬇️ Descargar Excel
+            <span class="badge bg-white text-success ms-1">{{ total_filtrado }}</span>
+        </a>
+    </div>
+
+    <!-- Filtros -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-light">
+            <h6 class="mb-0">🔎 Filtros</h6>
+        </div>
+        <div class="card-body">
+            <form method="get" class="row g-2 align-items-end">
+
+                <div class="col-md-3">
+                    <label class="form-label small mb-1">Buscar (nombre / CI)</label>
+                    <input type="text" name="buscar" class="form-control form-control-sm"
+                           placeholder="Nombre, apellido o CI…" value="{{ buscar }}">
+                </div>
+
+                <div class="col-md-2">
+                    <label class="form-label small mb-1">Grado</label>
+                    <select name="grado" class="form-select form-select-sm">
+                        <option value="">Todos</option>
+                        {% for g in grados %}
+                        <option value="{{ g.pk }}"
+                            {% if grado_sel == g.pk|stringformat:"s" %}selected{% endif %}>
+                            {{ g.abreviatura }} — {{ g.nombre }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="col-md-2">
+                    <label class="form-label small mb-1">Unidad</label>
+                    <select name="unidad" class="form-select form-select-sm">
+                        <option value="">Todas</option>
+                        {% for u in unidades %}
+                        <option value="{{ u.pk }}"
+                            {% if unidad_sel == u.pk|stringformat:"s" %}selected{% endif %}>
+                            {{ u.nombre }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="col-md-2">
+                    <label class="form-label small mb-1">Estado</label>
+                    <select name="estado" class="form-select form-select-sm">
+                        <option value="">Todos</option>
+                        {% for e in estados %}
+                        <option value="{{ e.pk }}"
+                            {% if estado_sel == e.pk|stringformat:"s" %}selected{% endif %}>
+                            {{ e.nombre }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="col-md-1">
+                    <label class="form-label small mb-1">Sexo</label>
+                    <select name="genero" class="form-select form-select-sm">
+                        <option value="">Todos</option>
+                        <option value="M" {% if genero_sel == "M" %}selected{% endif %}>M</option>
+                        <option value="F" {% if genero_sel == "F" %}selected{% endif %}>F</option>
+                    </select>
+                </div>
+
+                <div class="col-md-2 d-flex gap-2">
+                    <button type="submit" class="btn btn-primary btn-sm w-100">🔍 Filtrar</button>
+                    <a href="{% url 'reportes:reporte_personal' %}"
+                       class="btn btn-outline-secondary btn-sm">✖</a>
+                </div>
+
+            </form>
+        </div>
+    </div>
+
+    <!-- Tabla preview -->
+    <div class="card shadow-sm">
+        <div class="card-header bg-light d-flex justify-content-between align-items-center">
+            <span>
+                Mostrando <strong>{{ page_obj.start_index }}–{{ page_obj.end_index }}</strong>
+                de <strong>{{ total_filtrado }}</strong> registros
+            </span>
+            <small class="text-muted">El Excel incluye todas las columnas del reporte</small>
+        </div>
+
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-sm table-hover table-striped mb-0">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>GRADO</th>
+                            <th>AP. PATERNO</th>
+                            <th>AP. MATERNO</th>
+                            <th>NOMBRE(S)</th>
+                            <th>C.I.</th>
+                            <th>SEXO</th>
+                            <th>CARGO ACTUAL</th>
+                            <th>UNIDAD DESTINO</th>
+                            <th>CELULAR</th>
+                            <th>OTRA PROFESIÓN</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for p in personal %}
+                        <tr>
+                            <td>{{ p.grado.abreviatura }}</td>
+                            <td>{{ p.apellido_paterno }}</td>
+                            <td>{{ p.apellido_materno }}</td>
+                            <td>{{ p.nombres }}</td>
+                            <td>{{ p.ci }} {{ p.expedido }}</td>
+                            <td>{{ p.get_genero_display }}</td>
+                            <td>{{ p.cargo_actual|default:"—" }}</td>
+                            <td>
+                                {% for d in p.destinos.all %}{% if d.activo %}
+                                <span class="badge bg-success">
+                                    {{ d.lugar_destino|truncatechars:20 }}
+                                </span>
+                                {% endif %}{% endfor %}
+                            </td>
+                            <td>{{ p.telefono_personal|default:"—" }}</td>
+                            <td>{{ p.otra_profesion|default:"—" }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="10" class="text-center text-muted py-4">
+                                No se encontraron registros con los filtros aplicados.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        {% if page_obj.has_other_pages %}
+        <div class="card-footer">
+            <nav>
+                <ul class="pagination pagination-sm mb-0 justify-content-center">
+                    {% if page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link"
+                           href="?page={{ page_obj.previous_page_number }}&{{ query_string }}">‹</a>
+                    </li>
+                    {% endif %}
+                    {% for num in page_obj.paginator.page_range %}
+                        {% if page_obj.number == num %}
+                        <li class="page-item active">
+                            <span class="page-link">{{ num }}</span>
+                        </li>
+                        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                        <li class="page-item">
+                            <a class="page-link"
+                               href="?page={{ num }}&{{ query_string }}">{{ num }}</a>
+                        </li>
+                        {% endif %}
+                    {% endfor %}
+                    {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link"
+                           href="?page={{ page_obj.next_page_number }}&{{ query_string }}">›</a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+        {% endif %}
+
+    </div>
+</div>
+{% endblock %}

@@ -14,6 +14,15 @@
                     ➕ Agregar Personal
                 </a>
                 {% endif %}
+                                
+                {% if user.es_administrador or user.es_oficial_administrativo %}
+                <li class="nav-item">
+                    <a class="nav-link {% if request.resolver_match.url_name == 'reporte_personal' %}active{% endif %}"
+                    href="{% url 'reporte_personal' %}">
+                        📊 Reporte de Personal
+                    </a>
+                </li>
+                {% endif %}
             </div>
         </div>
     </div>

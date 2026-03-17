@@ -52,6 +52,7 @@ INSTALLED_APPS = [
     'core',
     'catalogos',
     'personal',
+    'reportes.apps.ReportesConfig',
     
 ]
 

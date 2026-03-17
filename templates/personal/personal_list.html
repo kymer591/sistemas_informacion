@@ -1,33 +1,144 @@
-    {% extends 'base.html' %}
+{% extends 'base.html' %}
 
-    {% block app_navbar %}
-        {% include 'includes/personal_navbar.html' %}
-    {% endblock %}
+{% block app_navbar %}
+    {% include 'includes/personal_navbar.html' %}
+{% endblock %}
 
-    {% block content %}
-    <div class="container-fluid">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h2>👥 Personal Policial</h2>
-            
-            <!-- Solo mostrar botón si puede crear -->
-            {% if user.puede_crear %}
-            <a href="{% url 'personal_create' %}" class="btn btn-primary">
-                ➕ Agregar Personal
-            </a>
-            {% endif %}
+{% block content %}
+<div class="container-fluid mt-3">
+
+    <!-- Encabezado -->
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h2 class="mb-0">👥 Personal Policial</h2>
+            <small class="text-muted">
+                Mostrando {{ page_obj.paginator.count }} de {{ total_general }} registros
+            </small>
         </div>
+        {% if user.puede_crear %}
+        <a href="{% url 'personal_create' %}" class="btn btn-primary">
+            ➕ Agregar Personal
+        </a>
+        {% endif %}
+    </div>
 
-        <div class="card">
+    <!-- Panel de búsqueda y filtros -->
+    <div class="card shadow-sm mb-3">
+        <div class="card-header bg-light d-flex justify-content-between align-items-center"
+             style="cursor:pointer" data-bs-toggle="collapse" data-bs-target="#filtros-panel">
+            <span><strong>🔍 Búsqueda y Filtros</strong>
+                {% if buscar or grado_sel or unidad_sel or estado_sel or genero_sel or activo_sel %}
+                <span class="badge bg-primary ms-2">Filtros activos</span>
+                {% endif %}
+            </span>
+            <span class="text-muted small">▼ expandir / colapsar</span>
+        </div>
+        <div class="collapse show" id="filtros-panel">
             <div class="card-body">
-                <table class="table table-striped table-hover">
+                <form method="get" id="filtros-form">
+                    <div class="row g-2">
+
+                        <!-- Búsqueda libre -->
+                        <div class="col-md-12 col-lg-4">
+                            <label class="form-label small fw-bold">Buscar</label>
+                            <input type="text"
+                                   name="buscar"
+                                   class="form-control"
+                                   placeholder="Nombre, apellido, CI o código..."
+                                   value="{{ buscar }}">
+                        </div>
+
+                        <!-- Grado -->
+                        <div class="col-md-4 col-lg-2">
+                            <label class="form-label small fw-bold">Grado</label>
+                            <select name="grado" class="form-select">
+                                <option value="">Todos</option>
+                                {% for g in grados %}
+                                <option value="{{ g.id }}" {% if grado_sel == g.id|stringformat:"s" %}selected{% endif %}>
+                                    {{ g.abreviatura }} - {{ g.nombre }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <!-- Unidad -->
+                        <div class="col-md-4 col-lg-2">
+                            <label class="form-label small fw-bold">Unidad</label>
+                            <select name="unidad" class="form-select">
+                                <option value="">Todas</option>
+                                {% for u in unidades %}
+                                <option value="{{ u.id }}" {% if unidad_sel == u.id|stringformat:"s" %}selected{% endif %}>
+                                    {{ u.codigo }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <!-- Estado -->
+                        <div class="col-md-4 col-lg-2">
+                            <label class="form-label small fw-bold">Estado</label>
+                            <select name="estado" class="form-select">
+                                <option value="">Todos</option>
+                                {% for e in estados %}
+                                <option value="{{ e.id }}" {% if estado_sel == e.id|stringformat:"s" %}selected{% endif %}>
+                                    {{ e.nombre }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <!-- Género y Activo -->
+                        <div class="col-md-4 col-lg-1">
+                            <label class="form-label small fw-bold">Género</label>
+                            <select name="genero" class="form-select">
+                                <option value="">Todos</option>
+                                <option value="M" {% if genero_sel == "M" %}selected{% endif %}>Masculino</option>
+                                <option value="F" {% if genero_sel == "F" %}selected{% endif %}>Femenino</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-4 col-lg-1">
+                            <label class="form-label small fw-bold">Activo</label>
+                            <select name="activo" class="form-select">
+                                <option value="">Todos</option>
+                                <option value="1" {% if activo_sel == "1" %}selected{% endif %}>Sí</option>
+                                <option value="0" {% if activo_sel == "0" %}selected{% endif %}>No</option>
+                            </select>
+                        </div>
+
+                    </div>
+
+                    <!-- Botones -->
+                    <div class="row mt-3">
+                        <div class="col-12 d-flex gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                🔍 Buscar
+                            </button>
+                            <a href="{% url 'personal_list' %}" class="btn btn-outline-secondary">
+                                ✖ Limpiar Filtros
+                            </a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabla de resultados -->
+    <div class="card shadow-sm">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
                     <thead class="table-dark">
                         <tr>
                             <th>Código</th>
                             <th>Nombre Completo</th>
+                            <th>CI</th>
                             <th>Grado</th>
                             <th>Unidad</th>
                             <th>Estado</th>
-                            <th>Acciones</th>
+                            <th>Activo</th>
+                            <th class="text-center">Acciones</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -35,38 +146,46 @@
                         <tr>
                             <td><strong>{{ persona.codigo_identificacion }}</strong></td>
                             <td>{{ persona.nombre_completo }}</td>
-                            <td>{{ persona.grado.abreviatura }}</td>
+                            <td>{{ persona.ci }}</td>
+                            <td>
+                                <span class="badge bg-secondary">{{ persona.grado.abreviatura }}</span>
+                            </td>
                             <td>{{ persona.unidad.codigo }}</td>
                             <td>
-                                <span class="badge" style="background-color: {{ persona.estado_actual.color }};">
+                                <span class="badge"
+                                      style="background-color:{{ persona.estado_actual.color }};">
                                     {{ persona.estado_actual.nombre }}
                                 </span>
                             </td>
                             <td>
-                                <!-- VER - Todos pueden -->
-                                <a href="{% url 'personal_detail' persona.pk %}" class="btn btn-sm btn-info">
-                                    👁️ Ver
-                                </a>
-                                
-                                <!-- EDITAR - Solo Admin y Oficial Admin -->
-                                {% if user.puede_editar %}
-                                <a href="{% url 'personal_update' persona.pk %}" class="btn btn-sm btn-warning">
-                                    ✏️ Editar
-                                </a>
+                                {% if persona.activo %}
+                                    <span class="badge bg-success">✔</span>
+                                {% else %}
+                                    <span class="badge bg-danger">✖</span>
                                 {% endif %}
-                                
-                                <!-- ELIMINAR - Solo Admin -->
+                            </td>
+                            <td class="text-center">
+                                <a href="{% url 'personal_detail' persona.pk %}"
+                                   class="btn btn-sm btn-info" title="Ver detalle">👁️</a>
+                                {% if user.puede_editar %}
+                                <a href="{% url 'personal_update' persona.pk %}"
+                                   class="btn btn-sm btn-warning" title="Editar">✏️</a>
+                                {% endif %}
                                 {% if user.puede_eliminar %}
-                                <a href="{% url 'personal_delete' persona.pk %}" class="btn btn-sm btn-danger">
-                                    🗑️ Eliminar
-                                </a>
+                                <a href="{% url 'personal_delete' persona.pk %}"
+                                   class="btn btn-sm btn-danger" title="Eliminar">🗑️</a>
                                 {% endif %}
                             </td>
                         </tr>
                         {% empty %}
                         <tr>
-                            <td colspan="6" class="text-center text-muted">
-                                No hay personal registrado
+                            <td colspan="8" class="text-center text-muted py-5">
+                                <div style="font-size:2.5rem" class="mb-2">🔍</div>
+                                <h5>Sin resultados</h5>
+                                <p class="mb-3">No se encontró personal con los filtros aplicados.</p>
+                                <a href="{% url 'personal_list' %}" class="btn btn-outline-secondary btn-sm">
+                                    ✖ Limpiar Filtros
+                                </a>
                             </td>
                         </tr>
                         {% endfor %}
@@ -75,4 +194,52 @@
             </div>
         </div>
     </div>
-    {% endblock %}
+
+    <!-- Paginación -->
+    {% if is_paginated %}
+    <nav class="mt-3">
+        <ul class="pagination justify-content-center">
+
+            {% if page_obj.has_previous %}
+            <li class="page-item">
+                <a class="page-link"
+                   href="?page=1&buscar={{ buscar }}&grado={{ grado_sel }}&unidad={{ unidad_sel }}&estado={{ estado_sel }}&genero={{ genero_sel }}&activo={{ activo_sel }}">
+                    «« Primera
+                </a>
+            </li>
+            <li class="page-item">
+                <a class="page-link"
+                   href="?page={{ page_obj.previous_page_number }}&buscar={{ buscar }}&grado={{ grado_sel }}&unidad={{ unidad_sel }}&estado={{ estado_sel }}&genero={{ genero_sel }}&activo={{ activo_sel }}">
+                    ‹ Anterior
+                </a>
+            </li>
+            {% endif %}
+
+            <li class="page-item disabled">
+                <span class="page-link">
+                    Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}
+                    ({{ page_obj.paginator.count }} registros)
+                </span>
+            </li>
+
+            {% if page_obj.has_next %}
+            <li class="page-item">
+                <a class="page-link"
+                   href="?page={{ page_obj.next_page_number }}&buscar={{ buscar }}&grado={{ grado_sel }}&unidad={{ unidad_sel }}&estado={{ estado_sel }}&genero={{ genero_sel }}&activo={{ activo_sel }}">
+                    Siguiente ›
+                </a>
+            </li>
+            <li class="page-item">
+                <a class="page-link"
+                   href="?page={{ page_obj.paginator.num_pages }}&buscar={{ buscar }}&grado={{ grado_sel }}&unidad={{ unidad_sel }}&estado={{ estado_sel }}&genero={{ genero_sel }}&activo={{ activo_sel }}">
+                    Última »»
+                </a>
+            </li>
+            {% endif %}
+
+        </ul>
+    </nav>
+    {% endif %}
+
+</div>
+{% endblock %}

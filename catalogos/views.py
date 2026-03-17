@@ -10,6 +10,9 @@ from core.mixins import (
     PuedeEliminarMixin
 )
 
+from reportes.utils import BitacoraMixin
+
+
 # ===== GRADOS =====
 class GradoListView(UsuarioAutorizadoRequiredMixin, ListView):
     model = Grado
@@ -17,25 +20,29 @@ class GradoListView(UsuarioAutorizadoRequiredMixin, ListView):
     context_object_name = 'grados'
     login_url = 'login'
 
-class GradoCreateView(PuedeCrearMixin, CreateView):
+class GradoCreateView(BitacoraMixin, PuedeCrearMixin, CreateView):
+    bitacora_modulo = 'catalogos'
     model = Grado
     template_name = 'catalogos/grado_form.html'
     fields = ['nombre', 'abreviatura', 'orden', 'activo']
     success_url = reverse_lazy('grado_list')
     login_url = 'login'
 
-class GradoUpdateView(PuedeEditarMixin, UpdateView):
+class GradoUpdateView(BitacoraMixin, PuedeEditarMixin, UpdateView):
+    bitacora_modulo = 'catalogos'
     model = Grado
     template_name = 'catalogos/grado_form.html'
     fields = ['nombre', 'abreviatura', 'orden', 'activo']
     success_url = reverse_lazy('grado_list')
     login_url = 'login'
 
-class GradoDeleteView(PuedeEliminarMixin, DeleteView):
+class GradoDeleteView(BitacoraMixin, PuedeEliminarMixin, DeleteView):
+    bitacora_modulo = 'catalogos'
     model = Grado
     template_name = 'catalogos/grado_confirm_delete.html'
     success_url = reverse_lazy('grado_list')
     login_url = 'login'
+
 
 # ===== UNIDADES =====
 class UnidadListView(UsuarioAutorizadoRequiredMixin, ListView):
@@ -44,25 +51,29 @@ class UnidadListView(UsuarioAutorizadoRequiredMixin, ListView):
     context_object_name = 'unidades'
     login_url = 'login'
 
-class UnidadCreateView(PuedeCrearMixin, CreateView):
+class UnidadCreateView(BitacoraMixin, PuedeCrearMixin, CreateView):
+    bitacora_modulo = 'catalogos'
     model = Unidad
     template_name = 'catalogos/unidad_form.html'
     fields = ['codigo', 'nombre', 'descripcion', 'activa']
     success_url = reverse_lazy('unidad_list')
     login_url = 'login'
 
-class UnidadUpdateView(PuedeEditarMixin, UpdateView):
+class UnidadUpdateView(BitacoraMixin, PuedeEditarMixin, UpdateView):
+    bitacora_modulo = 'catalogos'
     model = Unidad
     template_name = 'catalogos/unidad_form.html'
     fields = ['codigo', 'nombre', 'descripcion', 'activa']
     success_url = reverse_lazy('unidad_list')
     login_url = 'login'
 
-class UnidadDeleteView(PuedeEliminarMixin, DeleteView):
+class UnidadDeleteView(BitacoraMixin, PuedeEliminarMixin, DeleteView):
+    bitacora_modulo = 'catalogos'
     model = Unidad
     template_name = 'catalogos/unidad_confirm_delete.html'
     success_url = reverse_lazy('unidad_list')
     login_url = 'login'
+
 
 # ===== TIPOS DE ESTADO =====
 class TipoEstadoListView(UsuarioAutorizadoRequiredMixin, ListView):
@@ -70,19 +81,22 @@ class TipoEstadoListView(UsuarioAutorizadoRequiredMixin, ListView):
     template_name = 'catalogos/tipoestado_list.html'
     context_object_name = 'estados'
 
-class TipoEstadoCreateView(PuedeCrearMixin, CreateView):
+class TipoEstadoCreateView(BitacoraMixin, PuedeCrearMixin, CreateView):
+    bitacora_modulo = 'catalogos'
     model = TipoEstado
     template_name = 'catalogos/tipoestado_form.html'
     fields = ['nombre', 'color']
     success_url = reverse_lazy('tipoestado_list')
 
-class TipoEstadoUpdateView(PuedeEditarMixin, UpdateView):
+class TipoEstadoUpdateView(BitacoraMixin, PuedeEditarMixin, UpdateView):
+    bitacora_modulo = 'catalogos'
     model = TipoEstado
     template_name = 'catalogos/tipoestado_form.html'
     fields = ['nombre', 'color']
     success_url = reverse_lazy('tipoestado_list')
 
-class TipoEstadoDeleteView(PuedeEliminarMixin, DeleteView):
+class TipoEstadoDeleteView(BitacoraMixin, PuedeEliminarMixin, DeleteView):
+    bitacora_modulo = 'catalogos'
     model = TipoEstado
     template_name = 'catalogos/tipoestado_confirm_delete.html'
     success_url = reverse_lazy('tipoestado_list')
@@ -95,45 +109,52 @@ class TipoSancionListView(UsuarioAutorizadoRequiredMixin, ListView):
     context_object_name = 'sanciones'
     login_url = 'login'
 
-class TipoSancionCreateView(PuedeCrearMixin, CreateView):
+class TipoSancionCreateView(BitacoraMixin, PuedeCrearMixin, CreateView):
+    bitacora_modulo = 'catalogos'
     model = TipoSancion
     template_name = 'catalogos/tiposancion_form.html'
     fields = ['nombre', 'gravedad', 'activo']
     success_url = reverse_lazy('tiposancion_list')
     login_url = 'login'
 
-class TipoSancionUpdateView(PuedeEditarMixin, UpdateView):
+class TipoSancionUpdateView(BitacoraMixin, PuedeEditarMixin, UpdateView):
+    bitacora_modulo = 'catalogos'
     model = TipoSancion
     template_name = 'catalogos/tiposancion_form.html'
     fields = ['nombre', 'gravedad', 'activo']
     success_url = reverse_lazy('tiposancion_list')
     login_url = 'login'
 
-class TipoSancionDeleteView(PuedeEliminarMixin, DeleteView):
+class TipoSancionDeleteView(BitacoraMixin, PuedeEliminarMixin, DeleteView):
+    bitacora_modulo = 'catalogos'
     model = TipoSancion
     template_name = 'catalogos/tiposancion_confirm_delete.html'
     success_url = reverse_lazy('tiposancion_list')
     login_url = 'login'
 
-# Agrega estas clases después de las vistas de TipoSancion
+
+# ===== TIPOS DE FELICITACIÓN =====
 class TipoFelicitacionListView(UsuarioAutorizadoRequiredMixin, ListView):
     model = TipoFelicitacion
     template_name = 'catalogos/tipofelicitacion_list.html'
     context_object_name = 'felicitaciones'
 
-class TipoFelicitacionCreateView(PuedeCrearMixin, CreateView):
+class TipoFelicitacionCreateView(BitacoraMixin, PuedeCrearMixin, CreateView):
+    bitacora_modulo = 'catalogos'
     model = TipoFelicitacion
     template_name = 'catalogos/tipofelicitacion_form.html'
     fields = ['nombre', 'descripcion']
     success_url = reverse_lazy('tipofelicitacion_list')
 
-class TipoFelicitacionUpdateView(PuedeEditarMixin, UpdateView):
+class TipoFelicitacionUpdateView(BitacoraMixin, PuedeEditarMixin, UpdateView):
+    bitacora_modulo = 'catalogos'
     model = TipoFelicitacion
     template_name = 'catalogos/tipofelicitacion_form.html'
     fields = ['nombre', 'descripcion']
     success_url = reverse_lazy('tipofelicitacion_list')
 
-class TipoFelicitacionDeleteView(PuedeEliminarMixin, DeleteView):
+class TipoFelicitacionDeleteView(BitacoraMixin, PuedeEliminarMixin, DeleteView):
+    bitacora_modulo = 'catalogos'
     model = TipoFelicitacion
     template_name = 'catalogos/tipofelicitacion_confirm_delete.html'
     success_url = reverse_lazy('tipofelicitacion_list')

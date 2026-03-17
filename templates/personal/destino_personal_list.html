@@ -1,0 +1,146 @@
+
+{% extends 'base.html' %}
+
+{% block app_navbar %}
+<nav class="app-navbar">
+    <div class="container-fluid">
+        <div class="d-flex align-items-center">
+            <h5 class="mb-0 me-4">📍 Destinos — {{ persona.nombre_completo }}</h5>
+            <div class="btn-group">
+                {% if user.puede_crear %}
+                <a href="{% url 'destino_personal_create' persona.pk %}" class="btn btn-primary btn-sm">
+                    ➕ Nuevo Destino
+                </a>
+                {% endif %}
+                <a href="{% url 'personal_detail' persona.pk %}" class="btn btn-outline-secondary btn-sm">
+                    👤 Ver Personal
+                </a>
+                <a href="{% url 'destino_list' %}" class="btn btn-outline-secondary btn-sm">
+                    📋 Todos los Destinos
+                </a>
+            </div>
+        </div>
+    </div>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-3">
+
+    <!-- Info del personal -->
+    <div class="alert alert-info d-flex align-items-center mb-3">
+        <span class="me-3" style="font-size:2rem">👤</span>
+        <div>
+            <strong>{{ persona.nombre_completo }}</strong><br>
+            <small>{{ persona.grado.nombre }} — {{ persona.unidad.nombre }} — Estado: {{ persona.estado_actual.nombre }}</small>
+        </div>
+    </div>
+
+    {% if destinos %}
+    <!-- Destino activo destacado -->
+    {% for destino in destinos %}
+    {% if destino.activo %}
+    <div class="card border-success shadow-sm mb-3">
+        <div class="card-header bg-success text-white d-flex justify-content-between">
+            <h6 class="mb-0">● Destino Actual</h6>
+            <span class="badge bg-light text-success">{{ destino.get_tipo_destino_display }}</span>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-4">
+                    <p class="text-muted mb-1 small">LUGAR</p>
+                    <h5>{{ destino.lugar_destino }}</h5>
+                    {% if destino.unidad_destino %}
+                    <small>{{ destino.unidad_destino.nombre }}</small>
+                    {% endif %}
+                </div>
+                <div class="col-md-3">
+                    <p class="text-muted mb-1 small">DESDE</p>
+                    <h6>{{ destino.fecha_inicio }}</h6>
+                </div>
+                <div class="col-md-3">
+                    <p class="text-muted mb-1 small">HASTA</p>
+                    <h6>{{ destino.fecha_fin|default:"Indefinido" }}</h6>
+                </div>
+                <div class="col-md-2 d-flex align-items-center gap-1">
+                    <a href="{% url 'destino_detail' destino.pk %}" class="btn btn-sm btn-info">👁️</a>
+                    {% if user.puede_editar %}
+                    <a href="{% url 'destino_update' destino.pk %}" class="btn btn-sm btn-warning">✏️</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    {% endfor %}
+
+    <!-- Historial -->
+    <div class="card shadow-sm">
+        <div class="card-header bg-light">
+            <h6 class="mb-0">📜 Historial de Destinos</h6>
+        </div>
+        <div class="card-body p-0">
+            <table class="table table-hover mb-0">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Tipo</th>
+                        <th>Lugar / Unidad</th>
+                        <th>Desde</th>
+                        <th>Hasta</th>
+                        <th>Duración</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for destino in destinos %}
+                    <tr {% if destino.activo %}class="table-success"{% endif %}>
+                        <td><span class="badge bg-info text-dark">{{ destino.get_tipo_destino_display }}</span></td>
+                        <td>
+                            {{ destino.lugar_destino }}
+                            {% if destino.unidad_destino %}
+                            <br><small class="text-muted">{{ destino.unidad_destino.codigo }}</small>
+                            {% endif %}
+                        </td>
+                        <td>{{ destino.fecha_inicio }}</td>
+                        <td>{{ destino.fecha_fin|default:"Indefinido" }}</td>
+                        <td><small>{{ destino.duracion }}</small></td>
+                        <td>
+                            {% if destino.activo %}
+                                <span class="badge bg-success">● Activo</span>
+                            {% else %}
+                                <span class="badge bg-secondary">Histórico</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <a href="{% url 'destino_detail' destino.pk %}" class="btn btn-sm btn-info">👁️</a>
+                            {% if user.puede_editar %}
+                            <a href="{% url 'destino_update' destino.pk %}" class="btn btn-sm btn-warning">✏️</a>
+                            {% endif %}
+                            {% if user.puede_eliminar %}
+                            <a href="{% url 'destino_delete' destino.pk %}" class="btn btn-sm btn-danger">🗑️</a>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    {% else %}
+    <div class="card shadow-sm">
+        <div class="card-body text-center text-muted py-5">
+            <div style="font-size:3rem" class="mb-2">📍</div>
+            <h5>Sin destinos registrados</h5>
+            <p>Este personal aún no tiene destinos asignados.</p>
+            {% if user.puede_crear %}
+            <a href="{% url 'destino_personal_create' persona.pk %}" class="btn btn-primary">
+                ➕ Registrar Primer Destino
+            </a>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

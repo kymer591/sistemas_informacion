@@ -1,0 +1,141 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block app_navbar %}
+<nav class="app-navbar">
+    <div class="container-fluid">
+        <div class="d-flex align-items-center">
+            <h5 class="mb-0 me-4">
+                📍 {% if object %}Editar Destino{% else %}Nuevo Destino{% endif %}
+                {% if persona %} — {{ persona.nombre_completo }}{% endif %}
+            </h5>
+            <div class="btn-group">
+                {% if persona %}
+                <a href="{% url 'destino_personal_list' persona.pk %}" class="btn btn-outline-secondary btn-sm">
+                    ↩️ Volver a Destinos
+                </a>
+                {% else %}
+                <a href="{% url 'destino_list' %}" class="btn btn-outline-secondary btn-sm">
+                    ↩️ Volver a Lista
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-3">
+    <div class="row justify-content-center">
+        <div class="col-md-9">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        {% if object %}✏️ Editar Destino{% else %}➕ Registrar Nuevo Destino{% endif %}
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+
+                        <!-- SECCIÓN 1: Personal y tipo -->
+                        <div class="card mb-3 border-secondary">
+                            <div class="card-header bg-light">
+                                <strong>👤 Personal y Tipo de Destino</strong>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        {{ form.personal|as_crispy_field }}
+                                    </div>
+                                    <div class="col-md-6">
+                                        {{ form.tipo_destino|as_crispy_field }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- SECCIÓN 2: Lugar y unidad -->
+                        <div class="card mb-3 border-secondary">
+                            <div class="card-header bg-light">
+                                <strong>🏢 Lugar de Destino</strong>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        {{ form.lugar_destino|as_crispy_field }}
+                                    </div>
+                                    <div class="col-md-6">
+                                        {{ form.unidad_destino|as_crispy_field }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- SECCIÓN 3: Fechas y estado -->
+                        <div class="card mb-3 border-secondary">
+                            <div class="card-header bg-light">
+                                <strong>📅 Período</strong>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        {{ form.fecha_inicio|as_crispy_field }}
+                                    </div>
+                                    <div class="col-md-4">
+                                        {{ form.fecha_fin|as_crispy_field }}
+                                    </div>
+                                    <div class="col-md-4 d-flex align-items-center mt-3">
+                                        {{ form.activo|as_crispy_field }}
+                                        <div class="alert alert-info ms-2 py-1 px-2 mb-0">
+                                            <small>✅ Marcar si este destino está vigente actualmente.</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- SECCIÓN 4: Descripción y documentación -->
+                        <div class="card mb-3 border-secondary">
+                            <div class="card-header bg-light">
+                                <strong>📋 Descripción y Documentación</strong>
+                            </div>
+                            <div class="card-body">
+                                {{ form.descripcion|as_crispy_field }}
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        {{ form.numero_resolucion|as_crispy_field }}
+                                    </div>
+                                    <div class="col-md-6">
+                                        {{ form.observaciones|as_crispy_field }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {% if not object %}
+                        <div class="alert alert-warning">
+                            <strong>⚠️ Nota:</strong> Si marcas este destino como <strong>Activo</strong>,
+                            los destinos activos anteriores del mismo personal se marcarán automáticamente
+                            como histórico.
+                        </div>
+                        {% endif %}
+
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-success">
+                                💾 {% if object %}Actualizar{% else %}Registrar{% endif %} Destino
+                            </button>
+                            {% if persona %}
+                            <a href="{% url 'destino_personal_list' persona.pk %}" class="btn btn-secondary">↩️ Cancelar</a>
+                            {% else %}
+                            <a href="{% url 'destino_list' %}" class="btn btn-secondary">↩️ Cancelar</a>
+                            {% endif %}
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

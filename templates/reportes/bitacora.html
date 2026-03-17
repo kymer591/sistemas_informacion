@@ -1,0 +1,188 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container-fluid">
+
+    <!-- Cabecera -->
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h4 class="mb-0">📋 Bitácora del Sistema</h4>
+            <small class="text-muted">Registro de auditoría — solo visible para Administrador</small>
+        </div>
+        <span class="badge bg-secondary fs-6">{{ total_logs }} registros</span>
+    </div>
+
+    <!-- Filtros -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-light">
+            <h6 class="mb-0">🔎 Filtros</h6>
+        </div>
+        <div class="card-body">
+            <form method="get" class="row g-2 align-items-end">
+
+                <div class="col-md-3">
+                    <label class="form-label small mb-1">Buscar</label>
+                    <input type="text" name="buscar" class="form-control form-control-sm"
+                           placeholder="Usuario, descripción…" value="{{ buscar }}">
+                </div>
+
+                <div class="col-md-2">
+                    <label class="form-label small mb-1">Acción</label>
+                    <select name="accion" class="form-select form-select-sm">
+                        <option value="">Todas</option>
+                        {% for val, label in accion_choices %}
+                        <option value="{{ val }}"
+                            {% if accion_sel == val %}selected{% endif %}>
+                            {{ label }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="col-md-2">
+                    <label class="form-label small mb-1">Módulo</label>
+                    <select name="modulo" class="form-select form-select-sm">
+                        <option value="">Todos</option>
+                        {% for val, label in modulo_choices %}
+                        <option value="{{ val }}"
+                            {% if modulo_sel == val %}selected{% endif %}>
+                            {{ label }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="col-md-2">
+                    <label class="form-label small mb-1">Usuario</label>
+                    <select name="usuario" class="form-select form-select-sm">
+                        <option value="">Todos</option>
+                        {% for u in usuarios %}
+                        <option value="{{ u.pk }}"
+                            {% if usuario_sel == u.pk|stringformat:"s" %}selected{% endif %}>
+                            {{ u.username }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="col-md-1">
+                    <label class="form-label small mb-1">Desde</label>
+                    <input type="date" name="fecha_desde" class="form-control form-control-sm"
+                           value="{{ fecha_desde }}">
+                </div>
+
+                <div class="col-md-1">
+                    <label class="form-label small mb-1">Hasta</label>
+                    <input type="date" name="fecha_hasta" class="form-control form-control-sm"
+                           value="{{ fecha_hasta }}">
+                </div>
+
+                <div class="col-md-1 d-flex gap-1">
+                    <button type="submit" class="btn btn-primary btn-sm w-100">🔍</button>
+                    <a href="{% url 'reportes:bitacora' %}"
+                       class="btn btn-outline-secondary btn-sm">✖</a>
+                </div>
+
+            </form>
+        </div>
+    </div>
+
+    <!-- Tabla -->
+    <div class="card shadow-sm">
+        <div class="card-header bg-light d-flex justify-content-between align-items-center">
+            <span>
+                Mostrando <strong>{{ page_obj.start_index }}–{{ page_obj.end_index }}</strong>
+                de <strong>{{ total_logs }}</strong> registros
+            </span>
+        </div>
+
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-sm table-hover mb-0">
+                    <thead class="table-dark">
+                        <tr>
+                            <th style="width:140px">FECHA Y HORA</th>
+                            <th style="width:120px">USUARIO</th>
+                            <th style="width:100px">ACCIÓN</th>
+                            <th style="width:110px">MÓDULO</th>
+                            <th>DESCRIPCIÓN</th>
+                            <th style="width:160px">OBJETO AFECTADO</th>
+                            <th style="width:120px">IP</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for log in logs %}
+                        <tr>
+                            <td class="text-nowrap small">
+                                {{ log.fecha_hora|date:"d/m/Y H:i:s" }}
+                            </td>
+                            <td class="small">
+                                {% if log.usuario %}
+                                    {{ log.usuario.username }}
+                                {% else %}
+                                    <span class="text-muted">—</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <span class="badge bg-{{ log.accion_color }}">
+                                    {{ log.get_accion_display }}
+                                </span>
+                            </td>
+                            <td class="small text-capitalize">{{ log.modulo }}</td>
+                            <td class="small">{{ log.descripcion }}</td>
+                            <td class="small text-muted">
+                                {{ log.objeto_repr|default:"—"|truncatechars:40 }}
+                            </td>
+                            <td class="small text-muted">
+                                {{ log.ip_address|default:"—" }}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="7" class="text-center text-muted py-4">
+                                No se encontraron registros.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Paginación -->
+        {% if page_obj.has_other_pages %}
+        <div class="card-footer">
+            <nav>
+                <ul class="pagination pagination-sm mb-0 justify-content-center">
+                    {% if page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link"
+                           href="?page={{ page_obj.previous_page_number }}&{{ query_string }}">‹</a>
+                    </li>
+                    {% endif %}
+                    {% for num in page_obj.paginator.page_range %}
+                        {% if page_obj.number == num %}
+                        <li class="page-item active">
+                            <span class="page-link">{{ num }}</span>
+                        </li>
+                        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                        <li class="page-item">
+                            <a class="page-link"
+                               href="?page={{ num }}&{{ query_string }}">{{ num }}</a>
+                        </li>
+                        {% endif %}
+                    {% endfor %}
+                    {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link"
+                           href="?page={{ page_obj.next_page_number }}&{{ query_string }}">›</a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+        {% endif %}
+
+    </div>
+</div>
+{% endblock %}

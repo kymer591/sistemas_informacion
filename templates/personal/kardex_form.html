@@ -5,13 +5,13 @@
 <nav class="app-navbar">
     <div class="container-fluid">
         <div class="d-flex align-items-center">
-            <h5 class="mb-0 me-4">➕ Nuevo Registro de Kardex - {{ persona.nombre_completo }}</h5>
-            <div class="btn-group" role="group">
+            <h5 class="mb-0 me-4">📒 Kardex — {{ persona.nombre_completo }}</h5>
+            <div class="btn-group">
                 <a href="{% url 'kardex_list' persona.pk %}" class="btn btn-outline-info btn-sm">
-                    📒 Ver Kardex
+                    📋 Ver Historial
                 </a>
                 <a href="{% url 'personal_detail' persona.pk %}" class="btn btn-outline-secondary btn-sm">
-                    👁️ Ver Personal
+                    👤 Ver Personal
                 </a>
             </div>
         </div>
@@ -22,41 +22,105 @@
 {% block content %}
 <div class="container-fluid mt-3">
     <div class="row justify-content-center">
-        <div class="col-md-10">
-            <div class="card">
+        <div class="col-md-9">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">➕ Nuevo Registro de Kardex</h5>
+                </div>
                 <div class="card-body">
-                    <form method="post">
+                    <form method="post" id="kardex-form">
                         {% csrf_token %}
-                        <div class="row">
-                            <div class="col-md-6">
-                                <h6>Información Básica</h6>
-                                {{ form.tipo_registro|as_crispy_field }}
-                                {{ form.fecha_registro|as_crispy_field }}
+
+                        <!-- SECCIÓN 1: Datos principales -->
+                        <div class="card mb-3 border-secondary">
+                            <div class="card-header bg-light">
+                                <strong>📋 Información del Registro</strong>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        {{ form.tipo_registro|as_crispy_field }}
+                                    </div>
+                                    <div class="col-md-6">
+                                        {{ form.fecha_registro|as_crispy_field }}
+                                    </div>
+                                </div>
                                 {{ form.descripcion|as_crispy_field }}
                             </div>
-                            <div class="col-md-6">
-                                <h6>Documentación</h6>
-                                {{ form.documento_referencia|as_crispy_field }}
-                                {{ form.observaciones|as_crispy_field }}
+                        </div>
+
+                        <!-- SECCIÓN 2: Campos condicionales según tipo -->
+                        <div class="card mb-3 border-secondary" id="seccion-cambios">
+                            <div class="card-header bg-light">
+                                <strong>🔄 Detalle del Cambio</strong>
+                                <small class="text-muted ms-2">(completar según el tipo de registro)</small>
+                            </div>
+                            <div class="card-body">
+
+                                <!-- Ascenso de grado -->
+                                <div class="row cambio-grupo" id="grupo-grado" style="display:none;">
+                                    <div class="col-12 mb-2">
+                                        <span class="badge bg-success">⭐ Ascenso de Grado</span>
+                                    </div>
+                                    <div class="col-md-6">
+                                        {{ form.grado_anterior|as_crispy_field }}
+                                    </div>
+                                    <div class="col-md-6">
+                                        {{ form.grado_nuevo|as_crispy_field }}
+                                    </div>
+                                </div>
+
+                                <!-- Traslado de unidad -->
+                                <div class="row cambio-grupo" id="grupo-unidad" style="display:none;">
+                                    <div class="col-12 mb-2">
+                                        <span class="badge bg-info">🏢 Traslado de Unidad</span>
+                                    </div>
+                                    <div class="col-md-6">
+                                        {{ form.unidad_anterior|as_crispy_field }}
+                                    </div>
+                                    <div class="col-md-6">
+                                        {{ form.unidad_nueva|as_crispy_field }}
+                                    </div>
+                                </div>
+
+                                <!-- Cambio de estado -->
+                                <div class="row cambio-grupo" id="grupo-estado" style="display:none;">
+                                    <div class="col-12 mb-2">
+                                        <span class="badge bg-warning text-dark">📝 Cambio de Estado</span>
+                                    </div>
+                                    <div class="col-md-6">
+                                        {{ form.estado_anterior|as_crispy_field }}
+                                    </div>
+                                    <div class="col-md-6">
+                                        {{ form.estado_nuevo|as_crispy_field }}
+                                    </div>
+                                </div>
+
+                                <!-- Mensaje cuando no aplica -->
+                                <div id="grupo-noaplica" class="text-muted text-center py-3">
+                                    <small>Selecciona un tipo de registro para ver los campos correspondientes.</small>
+                                </div>
                             </div>
                         </div>
-                        
-                        <div class="row mt-3">
-                            <div class="col-md-6">
-                                <h6>Cambios de Grado</h6>
-                                {{ form.grado_anterior|as_crispy_field }}
-                                {{ form.grado_nuevo|as_crispy_field }}
+
+                        <!-- SECCIÓN 3: Documentación -->
+                        <div class="card mb-3 border-secondary">
+                            <div class="card-header bg-light">
+                                <strong>📎 Documentación</strong>
                             </div>
-                            <div class="col-md-6">
-                                <h6>Cambios de Unidad/Estado</h6>
-                                {{ form.unidad_anterior|as_crispy_field }}
-                                {{ form.unidad_nueva|as_crispy_field }}
-                                {{ form.estado_anterior|as_crispy_field }}
-                                {{ form.estado_nuevo|as_crispy_field }}
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        {{ form.documento_referencia|as_crispy_field }}
+                                    </div>
+                                    <div class="col-md-6">
+                                        {{ form.observaciones|as_crispy_field }}
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                        
-                        <div class="mt-4">
+
+                        <div class="d-flex gap-2">
                             <button type="submit" class="btn btn-success">
                                 💾 Guardar Registro
                             </button>
@@ -70,4 +134,40 @@
         </div>
     </div>
 </div>
+
+<script>
+// Mostrar/ocultar secciones según el tipo de registro seleccionado
+const tipoSelect = document.getElementById('id_tipo_registro');
+
+const grupos = {
+    'ascenso':   ['grupo-grado'],
+    'traslado':  ['grupo-unidad'],
+    'estado':    ['grupo-estado'],
+    // Los demás tipos no muestran campos de cambio
+};
+
+function actualizarCampos() {
+    const tipo = tipoSelect.value;
+    const activos = grupos[tipo] || [];
+
+    // Ocultar todos los grupos
+    document.querySelectorAll('.cambio-grupo').forEach(g => g.style.display = 'none');
+
+    // Mostrar mensaje si no aplica
+    const noAplica = document.getElementById('grupo-noaplica');
+
+    if (activos.length === 0) {
+        noAplica.style.display = 'block';
+    } else {
+        noAplica.style.display = 'none';
+        activos.forEach(id => {
+            document.getElementById(id).style.display = 'flex';
+        });
+    }
+}
+
+tipoSelect.addEventListener('change', actualizarCampos);
+// Ejecutar al cargar por si hay valor previo
+actualizarCampos();
+</script>
 {% endblock %}

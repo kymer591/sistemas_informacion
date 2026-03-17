@@ -25,4 +25,20 @@ urlpatterns = [
     path('felicitaciones/nueva/', views.FelicitacionCreateView.as_view(), name='felicitacion_create'),
     path('felicitaciones/editar/<int:pk>/', views.FelicitacionUpdateView.as_view(), name='felicitacion_update'),
     path('felicitaciones/detalle/<int:pk>/', views.FelicitacionDetailView.as_view(), name='felicitacion_detail'),
+     
+     
+     # Destinos — lista general
+    path('destinos/', views.DestinoListView.as_view(), name='destino_list'),
+    path('destinos/nuevo/', views.DestinoCreateView.as_view(), name='destino_create'),
+    path('destinos/editar/<int:pk>/', views.DestinoUpdateView.as_view(), name='destino_update'),
+    path('destinos/detalle/<int:pk>/', views.DestinoDetailView.as_view(), name='destino_detail'),
+    path('destinos/eliminar/<int:pk>/', views.DestinoDeleteView.as_view(), name='destino_delete'),
+
+    # Destinos — por personal específico
+    path('<int:personal_id>/destinos/', views.DestinoPersonalListView.as_view(), name='destino_personal_list'),
+    path('<int:personal_id>/destinos/nuevo/', views.DestinoCreateView.as_view(), name='destino_personal_create'),
+
+    # Reportes
+    path('reporte/',          views.ReportePersonalView.as_view(), name='reporte_personal'),
+    path('reporte/exportar/', views.exportar_personal_excel,       name='exportar_personal_excel'),
 ]

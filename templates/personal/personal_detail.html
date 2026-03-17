@@ -1,5 +1,4 @@
 {% extends 'base.html' %}
-{% load crispy_forms_tags %}
 
 {% block app_navbar %}
     {% include 'includes/personal_navbar.html' %}
@@ -8,138 +7,176 @@
 {% block content %}
 <div class="container-fluid">
     <div class="row">
+
+        <!-- Columna izquierda -->
         <div class="col-md-4">
-            <div class="card">
+
+            <!-- Tarjeta principal -->
+            <div class="card shadow-sm">
                 <div class="card-header bg-primary text-white">
                     <h5 class="mb-0">🆔 Información del Personal</h5>
                 </div>
                 <div class="card-body text-center">
-                    <div class="mb-3">
-                        <div class="bg-light rounded-circle d-inline-flex align-items-center justify-content-center" 
-                             style="width: 100px; height: 100px;">
-                            <span class="fs-2">👤</span>
-                        </div>
+                    <div class="bg-light rounded-circle d-inline-flex align-items-center justify-content-center mb-3"
+                         style="width:100px;height:100px;">
+                        <span class="fs-1">👤</span>
                     </div>
                     <h4>{{ persona.nombre_completo }}</h4>
-                    <p class="text-muted">{{ persona.grado.nombre }}</p>
-                    
-                    <div class="mt-3">
-                        <span class="badge fs-6" style="background-color: {{ persona.estado_actual.color }};">
-                            {{ persona.estado_actual.nombre }}
-                        </span>
-                    </div>
+                    <p class="text-muted mb-1">{{ persona.grado.nombre }}</p>
+                    {% if persona.cargo_actual %}
+                    <p class="text-muted mb-1"><em>{{ persona.cargo_actual }}</em></p>
+                    {% endif %}
+                    <p class="text-muted">{{ persona.unidad.nombre }}</p>
+                    <span class="badge fs-6" style="background-color:{{ persona.estado_actual.color }};">
+                        {{ persona.estado_actual.nombre }}
+                    </span>
                 </div>
             </div>
 
-            <div class="card mt-3">
-                <div class="card-header">
-                    <h6 class="mb-0">📞 Contacto</h6>
-                </div>
+            <!-- Contacto -->
+            <div class="card shadow-sm mt-3">
+                <div class="card-header"><h6 class="mb-0">📞 Contacto</h6></div>
                 <div class="card-body">
-                    <p><strong>Teléfono Personal:</strong><br>
-                    {{ persona.telefono_personal|default:"No registrado" }}</p>
-                    
-                    <p><strong>Teléfono Emergencia:</strong><br>
-                    {{ persona.telefono_emergencia|default:"No registrado" }}</p>
-                    
-                    <p><strong>Email Institucional:</strong><br>
-                    {{ persona.correo_institucional|default:"No registrado" }}</p>
+                    <p class="mb-2">
+                        <strong>CI:</strong> {{ persona.ci }} {{ persona.expedido }}
+                    </p>
+                    <p class="mb-2">
+                        <strong>Código:</strong> {{ persona.codigo_identificacion }}
+                    </p>
+                    <p class="mb-2">
+                        <strong>Celular:</strong>
+                        {{ persona.telefono_personal|default:"No registrado" }}
+                    </p>
+                    <p class="mb-2">
+                        <strong>Tel. Emergencia:</strong>
+                        {{ persona.telefono_emergencia|default:"No registrado" }}
+                    </p>
+                    <p class="mb-2">
+                        <strong>Email:</strong>
+                        {{ persona.correo_institucional|default:"No registrado" }}
+                    </p>
+                    <p class="mb-0">
+                        <strong>Domicilio:</strong>
+                        {{ persona.direccion_domicilio|default:"No registrado" }}
+                    </p>
                 </div>
             </div>
+
+            <!-- Información adicional -->
+            <div class="card shadow-sm mt-3">
+                <div class="card-header"><h6 class="mb-0">🎓 Información Adicional</h6></div>
+                <div class="card-body">
+                    <p class="mb-2">
+                        <strong>Fecha Nacimiento:</strong> {{ persona.fecha_nacimiento }}
+                    </p>
+                    <p class="mb-2">
+                        <strong>Género:</strong> {{ persona.get_genero_display }}
+                    </p>
+                    <p class="mb-2">
+                        <strong>Fecha Ingreso:</strong> {{ persona.fecha_ingreso }}
+                    </p>
+                    <p class="mb-0">
+                        <strong>Otra Profesión:</strong>
+                        {{ persona.otra_profesion|default:"No registrado" }}
+                    </p>
+                </div>
+            </div>
+
         </div>
 
+        <!-- Columna derecha -->
         <div class="col-md-8">
-            <div class="card">
-                <div class="card-header">
-                    <h5 class="mb-0">📋 Información Detallada</h5>
+
+            <!-- Acciones -->
+            <div class="card shadow-sm mb-3">
+                <div class="card-body d-flex flex-wrap gap-2">
+                    {% if user.puede_editar %}
+                    <a href="{% url 'personal_update' persona.pk %}" class="btn btn-warning">
+                        ✏️ Editar
+                    </a>
+                    {% endif %}
+                    <a href="{% url 'kardex_list' persona.pk %}" class="btn btn-info">
+                        📒 Kardex
+                    </a>
+                    <a href="{% url 'destino_personal_list' persona.pk %}" class="btn btn-primary">
+                        📍 Destinos
+                    </a>
+                    {% if user.puede_crear %}
+                    <a href="{% url 'kardex_create' persona.pk %}" class="btn btn-outline-info">
+                        ➕ Kardex
+                    </a>
+                    <a href="{% url 'destino_personal_create' persona.pk %}" class="btn btn-outline-primary">
+                        ➕ Destino
+                    </a>
+                    {% endif %}
+                    <a href="{% url 'personal_list' %}" class="btn btn-secondary">
+                        ↩️ Volver
+                    </a>
+                </div>
+            </div>
+
+            <!-- Destino actual -->
+            {% with destino=persona.destinos.all %}
+            {% for d in destino %}{% if d.activo %}
+            <div class="card shadow-sm mb-3 border-success">
+                <div class="card-header bg-success text-white d-flex justify-content-between">
+                    <h6 class="mb-0">📍 Destino Actual</h6>
+                    <span class="badge bg-light text-success">{{ d.get_tipo_destino_display }}</span>
                 </div>
                 <div class="card-body">
                     <div class="row">
-                        <div class="col-md-6">
-                            <p><strong>Código Identificación:</strong><br>
-                            {{ persona.codigo_identificacion }}</p>
-                            
-                            <p><strong>Cédula de Identidad:</strong><br>
-                            {{ persona.ci }} {{ persona.expedido }}</p>
-                            
-                            <p><strong>Fecha Nacimiento:</strong><br>
-                            {{ persona.fecha_nacimiento }} (Edad: {{ persona.fecha_nacimiento|timesince }})</p>
-                            
-                            <p><strong>Género:</strong><br>
-                            {{ persona.get_genero_display }}</p>
+                        <div class="col-md-4">
+                            <p class="text-muted small mb-1">LUGAR</p>
+                            <h6>{{ d.lugar_destino }}</h6>
+                            {% if d.unidad_destino %}
+                            <small class="text-muted">{{ d.unidad_destino.nombre }}</small>
+                            {% endif %}
                         </div>
-                        
-                        <div class="col-md-6">
-                            <p><strong>Unidad:</strong><br>
-                            {{ persona.unidad.nombre }}</p>
-                            
-                            <p><strong>Fecha Ingreso:</strong><br>
-                            {{ persona.fecha_ingreso }}</p>
-                            
-                            <p><strong>Estado Actual:</strong><br>
-                            <span class="badge" style="background-color: {{ persona.estado_actual.color }};">
-                                {{ persona.estado_actual.nombre }}
-                            </span></p>
-                            
-                            <p><strong>Estado en Sistema:</strong><br>
-                            {% if persona.activo %}
-                                <span class="badge bg-success">Activo</span>
-                            {% else %}
-                                <span class="badge bg-danger">Inactivo</span>
-                            {% endif %}</p>
+                        <div class="col-md-4">
+                            <p class="text-muted small mb-1">DESDE</p>
+                            <h6>{{ d.fecha_inicio }}</h6>
+                        </div>
+                        <div class="col-md-4">
+                            <p class="text-muted small mb-1">HASTA</p>
+                            <h6>{{ d.fecha_fin|default:"Indefinido" }}</h6>
                         </div>
                     </div>
                 </div>
             </div>
+            {% endif %}{% endfor %}
+            {% endwith %}
 
-            <div class="card mt-3">
-                <div class="card-header">
-                    <h6 class="mb-0">🛠️ Acciones</h6>
-                </div>
-                <!-- En la sección de acciones -->
-                <div class="card mt-3">
-                    <div class="card-header">
-                        <h6 class="mb-0">📒 Kardex Digital</h6>
-                    </div>
-                    <div class="card-body">
-                        <a href="{% url 'kardex_list' persona.pk %}" class="btn btn-info">
-                            📒 Ver Kardex Completo
-                        </a>
-                        <a href="{% url 'kardex_create' persona.pk %}" class="btn btn-success">
-                            ➕ Agregar Registro
-                        </a>
-                    </div>
-                </div>
+            <!-- Acceso al sistema -->
+            <div class="card shadow-sm mb-3">
+                <div class="card-header"><h6 class="mb-0">🔐 Acceso al Sistema</h6></div>
                 <div class="card-body">
-                    <a href="{% url 'personal_update' persona.pk %}" class="btn btn-warning">
-                        ✏️ Editar Información
-                    </a>
-                    <a href="{% url 'personal_list' %}" class="btn btn-secondary">
-                        ↩️ Volver al Listado
-                    </a>
-                </div>
-            </div>
-            <!-- En personal_detail.html, añade esto donde quieras -->
-            <div class="card mt-3">
-                <div class="card-header">
-                    <h6>🔐 Acceso al Sistema</h6>
-                </div>
-                <div class="card-body">
-                    {% if personal.usuario_acceso %}
-                        <p><strong>Usuario:</strong> {{ personal.usuario_acceso.username }}</p>
-                        <p><strong>Rol:</strong> 
-                            <span class="badge bg-info">{{ personal.usuario_acceso.get_rol_display }}</span>
+                    {% if persona.usuario_acceso %}
+                        <p class="mb-1">
+                            <strong>Usuario:</strong> {{ persona.usuario_acceso.username }}
+                        </p>
+                        <p class="mb-2">
+                            <strong>Rol:</strong>
+                            <span class="badge bg-info">{{ persona.usuario_acceso.get_rol_display }}</span>
+                            <span class="badge {% if persona.usuario_acceso.activo %}bg-success{% else %}bg-danger{% endif %} ms-1">
+                                {% if persona.usuario_acceso.activo %}Activo{% else %}Inactivo{% endif %}
+                            </span>
                         </p>
                         {% if user.es_administrador %}
-                            <a href="{% url 'cambiar_rol' personal.pk %}" class="btn btn-sm btn-warning">
-                                ✏️ Cambiar Rol
-                            </a>
+                        <a href="{% url 'asignar_rol' persona.pk %}" class="btn btn-sm btn-warning">
+                            ✏️ Cambiar Rol
+                        </a>
                         {% endif %}
                     {% else %}
-                        <p class="text-muted">Usuario no creado automáticamente</p>
+                        <p class="text-muted mb-2">Sin usuario asignado.</p>
+                        {% if user.es_administrador %}
+                        <a href="{% url 'asignar_rol' persona.pk %}" class="btn btn-sm btn-primary">
+                            ➕ Dar Acceso
+                        </a>
+                        {% endif %}
                     {% endif %}
                 </div>
             </div>
+
         </div>
     </div>
 </div>
