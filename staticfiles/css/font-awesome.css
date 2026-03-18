@@ -1,0 +1,17 @@
+/* Font Awesome 6 Free - Core CSS */
+.fas, .far, .fal, .fab {
+  font-family: "Font Awesome 6 Free";
+  font-weight: 900;
+}
+
+.fas::before, .far::before, .fal::before, .fab::before {
+  display: inline-block;
+  text-rendering: auto;
+  -webkit-font-smoothing: antialiased;
+}
+
+.fa-shield-alt::before { content: "🔒"; }
+.fa-user::before { content: "👤"; }
+.fa-lock::before { content: "🔑"; }
+.fa-sign-in-alt::before { content: "🚀"; }
+.fa-exclamation-triangle::before { content: "⚠️"; }

@@ -1,29 +1,19 @@
-asgiref==3.10.0
-Django==5.2.7
-dj-database-url==2.1.0
-gunicorn==21.2.0
-psycopg2-binary==2.9.9   # (usa psycopg2-binary en lugar de psycopg2 para evitar compilación)
-sqlparse==0.5.3
-whitenoise==6.6.0
-
-# Si usas crispy / bootstrap
+asgiref==3.9.2
+charset-normalizer==3.4.6
 crispy-bootstrap5==2025.6
-django-crispy-forms==2.5
-# django-bootstrap5==25.2    (¿usas esto o crispy? Si usas crispy, borra esta)
-
-# Si usas requests
-requests==2.32.4
-
-# Si usas Pillow (para imágenes)
-pillow==11.1.0
-
-# Si usas pandas o numpy (¿seguro que los necesitas en el servidor?)
-# pandas==2.2.3
-# numpy==2.2.4
-
-# Si usas openpyxl (para leer Excel)
+dj-database-url==3.1.2
+Django==5.2.7
+django-crispy-forms==2.4
+et_xmlfile==2.0.0
 openpyxl==3.1.5
-
-# Si usas generación de PDF
-fpdf2==2.8.3
-
+pillow==12.0.0
+psycopg2-binary==2.9.10
+python-dateutil==2.9.0.post0
+python-decouple==3.8
+pytz==2025.2
+reportlab==4.4.10
+setuptools==80.9.0
+six==1.17.0
+sqlparse==0.5.3
+tzdata==2025.2
+whitenoise==6.12.0
