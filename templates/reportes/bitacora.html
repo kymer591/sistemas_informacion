@@ -10,6 +10,12 @@
             <small class="text-muted">Registro de auditoría — solo visible para Administrador</small>
         </div>
         <span class="badge bg-secondary fs-6">{{ total_logs }} registros</span>
+        <a href="{% url 'reportes:exportar_bitacora_pdf' %}{% if query_string %}?{{ query_string }}{% endif %}"
+        class="btn btn-danger"
+        target="_blank">
+            📄 Exportar PDF
+            <span class="badge bg-white text-danger ms-1">{{ total_logs }}</span>
+        </a> 
     </div>
 
     <!-- Filtros -->

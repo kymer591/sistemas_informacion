@@ -1,6 +1,11 @@
 import io
 from datetime import date
 
+from .utils import registrar_log
+from django.db.models import Q
+from core.mixins import AdminRequiredMixin
+from .models import BitacoraLog
+
 from django.core.exceptions import PermissionDenied
 from django.db.models import Q
 from django.http import HttpResponse
@@ -14,6 +19,13 @@ from personal.models import PersonalPolicial
 from catalogos.models import Grado, Unidad, TipoEstado
 # Ajusta según el nombre exacto de tu mixin:
 from core.mixins import OficialAdministrativoRequiredMixin
+
+from reportlab.lib import colors
+from reportlab.lib.pagesizes import A4, landscape
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib.units import cm
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+from reportlab.lib.enums import TA_CENTER, TA_LEFT
 
 
 HEADERS = [
@@ -211,9 +223,6 @@ def exportar_personal_excel(request):
 #   from .models import BitacoraLog
 # ================================================================
 
-from django.db.models import Q
-from core.mixins import AdminRequiredMixin   # solo admin
-from .models import BitacoraLog
 
 
 class BitacoraView(AdminRequiredMixin, ListView):
@@ -269,3 +278,163 @@ class BitacoraView(AdminRequiredMixin, ListView):
         })
         return context
 
+def exportar_bitacora_pdf(request):
+    """
+    Exporta la bitácora filtrada a PDF.
+    Acceso: Solo Administrador.
+    """
+    if not request.user.is_authenticated or not request.user.es_administrador():
+        raise PermissionDenied
+ 
+    # Aplicar los mismos filtros que la vista de bitácora
+    qs = BitacoraLog.objects.select_related('usuario')
+ 
+    buscar = request.GET.get('buscar', '').strip()
+    if buscar:
+        qs = qs.filter(
+            Q(usuario__username__icontains=buscar) |
+            Q(descripcion__icontains=buscar)       |
+            Q(objeto_repr__icontains=buscar)
+        )
+    if request.GET.get('accion'):
+        qs = qs.filter(accion=request.GET['accion'])
+    if request.GET.get('modulo'):
+        qs = qs.filter(modulo=request.GET['modulo'])
+    if request.GET.get('usuario'):
+        qs = qs.filter(usuario_id=request.GET['usuario'])
+    if request.GET.get('fecha_desde'):
+        qs = qs.filter(fecha_hora__date__gte=request.GET['fecha_desde'])
+    if request.GET.get('fecha_hasta'):
+        qs = qs.filter(fecha_hora__date__lte=request.GET['fecha_hasta'])
+ 
+    # Registrar la exportación en la propia bitácora
+    registrar_log(
+        request, 'OTRO', 'reportes',
+        f'Exportó bitácora en PDF ({qs.count()} registros)',
+    )
+ 
+    # ── Construir PDF ──────────────────────────────────────────────
+    response = HttpResponse(content_type='application/pdf')
+    filename = f"bitacora_{date.today().strftime('%Y%m%d')}.pdf"
+    response['Content-Disposition'] = f'attachment; filename="{filename}"'
+ 
+    doc = SimpleDocTemplate(
+        response,
+        pagesize=landscape(A4),
+        leftMargin=1.5*cm,
+        rightMargin=1.5*cm,
+        topMargin=2*cm,
+        bottomMargin=2*cm,
+    )
+ 
+    styles = getSampleStyleSheet()
+ 
+    # Estilos personalizados
+    estilo_titulo = ParagraphStyle(
+        'titulo',
+        parent=styles['Title'],
+        fontSize=14,
+        textColor=colors.HexColor('#1F3864'),
+        alignment=TA_CENTER,
+        spaceAfter=4,
+    )
+    estilo_subtitulo = ParagraphStyle(
+        'subtitulo',
+        parent=styles['Normal'],
+        fontSize=9,
+        textColor=colors.grey,
+        alignment=TA_CENTER,
+        spaceAfter=12,
+    )
+    estilo_celda = ParagraphStyle(
+        'celda',
+        parent=styles['Normal'],
+        fontSize=7,
+        leading=9,
+    )
+ 
+    elementos = []
+ 
+    # Título
+    elementos.append(Paragraph('UTEPPI — BITÁCORA DEL SISTEMA', estilo_titulo))
+    elementos.append(Paragraph(
+        f'Generado el {date.today().strftime("%d/%m/%Y")} '
+        f'por {request.user.username} · {qs.count()} registros',
+        estilo_subtitulo,
+    ))
+ 
+    # Encabezados de tabla
+    encabezados = [
+        Paragraph('<b>FECHA Y HORA</b>', estilo_celda),
+        Paragraph('<b>USUARIO</b>', estilo_celda),
+        Paragraph('<b>ACCIÓN</b>', estilo_celda),
+        Paragraph('<b>MÓDULO</b>', estilo_celda),
+        Paragraph('<b>DESCRIPCIÓN</b>', estilo_celda),
+        Paragraph('<b>OBJETO AFECTADO</b>', estilo_celda),
+        Paragraph('<b>IP</b>', estilo_celda),
+    ]
+ 
+    # Colores por acción
+    COLORES_ACCION = {
+        'LOGIN'   : colors.HexColor('#198754'),
+        'LOGOUT'  : colors.HexColor('#6c757d'),
+        'CREAR'   : colors.HexColor('#0d6efd'),
+        'EDITAR'  : colors.HexColor('#ffc107'),
+        'ELIMINAR': colors.HexColor('#dc3545'),
+        'ERROR'   : colors.HexColor('#212529'),
+        'OTRO'    : colors.HexColor('#6c757d'),
+    }
+ 
+    # Filas de datos
+    filas = [encabezados]
+    colores_filas = [None]  # fila de encabezado no tiene color de acción
+ 
+    for log in qs:
+        filas.append([
+            Paragraph(log.fecha_hora.strftime('%d/%m/%Y %H:%M:%S'), estilo_celda),
+            Paragraph(log.usuario.username if log.usuario else '—', estilo_celda),
+            Paragraph(log.get_accion_display(), estilo_celda),
+            Paragraph(log.modulo.capitalize(), estilo_celda),
+            Paragraph(log.descripcion[:120], estilo_celda),
+            Paragraph((log.objeto_repr or '—')[:50], estilo_celda),
+            Paragraph(log.ip_address or '—', estilo_celda),
+        ])
+        colores_filas.append(COLORES_ACCION.get(log.accion, colors.grey))
+ 
+    # Anchos de columna (landscape A4 ≈ 25.7cm útil)
+    anchos = [3.5*cm, 2.5*cm, 2*cm, 2*cm, 8*cm, 4*cm, 2.5*cm]
+ 
+    tabla = Table(filas, colWidths=anchos, repeatRows=1)
+ 
+    # Estilo base de la tabla
+    estilo_tabla = TableStyle([
+        # Encabezado
+        ('BACKGROUND',   (0, 0), (-1, 0),  colors.HexColor('#1F3864')),
+        ('TEXTCOLOR',    (0, 0), (-1, 0),  colors.white),
+        ('FONTNAME',     (0, 0), (-1, 0),  'Helvetica-Bold'),
+        ('FONTSIZE',     (0, 0), (-1, 0),  8),
+        ('ALIGN',        (0, 0), (-1, 0),  'CENTER'),
+        ('VALIGN',       (0, 0), (-1, -1), 'MIDDLE'),
+        ('ROWBACKGROUND',(0, 1), (-1, -1), [colors.HexColor('#EAF0FB'), colors.white]),
+        # Bordes
+        ('GRID',         (0, 0), (-1, -1), 0.4, colors.HexColor('#AAAAAA')),
+        ('LINEBELOW',    (0, 0), (-1, 0),  1,   colors.HexColor('#1F3864')),
+        # Padding
+        ('TOPPADDING',   (0, 0), (-1, -1), 4),
+        ('BOTTOMPADDING',(0, 0), (-1, -1), 4),
+        ('LEFTPADDING',  (0, 0), (-1, -1), 4),
+        ('RIGHTPADDING', (0, 0), (-1, -1), 4),
+    ])
+ 
+    # Colorear la columna ACCIÓN por tipo
+    for i, color_accion in enumerate(colores_filas[1:], start=1):
+        if color_accion:
+            estilo_tabla.add('TEXTCOLOR', (2, i), (2, i), color_accion)
+            estilo_tabla.add('FONTNAME',  (2, i), (2, i), 'Helvetica-Bold')
+ 
+    tabla.setStyle(estilo_tabla)
+    elementos.append(tabla)
+ 
+    doc.build(elementos)
+    return response
+ 

@@ -1,34 +1,68 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="container-fluid mt-4">
+<div class="container-fluid mt-3">
 
     <!-- Encabezado -->
-    <div class="row mb-4">
-        <div class="col-12">
-            <h2>👤 Mi Información Personal</h2>
-            <p class="text-muted">Bienvenido, {{ user.get_full_name|default:user.username }}</p>
+    <div class="mb-3">
+        <h5 class="mb-0">👤 Mi Información Personal</h5>
+        <small class="text-muted">Bienvenido, {{ user.get_full_name|default:user.username }}</small>
+    </div>
+
+    <!-- Estadísticas rápidas (arriba en móvil) -->
+    <div class="row g-2 mb-3">
+        <div class="col-6 col-md-3">
+            <div class="card text-center shadow-sm h-100">
+                <div class="card-body py-2">
+                    <h4 class="mb-0">{{ kardex|length }}</h4>
+                    <p class="text-muted mb-0 small">Kardex</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="card text-center shadow-sm h-100">
+                <div class="card-body py-2">
+                    <h4 class="mb-0">{{ destinos|length }}</h4>
+                    <p class="text-muted mb-0 small">Destinos</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="card text-center shadow-sm h-100">
+                <div class="card-body py-2">
+                    <h4 class="mb-0">{{ permisos|length }}</h4>
+                    <p class="text-muted mb-0 small">Permisos</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="card text-center shadow-sm h-100">
+                <div class="card-body py-2">
+                    <h4 class="mb-0">{{ felicitaciones|length }}</h4>
+                    <p class="text-muted mb-0 small">Reconocimientos</p>
+                </div>
+            </div>
         </div>
     </div>
 
-    <div class="row">
+    <div class="row g-3">
 
-        <!-- ── Columna izquierda: datos personales ── -->
-        <div class="col-md-4">
+        <!-- ── Columna izquierda ── -->
+        <div class="col-12 col-md-4">
 
             <!-- Tarjeta principal -->
             <div class="card shadow">
                 <div class="card-header bg-primary text-white">
-                    <h5 class="mb-0">📋 Datos Personales</h5>
+                    <h6 class="mb-0">📋 Datos Personales</h6>
                 </div>
                 <div class="card-body text-center">
-                    <div class="bg-light rounded-circle d-inline-flex align-items-center justify-content-center mb-3"
-                         style="width:100px;height:100px;">
-                        <span class="fs-1">👤</span>
+                    <div class="bg-light rounded-circle d-inline-flex align-items-center justify-content-center mb-2"
+                         style="width:80px;height:80px;">
+                        <span style="font-size:2rem;">👤</span>
                     </div>
-                    <h4>{{ personal.nombre_completo }}</h4>
-                    <p class="text-muted mb-1">{{ personal.grado.nombre }}</p>
-                    <p class="text-muted">{{ personal.unidad.nombre }}</p>
+                    <h5 class="mb-1">{{ personal.nombre_completo }}</h5>
+                    <p class="text-muted mb-1 small">{{ personal.grado.nombre }}</p>
+                    <p class="text-muted mb-2 small">{{ personal.unidad.nombre }}</p>
                     <span class="badge fs-6" style="background-color:{{ personal.estado_actual.color }};">
                         {{ personal.estado_actual.nombre }}
                     </span>
@@ -39,15 +73,37 @@
             <div class="card shadow mt-3">
                 <div class="card-header"><h6 class="mb-0">📞 Contacto</h6></div>
                 <div class="card-body">
-                    <p><strong>CI:</strong> {{ personal.ci }} {{ personal.expedido }}</p>
-                    <p><strong>Código:</strong> {{ personal.codigo_identificacion }}</p>
-                    <p><strong>Teléfono:</strong> {{ personal.telefono_personal|default:"No registrado" }}</p>
-                    <p><strong>Email:</strong> {{ personal.correo_institucional|default:"No registrado" }}</p>
-                    <p class="mb-0"><strong>Fecha Ingreso:</strong> {{ personal.fecha_ingreso }}</p>
+                    <!-- En móvil: grid de 2 columnas para compactar -->
+                    <div class="row g-1">
+                        <div class="col-5 small text-muted">CI</div>
+                        <div class="col-7 small">{{ personal.ci }} {{ personal.expedido }}</div>
+
+                        <div class="col-5 small text-muted">Código</div>
+                        <div class="col-7 small">{{ personal.codigo_identificacion }}</div>
+
+                        <div class="col-5 small text-muted">Teléfono</div>
+                        <div class="col-7 small">
+                            {% if personal.telefono_personal %}
+                            <a href="tel:{{ personal.telefono_personal }}" class="text-decoration-none">
+                                {{ personal.telefono_personal }}
+                            </a>
+                            {% else %}
+                            <span class="text-muted">No registrado</span>
+                            {% endif %}
+                        </div>
+
+                        <div class="col-5 small text-muted">Email</div>
+                        <div class="col-7 small" style="word-break:break-all;">
+                            {{ personal.correo_institucional|default:"No registrado" }}
+                        </div>
+
+                        <div class="col-5 small text-muted">Ingreso</div>
+                        <div class="col-7 small">{{ personal.fecha_ingreso }}</div>
+                    </div>
                 </div>
             </div>
 
-            <!-- Destino activo destacado -->
+            <!-- Destino activo -->
             {% if destino_activo %}
             <div class="card shadow mt-3 border-success">
                 <div class="card-header bg-success text-white">
@@ -61,12 +117,12 @@
                     {% if destino_activo.unidad_destino %}
                     <p class="mb-1 small text-muted">{{ destino_activo.unidad_destino.nombre }}</p>
                     {% endif %}
-                    <p class="mb-1 small">
-                        <strong>Desde:</strong> {{ destino_activo.fecha_inicio }}
-                    </p>
-                    <p class="mb-0 small">
-                        <strong>Hasta:</strong> {{ destino_activo.fecha_fin|default:"Indefinido" }}
-                    </p>
+                    <div class="row g-1">
+                        <div class="col-5 small text-muted">Desde</div>
+                        <div class="col-7 small">{{ destino_activo.fecha_inicio }}</div>
+                        <div class="col-5 small text-muted">Hasta</div>
+                        <div class="col-7 small">{{ destino_activo.fecha_fin|default:"Indefinido" }}</div>
+                    </div>
                 </div>
             </div>
             {% else %}
@@ -82,17 +138,21 @@
 
         </div>
 
-        <!-- ── Columna derecha: tabs de información ── -->
-        <div class="col-md-8">
+        <!-- ── Columna derecha: tabs ── -->
+        <div class="col-12 col-md-8">
 
-            <ul class="nav nav-tabs" id="perfilTab" role="tablist">
+            <!-- Tabs: scroll horizontal en móvil -->
+            <ul class="nav nav-tabs flex-nowrap overflow-auto" id="perfilTab"
+                role="tablist" style="white-space:nowrap;">
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab-kardex" type="button">
+                    <button class="nav-link active" data-bs-toggle="tab"
+                            data-bs-target="#tab-kardex" type="button">
                         📒 Kardex
                     </button>
                 </li>
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-destinos" type="button">
+                    <button class="nav-link" data-bs-toggle="tab"
+                            data-bs-target="#tab-destinos" type="button">
                         📍 Destinos
                         {% if destinos %}
                         <span class="badge bg-primary ms-1">{{ destinos|length }}</span>
@@ -100,18 +160,21 @@
                     </button>
                 </li>
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-permisos" type="button">
+                    <button class="nav-link" data-bs-toggle="tab"
+                            data-bs-target="#tab-permisos" type="button">
                         🏖️ Permisos
                     </button>
                 </li>
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-felicitaciones" type="button">
-                        ⭐ Felicitaciones
+                    <button class="nav-link" data-bs-toggle="tab"
+                            data-bs-target="#tab-felicitaciones" type="button">
+                        ⭐ Méritos
                     </button>
                 </li>
                 {% if sanciones %}
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-sanciones" type="button">
+                    <button class="nav-link" data-bs-toggle="tab"
+                            data-bs-target="#tab-sanciones" type="button">
                         ⚖️ Sanciones
                     </button>
                 </li>
@@ -125,7 +188,7 @@
                     <h6 class="mb-3">📒 Historial de Kardex</h6>
                     {% if kardex %}
                     <div class="table-responsive">
-                        <table class="table table-sm table-hover">
+                        <table class="table table-sm table-hover mb-0">
                             <thead class="table-light">
                                 <tr>
                                     <th>Fecha</th>
@@ -136,9 +199,13 @@
                             <tbody>
                                 {% for reg in kardex %}
                                 <tr>
-                                    <td class="text-nowrap">{{ reg.fecha_registro }}</td>
-                                    <td><span class="badge bg-info text-dark">{{ reg.get_tipo_registro_display }}</span></td>
-                                    <td>{{ reg.descripcion|truncatewords:15 }}</td>
+                                    <td class="text-nowrap small">{{ reg.fecha_registro }}</td>
+                                    <td>
+                                        <span class="badge bg-info text-dark">
+                                            {{ reg.get_tipo_registro_display }}
+                                        </span>
+                                    </td>
+                                    <td class="small">{{ reg.descripcion|truncatewords:12 }}</td>
                                 </tr>
                                 {% endfor %}
                             </tbody>
@@ -154,14 +221,13 @@
                     <h6 class="mb-3">📍 Historial de Destinos</h6>
                     {% if destinos %}
                     <div class="table-responsive">
-                        <table class="table table-sm table-hover">
+                        <table class="table table-sm table-hover mb-0">
                             <thead class="table-light">
                                 <tr>
                                     <th>Tipo</th>
                                     <th>Lugar</th>
                                     <th>Desde</th>
                                     <th>Hasta</th>
-                                    <th>Duración</th>
                                     <th>Estado</th>
                                 </tr>
                             </thead>
@@ -173,20 +239,19 @@
                                             {{ destino.get_tipo_destino_display }}
                                         </span>
                                     </td>
-                                    <td>
+                                    <td class="small">
                                         {{ destino.lugar_destino }}
                                         {% if destino.unidad_destino %}
                                         <br><small class="text-muted">{{ destino.unidad_destino.codigo }}</small>
                                         {% endif %}
                                     </td>
-                                    <td class="text-nowrap">{{ destino.fecha_inicio }}</td>
-                                    <td class="text-nowrap">{{ destino.fecha_fin|default:"Indefinido" }}</td>
-                                    <td><small>{{ destino.duracion }}</small></td>
+                                    <td class="text-nowrap small">{{ destino.fecha_inicio }}</td>
+                                    <td class="text-nowrap small">{{ destino.fecha_fin|default:"Indef." }}</td>
                                     <td>
                                         {% if destino.activo %}
-                                            <span class="badge bg-success">● Activo</span>
+                                        <span class="badge bg-success">Activo</span>
                                         {% else %}
-                                            <span class="badge bg-secondary">Histórico</span>
+                                        <span class="badge bg-secondary">Hist.</span>
                                         {% endif %}
                                     </td>
                                 </tr>
@@ -204,7 +269,7 @@
                     <h6 class="mb-3">🏖️ Mis Permisos y Licencias</h6>
                     {% if permisos %}
                     <div class="table-responsive">
-                        <table class="table table-sm table-hover">
+                        <table class="table table-sm table-hover mb-0">
                             <thead class="table-light">
                                 <tr>
                                     <th>Tipo</th>
@@ -216,21 +281,23 @@
                             <tbody>
                                 {% for permiso in permisos %}
                                 <tr>
-                                    <td>{{ permiso.get_tipo_permiso_display }}</td>
-                                    <td class="text-nowrap">
+                                    <td class="small">{{ permiso.get_tipo_permiso_display }}</td>
+                                    <td class="text-nowrap small">
                                         {{ permiso.fecha_inicio }}<br>
-                                        <small>al {{ permiso.fecha_fin }}</small>
+                                        <small class="text-muted">al {{ permiso.fecha_fin }}</small>
                                     </td>
-                                    <td><span class="badge bg-primary">{{ permiso.dias_solicitados }}</span></td>
+                                    <td>
+                                        <span class="badge bg-primary">{{ permiso.dias_solicitados }}</span>
+                                    </td>
                                     <td>
                                         {% if permiso.estado == 'aprobado' %}
-                                            <span class="badge bg-success">Aprobado</span>
+                                        <span class="badge bg-success">Aprobado</span>
                                         {% elif permiso.estado == 'pendiente' %}
-                                            <span class="badge bg-warning text-dark">Pendiente</span>
+                                        <span class="badge bg-warning text-dark">Pendiente</span>
                                         {% elif permiso.estado == 'rechazado' %}
-                                            <span class="badge bg-danger">Rechazado</span>
+                                        <span class="badge bg-danger">Rechazado</span>
                                         {% else %}
-                                            <span class="badge bg-secondary">{{ permiso.estado }}</span>
+                                        <span class="badge bg-secondary">{{ permiso.estado }}</span>
                                         {% endif %}
                                     </td>
                                 </tr>
@@ -248,7 +315,7 @@
                     <h6 class="mb-3">⭐ Mis Reconocimientos</h6>
                     {% if felicitaciones %}
                     <div class="table-responsive">
-                        <table class="table table-sm table-hover">
+                        <table class="table table-sm table-hover mb-0">
                             <thead class="table-light">
                                 <tr>
                                     <th>Fecha</th>
@@ -259,13 +326,13 @@
                             <tbody>
                                 {% for f in felicitaciones %}
                                 <tr>
-                                    <td class="text-nowrap">{{ f.fecha_felicitacion }}</td>
+                                    <td class="text-nowrap small">{{ f.fecha_felicitacion }}</td>
                                     <td>
                                         <span class="badge bg-warning text-dark">
                                             {{ f.tipo_felicitacion.nombre }}
                                         </span>
                                     </td>
-                                    <td>{{ f.motivo|truncatewords:10 }}</td>
+                                    <td class="small">{{ f.motivo|truncatewords:10 }}</td>
                                 </tr>
                                 {% endfor %}
                             </tbody>
@@ -276,12 +343,12 @@
                     {% endif %}
                 </div>
 
-                <!-- TAB Sanciones (solo si existen) -->
+                <!-- TAB Sanciones -->
                 {% if sanciones %}
                 <div class="tab-pane fade" id="tab-sanciones">
                     <h6 class="mb-3">⚖️ Mis Sanciones</h6>
                     <div class="table-responsive">
-                        <table class="table table-sm table-hover">
+                        <table class="table table-sm table-hover mb-0">
                             <thead class="table-light">
                                 <tr>
                                     <th>Fecha</th>
@@ -293,20 +360,20 @@
                             <tbody>
                                 {% for s in sanciones %}
                                 <tr>
-                                    <td class="text-nowrap">{{ s.fecha_sancion }}</td>
-                                    <td>{{ s.tipo_sancion.nombre }}</td>
+                                    <td class="text-nowrap small">{{ s.fecha_sancion }}</td>
+                                    <td class="small">{{ s.tipo_sancion.nombre }}</td>
                                     <td>
                                         {% if s.estado == 'cumplida' %}
-                                            <span class="badge bg-success">Cumplida</span>
+                                        <span class="badge bg-success">Cumplida</span>
                                         {% elif s.estado == 'activa' %}
-                                            <span class="badge bg-danger">Activa</span>
+                                        <span class="badge bg-danger">Activa</span>
                                         {% else %}
-                                            <span class="badge bg-secondary">{{ s.estado }}</span>
+                                        <span class="badge bg-secondary">{{ s.estado }}</span>
                                         {% endif %}
                                     </td>
-                                    <td class="text-nowrap">
+                                    <td class="text-nowrap small">
                                         {{ s.fecha_inicio }}<br>
-                                        <small>{{ s.fecha_fin|default:"Indefinido" }}</small>
+                                        <small class="text-muted">{{ s.fecha_fin|default:"Indef." }}</small>
                                     </td>
                                 </tr>
                                 {% endfor %}
@@ -317,44 +384,8 @@
                 {% endif %}
 
             </div><!-- /tab-content -->
-        </div><!-- /col-md-8 -->
+        </div><!-- /col -->
     </div><!-- /row -->
-
-    <!-- Estadísticas rápidas -->
-    <div class="row mt-4">
-        <div class="col-md-3">
-            <div class="card text-center shadow-sm">
-                <div class="card-body">
-                    <h3>{{ kardex|length }}</h3>
-                    <p class="text-muted mb-0 small">Registros en Kardex</p>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card text-center shadow-sm">
-                <div class="card-body">
-                    <h3>{{ destinos|length }}</h3>
-                    <p class="text-muted mb-0 small">Destinos Asignados</p>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card text-center shadow-sm">
-                <div class="card-body">
-                    <h3>{{ permisos|length }}</h3>
-                    <p class="text-muted mb-0 small">Permisos Solicitados</p>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card text-center shadow-sm">
-                <div class="card-body">
-                    <h3>{{ felicitaciones|length }}</h3>
-                    <p class="text-muted mb-0 small">Reconocimientos</p>
-                </div>
-            </div>
-        </div>
-    </div>
 
 </div>
 {% endblock %}
