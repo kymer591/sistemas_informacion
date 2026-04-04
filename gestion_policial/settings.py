@@ -70,16 +70,18 @@ WSGI_APPLICATION = 'gestion_policial.wsgi.application'
 DATABASE_URL = os.environ.get('DATABASE_URL')
 
 if DATABASE_URL:
-    # Producción: PostgreSQL en Render
-    import dj_database_url
+    from urllib.parse import urlparse
+    url = urlparse(DATABASE_URL)
     DATABASES = {
-        'default': dj_database_url.config(
-            default=DATABASE_URL,
-            conn_max_age=600,
-            ssl_require=False,
-        )
+        'default': {
+            'ENGINE'  : 'django.db.backends.postgresql',
+            'NAME'    : url.path[1:],
+            'USER'    : url.username,
+            'PASSWORD': url.password,
+            'HOST'    : url.hostname,
+            'PORT'    : url.port or 5432,
+        }
     }
-    
 
 else:
     # Local: PostgreSQL local
