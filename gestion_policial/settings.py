@@ -79,8 +79,7 @@ if DATABASE_URL:
             ssl_require=False,
         )
     }
-    DATABASES['default']['OPTIONS'] = {'sslmode': 'prefer'}
-
+    
 
 else:
     # Local: PostgreSQL local
