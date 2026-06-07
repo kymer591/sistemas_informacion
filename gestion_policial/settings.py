@@ -32,6 +32,7 @@ INSTALLED_APPS = [
     'catalogos',
     'personal',
     'reportes.apps.ReportesConfig',
+    'autoregistro',
 ]
 
 MIDDLEWARE = [

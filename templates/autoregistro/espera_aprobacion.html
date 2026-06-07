@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-5">
+<div class="row justify-content-center">
+<div class="col-md-6">
+  <div class="card shadow border-info">
+    <div class="card-header bg-info text-white">
+      <h5 class="mb-0">⏳ Registro enviado — Esperando aprobación</h5>
+    </div>
+    <div class="card-body text-center py-5">
+      <div style="font-size:4rem" class="mb-3">📋</div>
+      <h4>¡Gracias, {{ personal.nombre_completo }}!</h4>
+      <p class="text-muted mb-3">
+        Tu información fue enviada el
+        <strong>{{ reg.fecha_completado|date:"d/m/Y H:i" }}</strong>.<br>
+        Un administrativo la revisará y activará tu cuenta.
+      </p>
+      <div class="alert alert-info text-start">
+        <strong>¿Qué sigue?</strong><br>
+        Una vez aprobado, podrás iniciar sesión normalmente y acceder
+        a toda la información del sistema.
+      </div>
+    </div>
+    <div class="card-footer text-center text-muted">
+      <small>🛡️ UTEPPI — Sistema de Gestión Policial</small>
+    </div>
+  </div>
+</div>
+</div>
+</div>
+{% endblock %}

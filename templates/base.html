@@ -217,7 +217,171 @@
             }
         }
     </style>
-
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/material_blue.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/es.js"></script>
+ 
+    <style>
+        /* ── Integración visual con Bootstrap 5 ───────────────────── */
+        .flatpickr-input {
+            background-color: #fff !important;
+            cursor: pointer;
+        }
+ 
+        /* Ícono de calendario incrustado en el input */
+        .date-wrapper {
+            position: relative;
+            display: block;
+        }
+        .date-wrapper .flatpickr-input {
+            padding-right: 2.4rem;
+        }
+        .date-wrapper::after {
+            content: "📅";
+            position: absolute;
+            right: 0.65rem;
+            top: 50%;
+            transform: translateY(-50%);
+            pointer-events: none;
+            font-size: 1rem;
+            line-height: 1;
+        }
+ 
+        /* Calendario: colores corporativos UTEPPI (#2c3e50) */
+        .flatpickr-calendar {
+            border-radius: 10px;
+            box-shadow: 0 8px 30px rgba(0,0,0,.15);
+            border: 1px solid #dee2e6;
+            font-family: inherit;
+        }
+        .flatpickr-months {
+            background: #2c3e50;
+            border-radius: 10px 10px 0 0;
+            padding: 4px 0;
+        }
+        .flatpickr-months .flatpickr-month,
+        .flatpickr-months .flatpickr-prev-month,
+        .flatpickr-months .flatpickr-next-month {
+            color: #fff !important;
+            fill: #fff !important;
+        }
+        .flatpickr-months .flatpickr-prev-month:hover,
+        .flatpickr-months .flatpickr-next-month:hover {
+            background: rgba(255,255,255,.15);
+            border-radius: 4px;
+        }
+        .flatpickr-current-month .cur-month,
+        .flatpickr-current-month .numInputWrapper span,
+        .flatpickr-current-month input.cur-year {
+            color: #fff !important;
+        }
+        .flatpickr-weekdays {
+            background: #34495e;
+        }
+        span.flatpickr-weekday {
+            background: transparent;
+            color: #ecf0f1;
+            font-weight: 600;
+            font-size: .78rem;
+        }
+        .flatpickr-day.selected,
+        .flatpickr-day.selected:hover {
+            background: #2c3e50;
+            border-color: #2c3e50;
+        }
+        .flatpickr-day:hover {
+            background: #ecf0f1;
+            border-color: transparent;
+        }
+        .flatpickr-day.today {
+            border-color: #3498db;
+        }
+        .flatpickr-day.today:hover {
+            background: #3498db;
+            color: #fff;
+            border-color: #3498db;
+        }
+ 
+        /* Animación suave de apertura */
+        .flatpickr-calendar.open {
+            animation: fpSlideDown .15s ease-out;
+        }
+        @keyframes fpSlideDown {
+            from { opacity: 0; transform: translateY(-6px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+ 
+    <script>
+    (function () {
+        // Configuración Flatpickr en español
+        const FP_CONFIG = {
+            locale: "es",
+            dateFormat: "Y-m-d",        // formato que Django espera
+            altInput: true,             // muestra formato humano al usuario
+            altFormat: "d/m/Y",         // DD/MM/YYYY visible
+            allowInput: true,
+            disableMobile: false,       // usa picker nativo en móvil
+            nextArrow: "›",
+            prevArrow: "‹",
+        };
+ 
+        function wrapAndInit(input) {
+            // Evitar doble inicialización
+            if (input._flatpickr) return;
+ 
+            // Envolver en .date-wrapper para el ícono de calendario
+            const parent = input.parentNode;
+            if (!parent.classList.contains("date-wrapper")) {
+                const wrapper = document.createElement("div");
+                wrapper.className = "date-wrapper";
+                parent.insertBefore(wrapper, input);
+                wrapper.appendChild(input);
+            }
+ 
+            flatpickr(input, FP_CONFIG);
+        }
+ 
+        function initAll() {
+            // Selecciona todos los inputs de tipo date y los que Django genera
+            // para DateField / DateTimeField
+            document.querySelectorAll(
+                'input[type="date"], ' +
+                'input.datefield, ' +
+                'input[name$="_date"], ' +
+                'input[name="fecha_inicio"], ' +
+                'input[name="fecha_fin"], ' +
+                'input[name="fecha_registro"], ' +
+                'input[name="fecha_nacimiento"], ' +
+                'input[name="fecha_ingreso"], ' +
+                'input[name="fecha_sancion"], ' +
+                'input[name="fecha_felicitacion"], ' +
+                'input[name="fecha_aprobacion"]'
+            ).forEach(wrapAndInit);
+        }
+ 
+        // Inicializar al cargar la página
+        if (document.readyState === "loading") {
+            document.addEventListener("DOMContentLoaded", initAll);
+        } else {
+            initAll();
+        }
+ 
+        // Soporte para formularios cargados dinámicamente (por si hay modales AJAX)
+        const observer = new MutationObserver(function (mutations) {
+            mutations.forEach(function (m) {
+                m.addedNodes.forEach(function (node) {
+                    if (node.nodeType !== 1) return;
+                    node.querySelectorAll && node.querySelectorAll(
+                        'input[type="date"], input[name*="fecha"]'
+                    ).forEach(wrapAndInit);
+                });
+            });
+        });
+        observer.observe(document.body, { childList: true, subtree: true });
+    })();
+    </script>
     {% block extra_css %}{% endblock %}
 </head>
 <body class="{% block body_class %}{% endblock %}">

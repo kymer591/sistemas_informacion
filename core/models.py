@@ -14,6 +14,7 @@ class Usuario(AbstractUser):
         ('admin', 'Administrador'),
         ('oficial_administrativo', 'Oficial Administrativo'),
         ('usuario_autorizado', 'Usuario Autorizado'),
+        ('temporal', 'Usuario Temporal'),
     ]
 
     

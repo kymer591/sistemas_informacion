@@ -37,28 +37,12 @@
             <div class="card shadow-sm mt-3">
                 <div class="card-header"><h6 class="mb-0">📞 Contacto</h6></div>
                 <div class="card-body">
-                    <p class="mb-2">
-                        <strong>CI:</strong> {{ persona.ci }} {{ persona.expedido }}
-                    </p>
-                    <p class="mb-2">
-                        <strong>Código:</strong> {{ persona.codigo_identificacion }}
-                    </p>
-                    <p class="mb-2">
-                        <strong>Celular:</strong>
-                        {{ persona.telefono_personal|default:"No registrado" }}
-                    </p>
-                    <p class="mb-2">
-                        <strong>Tel. Emergencia:</strong>
-                        {{ persona.telefono_emergencia|default:"No registrado" }}
-                    </p>
-                    <p class="mb-2">
-                        <strong>Email:</strong>
-                        {{ persona.correo_institucional|default:"No registrado" }}
-                    </p>
-                    <p class="mb-0">
-                        <strong>Domicilio:</strong>
-                        {{ persona.direccion_domicilio|default:"No registrado" }}
-                    </p>
+                    <p class="mb-2"><strong>CI:</strong> {{ persona.ci }} {{ persona.expedido }}</p>
+                    <p class="mb-2"><strong>Código:</strong> {{ persona.codigo_identificacion }}</p>
+                    <p class="mb-2"><strong>Celular:</strong> {{ persona.telefono_personal|default:"No registrado" }}</p>
+                    <p class="mb-2"><strong>Tel. Emergencia:</strong> {{ persona.telefono_emergencia|default:"No registrado" }}</p>
+                    <p class="mb-2"><strong>Email:</strong> {{ persona.correo_institucional|default:"No registrado" }}</p>
+                    <p class="mb-0"><strong>Domicilio:</strong> {{ persona.direccion_domicilio|default:"No registrado" }}</p>
                 </div>
             </div>
 
@@ -66,21 +50,111 @@
             <div class="card shadow-sm mt-3">
                 <div class="card-header"><h6 class="mb-0">🎓 Información Adicional</h6></div>
                 <div class="card-body">
-                    <p class="mb-2">
-                        <strong>Fecha Nacimiento:</strong> {{ persona.fecha_nacimiento }}
-                    </p>
-                    <p class="mb-2">
-                        <strong>Género:</strong> {{ persona.get_genero_display }}
-                    </p>
-                    <p class="mb-2">
-                        <strong>Fecha Ingreso:</strong> {{ persona.fecha_ingreso }}
-                    </p>
-                    <p class="mb-0">
-                        <strong>Otra Profesión:</strong>
-                        {{ persona.otra_profesion|default:"No registrado" }}
-                    </p>
+                    <p class="mb-2"><strong>Fecha Nacimiento:</strong> {{ persona.fecha_nacimiento }}</p>
+                    <p class="mb-2"><strong>Género:</strong> {{ persona.get_genero_display }}</p>
+                    <p class="mb-2"><strong>Fecha Ingreso:</strong> {{ persona.fecha_ingreso }}</p>
+                    <p class="mb-0"><strong>Otra Profesión:</strong> {{ persona.otra_profesion|default:"No registrado" }}</p>
                 </div>
             </div>
+
+            <!-- ══════════════════════════════════════════
+                 ACCESO AL SISTEMA + AUTOREGISTRO TEMPORAL
+                 ══════════════════════════════════════════ -->
+            <div class="card shadow-sm mt-3">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h6 class="mb-0">🔐 Acceso al Sistema</h6>
+                </div>
+                <div class="card-body">
+
+                    {% if persona.usuario_acceso %}
+                        <!-- Ya tiene usuario -->
+                        <p class="mb-1">
+                            <strong>Usuario:</strong>
+                            <code>{{ persona.usuario_acceso.username }}</code>
+                        </p>
+                        <p class="mb-2">
+                            <strong>Rol:</strong>
+                            {% if persona.usuario_acceso.rol == 'temporal' %}
+                                <span class="badge bg-warning text-dark">⏳ Temporal</span>
+                            {% elif persona.usuario_acceso.rol == 'admin' %}
+                                <span class="badge bg-danger">🔴 Admin</span>
+                            {% elif persona.usuario_acceso.rol == 'oficial_administrativo' %}
+                                <span class="badge bg-warning text-dark">🟡 Oficial Admin</span>
+                            {% else %}
+                                <span class="badge bg-info">🔵 {{ persona.usuario_acceso.get_rol_display }}</span>
+                            {% endif %}
+                            <span class="badge {% if persona.usuario_acceso.activo %}bg-success{% else %}bg-danger{% endif %} ms-1">
+                                {% if persona.usuario_acceso.activo %}Activo{% else %}Inactivo{% endif %}
+                            </span>
+                        </p>
+
+                        <!-- Estado del registro temporal si aplica -->
+                        {% if persona.usuario_acceso.rol == 'temporal' %}
+                            {% with reg=persona.registro_temporal %}
+                            {% if reg %}
+                                {% if reg.estado == 'pendiente' %}
+                                <div class="alert alert-warning py-2 mb-2">
+                                    <small>⏳ Esperando que el policía complete su registro.</small>
+                                </div>
+                                {% elif reg.estado == 'completado' %}
+                                <div class="alert alert-info py-2 mb-2">
+                                    <small>
+                                        📋 El policía ya envió su información.
+                                        <a href="{% url 'autoregistro:revisar_registro' reg.pk %}"
+                                           class="btn btn-sm btn-primary ms-1 py-0">
+                                            ⚙️ Revisar
+                                        </a>
+                                    </small>
+                                </div>
+                                {% elif reg.estado == 'aprobado' %}
+                                <div class="alert alert-success py-2 mb-2">
+                                    <small>✅ Registro aprobado.</small>
+                                </div>
+                                {% endif %}
+                            {% endif %}
+                            {% endwith %}
+                        {% endif %}
+
+                        {% if user.es_administrador %}
+                        <a href="{% url 'asignar_rol' persona.pk %}" class="btn btn-sm btn-warning">
+                            ✏️ Cambiar Rol
+                        </a>
+                        {% endif %}
+
+                    {% else %}
+                        <!-- Sin usuario: ofrecer acceso normal O temporal -->
+                        <p class="text-muted mb-3 small">
+                            Este personal no tiene acceso al sistema.
+                        </p>
+
+                        {% if user.es_administrador or user.puede_crear %}
+                        <div class="d-grid gap-2">
+
+                            <!-- Opción 1: acceso normal -->
+                            <a href="{% url 'asignar_rol' persona.pk %}"
+                               class="btn btn-sm btn-primary">
+                                🔑 Dar acceso normal
+                            </a>
+
+                            <!-- Opción 2: usuario temporal para autoregistro -->
+                            <button type="button"
+                                    class="btn btn-sm btn-warning"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#modalUsuarioTemporal">
+                                📝 Habilitar autoregistro
+                            </button>
+
+                        </div>
+                        <div class="form-text mt-2 small">
+                            <strong>Autoregistro:</strong> el policía inicia sesión
+                            y completa su propia información.
+                        </div>
+                        {% endif %}
+                    {% endif %}
+
+                </div>
+            </div>
+            <!-- ══ fin Acceso al Sistema ══ -->
 
         </div>
 
@@ -146,38 +220,122 @@
             {% endif %}{% endfor %}
             {% endwith %}
 
-            <!-- Acceso al sistema -->
-            <div class="card shadow-sm mb-3">
-                <div class="card-header"><h6 class="mb-0">🔐 Acceso al Sistema</h6></div>
-                <div class="card-body">
-                    {% if persona.usuario_acceso %}
-                        <p class="mb-1">
-                            <strong>Usuario:</strong> {{ persona.usuario_acceso.username }}
-                        </p>
-                        <p class="mb-2">
-                            <strong>Rol:</strong>
-                            <span class="badge bg-info">{{ persona.usuario_acceso.get_rol_display }}</span>
-                            <span class="badge {% if persona.usuario_acceso.activo %}bg-success{% else %}bg-danger{% endif %} ms-1">
-                                {% if persona.usuario_acceso.activo %}Activo{% else %}Inactivo{% endif %}
-                            </span>
-                        </p>
-                        {% if user.es_administrador %}
-                        <a href="{% url 'asignar_rol' persona.pk %}" class="btn btn-sm btn-warning">
-                            ✏️ Cambiar Rol
-                        </a>
-                        {% endif %}
-                    {% else %}
-                        <p class="text-muted mb-2">Sin usuario asignado.</p>
-                        {% if user.es_administrador %}
-                        <a href="{% url 'asignar_rol' persona.pk %}" class="btn btn-sm btn-primary">
-                            ➕ Dar Acceso
-                        </a>
-                        {% endif %}
-                    {% endif %}
-                </div>
-            </div>
-
         </div>
     </div>
 </div>
+
+
+{# ══════════════════════════════════════════════════════════════
+   MODAL — Crear usuario temporal para autoregistro
+   Solo se renderiza si no tiene usuario y el admin puede crear
+   ══════════════════════════════════════════════════════════════ #}
+{% if not persona.usuario_acceso and user.puede_crear %}
+<div class="modal fade" id="modalUsuarioTemporal" tabindex="-1"
+     aria-labelledby="modalUsuarioTemporalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+
+            <div class="modal-header" style="background:#f39c12;">
+                <h5 class="modal-title fw-bold" id="modalUsuarioTemporalLabel">
+                    📝 Habilitar Autoregistro
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+
+            <form method="post"
+                  action="{% url 'autoregistro:crear_usuario_temporal' persona.pk %}">
+                {% csrf_token %}
+
+                <div class="modal-body">
+
+                    <!-- Resumen del policía -->
+                    <div class="d-flex align-items-center gap-3 p-3 bg-light rounded mb-4">
+                        <div class="rounded-circle bg-secondary d-flex align-items-center
+                                    justify-content-center text-white"
+                             style="width:52px;height:52px;font-size:1.5rem;flex-shrink:0">
+                            👮
+                        </div>
+                        <div>
+                            <div class="fw-bold">{{ persona.nombre_completo }}</div>
+                            <small class="text-muted">
+                                {{ persona.grado.nombre }} — {{ persona.unidad.nombre }}
+                            </small>
+                        </div>
+                    </div>
+
+                    <!-- Usuario (solo lectura, es el CI) -->
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">
+                            Usuario
+                            <span class="text-muted fw-normal">(generado automáticamente)</span>
+                        </label>
+                        <input type="text"
+                               class="form-control bg-light fw-bold"
+                               value="{{ persona.ci }}"
+                               readonly>
+                        <div class="form-text">Se usará el CI como nombre de usuario.</div>
+                    </div>
+
+                    <!-- Contraseña personalizable -->
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Contraseña temporal</label>
+                        <div class="input-group">
+                            <input type="text"
+                                   id="inputPasswordTemp"
+                                   name="password"
+                                   class="form-control"
+                                   placeholder="Dejar vacío = CI invertido"
+                                   autocomplete="off">
+                            <button class="btn btn-outline-secondary"
+                                    type="button"
+                                    onclick="generarPasswordAleatorio()">
+                                🔀 Generar
+                            </button>
+                        </div>
+                        <div class="form-text">
+                            Si la dejas vacía se usará
+                            <strong>CI invertido</strong>:
+                            <code>{{ persona.ci|slice:"::-1" }}</code>
+                        </div>
+                    </div>
+
+                    <div class="alert alert-warning d-flex gap-2 mb-0">
+                        <span style="font-size:1.1rem">⚠️</span>
+                        <small>
+                            <strong>Anota la contraseña</strong> antes de crear el usuario
+                            y entrégasela al policía personalmente.<br>
+                            Al iniciar sesión será redirigido directamente al formulario
+                            para completar su información.
+                        </small>
+                    </div>
+
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary"
+                            data-bs-dismiss="modal">
+                        Cancelar
+                    </button>
+                    <button type="submit" class="btn btn-warning fw-bold">
+                        ✅ Crear usuario temporal
+                    </button>
+                </div>
+
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+function generarPasswordAleatorio() {
+    const chars = 'ABCDEFGHJKMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';
+    let pwd = '';
+    for (let i = 0; i < 8; i++) {
+        pwd += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    document.getElementById('inputPasswordTemp').value = pwd;
+}
+</script>
+{% endif %}
+
 {% endblock %}

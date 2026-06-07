@@ -1,0 +1,147 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+<div class="container-fluid mt-3">
+
+  <div class="d-flex align-items-center gap-3 mb-3">
+    <a href="{% url 'autoregistro:lista_temporales' %}" class="btn btn-sm btn-outline-secondary">
+      ↩️ Volver
+    </a>
+    <div>
+      <h4 class="mb-0">⚙️ Revisar Registro — {{ personal.nombre_completo }}</h4>
+      <small class="text-muted">
+        {{ personal.grado.nombre }} — {{ personal.unidad.nombre }} |
+        Enviado: {{ reg.fecha_completado|date:"d/m/Y H:i" }}
+      </small>
+    </div>
+    {% if reg.estado == 'completado' %}
+    <span class="badge bg-info ms-auto fs-6">📋 Pendiente de revisión</span>
+    {% elif reg.estado == 'aprobado' %}
+    <span class="badge bg-success ms-auto fs-6">✅ Aprobado</span>
+    {% elif reg.estado == 'rechazado' %}
+    <span class="badge bg-danger ms-auto fs-6">❌ Rechazado</span>
+    {% endif %}
+  </div>
+
+  <form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    <div class="row g-4">
+
+      <!-- Columna izquierda: datos editables -->
+      <div class="col-lg-8">
+
+        <div class="card shadow-sm mb-3">
+          <div class="card-header bg-light fw-bold">
+            🪪 Identificación y Datos Personales
+            {% if reg.estado == 'completado' %}
+            <small class="text-primary ms-2">(puedes editar antes de aprobar)</small>
+            {% endif %}
+          </div>
+          <div class="card-body">
+            <div class="row g-3">
+              <div class="col-md-3">{{ form.expedido|as_crispy_field }}</div>
+              <div class="col-md-4">{{ form.fecha_nacimiento|as_crispy_field }}</div>
+              <div class="col-md-3">{{ form.genero|as_crispy_field }}</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card shadow-sm mb-3">
+          <div class="card-header bg-light fw-bold">📞 Contacto</div>
+          <div class="card-body">
+            <div class="row g-3">
+              <div class="col-md-4">{{ form.telefono_personal|as_crispy_field }}</div>
+              <div class="col-md-4">{{ form.telefono_emergencia|as_crispy_field }}</div>
+              <div class="col-md-4">{{ form.correo_institucional|as_crispy_field }}</div>
+              <div class="col-12">{{ form.direccion_domicilio|as_crispy_field }}</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card shadow-sm mb-3">
+          <div class="card-header bg-light fw-bold">🏢 Laboral</div>
+          <div class="card-body">
+            <div class="row g-3">
+              <div class="col-md-6">{{ form.cargo_actual|as_crispy_field }}</div>
+              <div class="col-md-6">{{ form.otra_profesion|as_crispy_field }}</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card shadow-sm mb-3">
+          <div class="card-header bg-light fw-bold">📷 Foto</div>
+          <div class="card-body d-flex align-items-center gap-4">
+            {% if personal.foto %}
+              <img src="{{ personal.foto.url }}" class="rounded-circle border"
+                   style="width:80px;height:80px;object-fit:cover;">
+            {% else %}
+              <div class="rounded-circle bg-light border d-flex align-items-center
+                          justify-content-center" style="width:80px;height:80px;font-size:2rem">👤</div>
+            {% endif %}
+            <div class="flex-grow-1">{{ form.foto }}</div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Columna derecha: acción -->
+      <div class="col-lg-4">
+        <div class="card shadow-sm sticky-top" style="top:80px">
+          <div class="card-header bg-dark text-white fw-bold">🔍 Decisión</div>
+          <div class="card-body">
+
+            <!-- Info básica del policía (creada por el admin, solo lectura) -->
+            <div class="mb-3 p-3 bg-light rounded">
+              <p class="text-muted small mb-1 fw-bold text-uppercase">Datos del sistema</p>
+              <p class="mb-1"><strong>CI:</strong> {{ personal.ci }} {{ personal.expedido }}</p>
+              <p class="mb-1"><strong>Código:</strong> {{ personal.codigo_identificacion }}</p>
+              <p class="mb-1"><strong>Grado:</strong> {{ personal.grado.nombre }}</p>
+              <p class="mb-1"><strong>Unidad:</strong> {{ personal.unidad.nombre }}</p>
+              <p class="mb-0"><strong>Ingreso:</strong> {{ personal.fecha_ingreso }}</p>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label fw-semibold">Observaciones (opcional)</label>
+              <textarea name="observaciones_rev" class="form-control" rows="3"
+                        placeholder="Notas internas sobre este registro...">{{ reg.observaciones_rev|default:'' }}</textarea>
+            </div>
+
+            {% if reg.estado == 'completado' %}
+            <div class="alert alert-info py-2 small mb-3">
+              Al <strong>aprobar</strong>, el usuario pasará a ser
+              <strong>Usuario Autorizado</strong> con acceso normal al sistema.
+            </div>
+            <div class="d-grid gap-2">
+              <button type="submit" name="accion" value="aprobar"
+                      class="btn btn-success btn-lg"
+                      onclick="return confirm('¿Aprobar el registro de {{ personal.nombre_completo }}?')">
+                ✅ Aprobar y activar cuenta
+              </button>
+              <button type="submit" name="accion" value="rechazar"
+                      class="btn btn-outline-danger"
+                      onclick="return confirm('¿Rechazar este registro?')">
+                ❌ Rechazar
+              </button>
+            </div>
+            {% elif reg.estado == 'pendiente' %}
+            <div class="alert alert-warning py-2 small mb-0">
+              ⏳ El policía aún no ha completado su información.
+            </div>
+            {% else %}
+            <div class="alert alert-secondary py-2 small mb-0">
+              Este registro ya fue <strong>{{ reg.get_estado_display }}</strong>.
+              {% if reg.revisado_por %}
+              Revisado por {{ reg.revisado_por.username }}
+              el {{ reg.fecha_aprobacion|date:"d/m/Y" }}.
+              {% endif %}
+            </div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </form>
+</div>
+{% endblock %}
