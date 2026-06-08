@@ -2,34 +2,96 @@ from django import forms
 from personal.models import PersonalPolicial
 
 
-# ── Formulario que el policía llena para completar su registro ────
+class CrearTemporalForm(forms.Form):
+    """
+    Solo CI, nombre completo y contraseña.
+    El policía completará todo lo demás al iniciar sesión.
+    """
+    ci = forms.CharField(
+        label='CI (Cédula de Identidad)',
+        max_length=15,
+        widget=forms.TextInput(attrs={
+            'class'      : 'form-control form-control-lg',
+            'placeholder': 'Ej: 12345678',
+            'autofocus'  : True,
+        }),
+    )
+    nombres = forms.CharField(
+        label='Nombres',
+        max_length=100,
+        widget=forms.TextInput(attrs={
+            'class'      : 'form-control form-control-lg',
+            'placeholder': 'Ej: Juan Carlos',
+        }),
+    )
+    apellido_paterno = forms.CharField(
+        label='Apellido Paterno',
+        max_length=100,
+        widget=forms.TextInput(attrs={
+            'class'      : 'form-control form-control-lg',
+            'placeholder': 'Ej: Mamani',
+        }),
+    )
+    apellido_materno = forms.CharField(
+        label='Apellido Materno',
+        max_length=100,
+        required=False,
+        widget=forms.TextInput(attrs={
+            'class'      : 'form-control form-control-lg',
+            'placeholder': 'Ej: Quispe (opcional)',
+        }),
+    )
+    password = forms.CharField(
+        label='Contraseña temporal',
+        required=False,
+        widget=forms.TextInput(attrs={
+            'class'       : 'form-control form-control-lg',
+            'placeholder' : 'Dejar vacío = CI invertido',
+            'autocomplete': 'off',
+        }),
+        help_text='Si lo dejas vacío se usará el CI al revés como contraseña.',
+    )
+
+    def clean_ci(self):
+        ci = self.cleaned_data['ci'].strip()
+        from personal.models import PersonalPolicial
+        from core.models import Usuario
+        if PersonalPolicial.objects.filter(ci=ci).exists():
+            raise forms.ValidationError(
+                f'Ya existe un personal con el CI "{ci}" en el sistema.'
+            )
+        if Usuario.objects.filter(username=ci).exists():
+            raise forms.ValidationError(
+                f'Ya existe un usuario con el nombre "{ci}".'
+            )
+        return ci
+
+
 class CompletarRegistroForm(forms.ModelForm):
     """
-    Todos los campos que el policía puede completar sobre sí mismo.
-    El administrativo ya habrá creado: CI, nombre, grado, unidad, estado, fecha_ingreso.
-    El policía completa el resto.
+    Todo lo que el policía completa al iniciar sesión con su cuenta temporal.
     """
-
     class Meta:
         model  = PersonalPolicial
         fields = [
-            # Identificación adicional
+            'codigo_identificacion',
             'expedido',
-            # Datos personales
             'fecha_nacimiento',
             'genero',
-            # Contacto
+            'grado',
+            'unidad',
+            'estado_actual',
+            'fecha_ingreso',
             'telefono_personal',
             'telefono_emergencia',
             'correo_institucional',
             'direccion_domicilio',
-            # Laboral
             'cargo_actual',
             'otra_profesion',
-            # Foto
             'foto',
         ]
         widgets = {
+            'codigo_identificacion': forms.TextInput(attrs={'class': 'form-control'}),
             'expedido': forms.Select(
                 choices=[
                     ('LP','La Paz'), ('CB','Cochabamba'), ('SC','Santa Cruz'),
@@ -38,60 +100,25 @@ class CompletarRegistroForm(forms.ModelForm):
                 ],
                 attrs={'class': 'form-select'}
             ),
-            'fecha_nacimiento'   : forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
-            'genero'             : forms.Select(attrs={'class': 'form-select'}),
-            'telefono_personal'  : forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ej: 70012345'}),
-            'telefono_emergencia': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ej: 72234567'}),
-            'correo_institucional': forms.EmailInput(attrs={'class': 'form-control', 'placeholder': 'correo@policia.gob.bo'}),
-            'direccion_domicilio': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Calle, número, zona, ciudad'}),
-            'cargo_actual'       : forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ej: Jefe de Patrullaje'}),
-            'otra_profesion'     : forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ej: Licenciado en Derecho'}),
-            'foto'               : forms.FileInput(attrs={'class': 'form-control', 'accept': 'image/*'}),
+            'fecha_nacimiento'    : forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
+            'genero'              : forms.Select(attrs={'class': 'form-select'}),
+            'grado'               : forms.Select(attrs={'class': 'form-select'}),
+            'unidad'              : forms.Select(attrs={'class': 'form-select'}),
+            'estado_actual'       : forms.Select(attrs={'class': 'form-select'}),
+            'fecha_ingreso'       : forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
+            'telefono_personal'   : forms.TextInput(attrs={'class': 'form-control'}),
+            'telefono_emergencia' : forms.TextInput(attrs={'class': 'form-control'}),
+            'correo_institucional': forms.EmailInput(attrs={'class': 'form-control'}),
+            'direccion_domicilio' : forms.TextInput(attrs={'class': 'form-control'}),
+            'cargo_actual'        : forms.TextInput(attrs={'class': 'form-control'}),
+            'otra_profesion'      : forms.TextInput(attrs={'class': 'form-control'}),
+            'foto'                : forms.FileInput(attrs={'class': 'form-control', 'accept': 'image/*'}),
         }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # Solo fecha_nacimiento y genero son obligatorios; el resto opcional
-        obligatorios = {'fecha_nacimiento', 'genero', 'expedido'}
+        # Solo estos son obligatorios, el resto el policía puede dejarlo para después
+        obligatorios = {'fecha_nacimiento', 'genero', 'grado', 'unidad', 'estado_actual', 'fecha_ingreso'}
         for name, field in self.fields.items():
             if name not in obligatorios:
                 field.required = False
-
-
-# ── Formulario que el admin usa para crear personal + usuario temporal ──
-class CrearPersonalTemporalForm(forms.ModelForm):
-    """
-    Campos mínimos que el admin llena para crear el registro base.
-    El policía completará el resto.
-    """
-    password = forms.CharField(
-        label='Contraseña temporal',
-        widget=forms.PasswordInput(attrs={'class': 'form-control'}),
-        required=False,
-        help_text='Dejar vacío para usar CI invertido como contraseña.',
-    )
-
-    class Meta:
-        model  = PersonalPolicial
-        fields = [
-            'codigo_identificacion',
-            'ci',
-            'nombres',
-            'apellido_paterno',
-            'apellido_materno',
-            'grado',
-            'unidad',
-            'estado_actual',
-            'fecha_ingreso',
-        ]
-        widgets = {
-            'codigo_identificacion': forms.TextInput(attrs={'class': 'form-control'}),
-            'ci'                   : forms.TextInput(attrs={'class': 'form-control'}),
-            'nombres'              : forms.TextInput(attrs={'class': 'form-control'}),
-            'apellido_paterno'     : forms.TextInput(attrs={'class': 'form-control'}),
-            'apellido_materno'     : forms.TextInput(attrs={'class': 'form-control'}),
-            'grado'                : forms.Select(attrs={'class': 'form-select'}),
-            'unidad'               : forms.Select(attrs={'class': 'form-select'}),
-            'estado_actual'        : forms.Select(attrs={'class': 'form-select'}),
-            'fecha_ingreso'        : forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
-        }

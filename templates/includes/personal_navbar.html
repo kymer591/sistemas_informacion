@@ -1,28 +1,43 @@
 <nav class="app-navbar">
     <div class="container-fluid">
-        <div class="d-flex align-items-center">
-            <h5 class="mb-0 me-4">👥 Gestión de Personal</h5>
+        <div class="d-flex align-items-center flex-wrap gap-2">
+            <h5 class="mb-0 me-3">👥 Gestión de Personal</h5>
             <div class="btn-group" role="group">
+
                 <!-- Lista - TODOS -->
-                <a href="{% url 'personal_list' %}" class="btn btn-outline-success btn-sm {% if request.resolver_match.url_name == 'personal_list' %}active{% endif %}">
+                <a href="{% url 'personal_list' %}"
+                   class="btn btn-outline-success btn-sm
+                   {% if request.resolver_match.url_name == 'personal_list' %}active{% endif %}">
                     👤 Lista de Personal
                 </a>
-                
-                <!-- Agregar - Solo Admin y Oficial Admin -->
+
+                <!-- Agregar completo - Solo Admin y Oficial Admin -->
                 {% if user.puede_crear %}
-                <a href="{% url 'personal_create' %}" class="btn btn-outline-success btn-sm {% if request.resolver_match.url_name == 'personal_create' %}active{% endif %}">
+                <a href="{% url 'personal_create' %}"
+                   class="btn btn-outline-success btn-sm
+                   {% if request.resolver_match.url_name == 'personal_create' %}active{% endif %}">
                     ➕ Agregar Personal
                 </a>
                 {% endif %}
-                                
-                {% if user.es_administrador or user.es_oficial_administrativo %}
-                <li class="nav-item">
-                    <a class="nav-link {% if request.resolver_match.url_name == 'reporte_personal' %}active{% endif %}"
-                    href="{% url 'reporte_personal' %}">
-                        📊 Reporte de Personal
-                    </a>
-                </li>
+
+                <!-- NUEVO: Registro con autoregistro -->
+                {% if user.puede_crear %}
+                <a href="{% url 'autoregistro:crear_temporal' %}"
+                   class="btn btn-outline-warning btn-sm
+                   {% if 'autoregistro' in request.path and 'crear' in request.path %}active{% endif %}">
+                    📝 Registro con autoregistro
+                </a>
                 {% endif %}
+
+                <!-- Reporte -->
+                {% if user.es_administrador or user.es_oficial_administrativo %}
+                <a href="{% url 'reportes:reporte_personal' %}"
+                   class="btn btn-outline-primary btn-sm
+                   {% if request.resolver_match.url_name == 'reporte_personal' %}active{% endif %}">
+                    📊 Reporte de Personal
+                </a>
+                {% endif %}
+
             </div>
         </div>
     </div>

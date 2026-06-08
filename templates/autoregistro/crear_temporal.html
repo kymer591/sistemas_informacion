@@ -1,91 +1,91 @@
 {% extends 'base.html' %}
 {% load crispy_forms_tags %}
 
+{% block app_navbar %}
+    {% include 'includes/personal_navbar.html' %}
+{% endblock %}
+
 {% block content %}
 <div class="container-fluid mt-3">
 <div class="row justify-content-center">
-<div class="col-lg-8">
+<div class="col-lg-5 col-md-7">
 
   <div class="card shadow-sm">
-    <div class="card-header bg-primary text-white">
-      <h5 class="mb-0">➕ Crear Personal con Usuario Temporal</h5>
+    <div class="card-header" style="background:#f39c12;">
+      <h5 class="mb-0 text-white fw-bold">📝 Crear Usuario Temporal</h5>
     </div>
-    <div class="card-body">
+    <div class="card-body p-4">
 
-      <!-- Explicación del flujo -->
-      <div class="alert alert-info d-flex gap-3 mb-4">
-        <span style="font-size:1.6rem;line-height:1">ℹ️</span>
-        <div>
-          <strong>¿Cómo funciona?</strong>
-          <ol class="mb-0 mt-1 ps-3">
-            <li>Ingresa los datos <strong>mínimos</strong> del policía (CI, nombre, grado, unidad).</li>
-            <li>El sistema crea automáticamente un <strong>usuario temporal</strong>.</li>
-            <li>El policía inicia sesión y <strong>completa su propia información</strong>.</li>
-            <li>Tú revisas, editas si es necesario, y <strong>apruebas</strong> el registro.</li>
-          </ol>
-        </div>
+      <div class="alert alert-info d-flex gap-2 mb-4">
+        <span style="font-size:1.2rem">ℹ️</span>
+        <small>
+          Ingresa solo los datos básicos. El policía completará
+          <strong>toda su información</strong> al iniciar sesión.
+        </small>
       </div>
 
-      <form method="post">
+      <form method="post" novalidate>
         {% csrf_token %}
 
-        <!-- DATOS BÁSICOS -->
-        <div class="card mb-3 border-secondary">
-          <div class="card-header bg-light fw-bold">🆔 Identificación</div>
-          <div class="card-body">
-            <div class="row g-3">
-              <div class="col-md-4">{{ form.codigo_identificacion|as_crispy_field }}</div>
-              <div class="col-md-4">{{ form.ci|as_crispy_field }}</div>
-            </div>
-          </div>
+        <div class="mb-3">
+          <label class="form-label fw-semibold">CI <span class="text-danger">*</span></label>
+          {{ form.ci }}
+          {% if form.ci.errors %}
+            <div class="text-danger small mt-1">{{ form.ci.errors.0 }}</div>
+          {% endif %}
         </div>
 
-        <div class="card mb-3 border-secondary">
-          <div class="card-header bg-light fw-bold">👤 Nombre</div>
-          <div class="card-body">
-            <div class="row g-3">
-              <div class="col-md-4">{{ form.nombres|as_crispy_field }}</div>
-              <div class="col-md-4">{{ form.apellido_paterno|as_crispy_field }}</div>
-              <div class="col-md-4">{{ form.apellido_materno|as_crispy_field }}</div>
-            </div>
-          </div>
+        <div class="mb-3">
+          <label class="form-label fw-semibold">Nombres <span class="text-danger">*</span></label>
+          {{ form.nombres }}
+          {% if form.nombres.errors %}
+            <div class="text-danger small mt-1">{{ form.nombres.errors.0 }}</div>
+          {% endif %}
         </div>
 
-        <div class="card mb-3 border-secondary">
-          <div class="card-header bg-light fw-bold">🏢 Datos Laborales</div>
-          <div class="card-body">
-            <div class="row g-3">
-              <div class="col-md-4">{{ form.grado|as_crispy_field }}</div>
-              <div class="col-md-4">{{ form.unidad|as_crispy_field }}</div>
-              <div class="col-md-4">{{ form.estado_actual|as_crispy_field }}</div>
-              <div class="col-md-4">{{ form.fecha_ingreso|as_crispy_field }}</div>
-            </div>
-          </div>
+        <div class="mb-3">
+          <label class="form-label fw-semibold">Apellido Paterno <span class="text-danger">*</span></label>
+          {{ form.apellido_paterno }}
+          {% if form.apellido_paterno.errors %}
+            <div class="text-danger small mt-1">{{ form.apellido_paterno.errors.0 }}</div>
+          {% endif %}
         </div>
 
-        <!-- CONTRASEÑA TEMPORAL -->
-        <div class="card mb-4 border-warning">
-          <div class="card-header bg-warning fw-bold">🔑 Contraseña Temporal</div>
-          <div class="card-body">
-            {{ form.password|as_crispy_field }}
-            <div class="alert alert-warning mb-0 py-2">
-              <small>
-                ⚠️ <strong>Anota esta contraseña</strong> y entrégala al policía.
-                Si la dejas vacía, la contraseña será el <strong>CI invertido</strong>
-                (ej: CI <code>12345678</code> → contraseña <code>87654321</code>).
-              </small>
-            </div>
-          </div>
+        <div class="mb-3">
+          <label class="form-label fw-semibold">Apellido Materno</label>
+          {{ form.apellido_materno }}
         </div>
 
-        <div class="d-flex gap-2">
-          <button type="submit" class="btn btn-success btn-lg">
-            💾 Crear personal y usuario temporal
+        <hr>
+
+        <div class="mb-1">
+          <label class="form-label fw-semibold">Contraseña temporal</label>
+          <div class="input-group">
+            {{ form.password }}
+            <button class="btn btn-outline-secondary" type="button"
+                    onclick="generarPassword()">
+              🔀 Generar
+            </button>
+          </div>
+          <div class="form-text">{{ form.password.help_text }}</div>
+        </div>
+
+        <div class="alert alert-warning py-2 mt-3 mb-4">
+          <small>
+            ⚠️ <strong>Anota la contraseña</strong> y entrégasela
+            personalmente al policía antes de cerrar esta página.
+          </small>
+        </div>
+
+        <div class="d-grid gap-2">
+          <button type="submit" class="btn btn-warning btn-lg fw-bold">
+            ✅ Crear usuario temporal
           </button>
-          <a href="{% url 'autoregistro:lista_temporales' %}" class="btn btn-secondary btn-lg">
+          <a href="{% url 'personal_list' %}" class="btn btn-outline-secondary">
             ↩️ Cancelar
           </a>
         </div>
+
       </form>
     </div>
   </div>
@@ -93,4 +93,15 @@
 </div>
 </div>
 </div>
+
+<script>
+function generarPassword() {
+    const chars = 'ABCDEFGHJKMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';
+    let pwd = '';
+    for (let i = 0; i < 8; i++) {
+        pwd += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    document.getElementById('id_password').value = pwd;
+}
+</script>
 {% endblock %}

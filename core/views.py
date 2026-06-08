@@ -26,6 +26,8 @@ def custom_login(request):
     if request.user.is_authenticated:
         if not request.user.activo:
             return render(request, 'core/cuenta_desactivada.html', {'user': request.user})
+        if request.user.rol == 'temporal':
+            return redirect('autoregistro:completar_registro')
         if request.user.es_usuario_autorizado():
             return redirect('mi_perfil')
         else:
@@ -42,6 +44,9 @@ def custom_login(request):
                 login(request, user)
                 if not user.activo:
                     return render(request, 'core/cuenta_desactivada.html', {'user': user})
+                # Usuario temporal → solo puede completar su registro
+                if user.rol == 'temporal':
+                    return redirect('autoregistro:completar_registro')
                 messages.success(request, f'✅ Bienvenido {username}!')
                 if user.es_usuario_autorizado():
                     return redirect('mi_perfil')
@@ -53,8 +58,7 @@ def custom_login(request):
         form = AuthenticationForm()
 
     return render(request, 'login.html', {'form': form})
-
-
+    
 @login_required
 def custom_logout(request):
     logout(request)

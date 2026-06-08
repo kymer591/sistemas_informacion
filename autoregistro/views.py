@@ -9,89 +9,97 @@ from core.models import Usuario
 from personal.models import PersonalPolicial
 from reportes.utils import registrar_log
 from .models import RegistroTemporal
-from .forms import CompletarRegistroForm
+from .forms import CrearTemporalForm, CompletarRegistroForm
 
 
 # ══════════════════════════════════════════════════════════════════
-#  ADMINISTRATIVO — Crear usuario temporal desde personal_detail
+#  ADMINISTRATIVO — Crear usuario temporal (solo CI + nombre)
 # ══════════════════════════════════════════════════════════════════
 
 @login_required
-@require_POST
-def crear_usuario_temporal(request, personal_id):
-    """
-    Crea el usuario temporal desde el modal en personal_detail.html.
-    """
-    if not (request.user.puede_crear() or request.user.es_administrador()):
-        messages.error(request, '❌ No tienes permisos para realizar esta acción.')
-        return redirect('personal_detail', pk=personal_id)
+def crear_temporal(request):
+    if not request.user.puede_crear():
+        messages.error(request, '❌ No tienes permisos para crear personal.')
+        return redirect('personal_list')
 
-    personal = get_object_or_404(PersonalPolicial, pk=personal_id)
+    if request.method == 'POST':
+        form = CrearTemporalForm(request.POST)
+        if form.is_valid():
+            ci               = form.cleaned_data['ci']
+            nombres          = form.cleaned_data['nombres']
+            apellido_paterno = form.cleaned_data['apellido_paterno']
+            apellido_materno = form.cleaned_data.get('apellido_materno', '')
+            password         = form.cleaned_data.get('password', '').strip() or ci[::-1]
 
-    # Verificar que no tenga ya un usuario vinculado
-    if hasattr(personal, 'usuario_acceso') and personal.usuario_acceso:
-        messages.warning(
-            request,
-            f'⚠️ {personal.nombre_completo()} ya tiene un usuario asignado '
-            f'({personal.usuario_acceso.username}).'
-        )
-        return redirect('personal_detail', pk=personal_id)
+            with transaction.atomic():
+                # Crear personal con datos mínimos — placeholders que el policía corregirá
+                from catalogos.models import Grado, Unidad, TipoEstado
+                grado         = Grado.objects.order_by('orden').last()
+                unidad        = Unidad.objects.filter(activa=True).first()
+                estado_actual = TipoEstado.objects.filter(nombre='Activo').first() \
+                                or TipoEstado.objects.first()
 
-    # Verificar que no exista ya un usuario con ese CI
-    if Usuario.objects.filter(username=personal.ci).exists():
-        messages.error(
-            request,
-            f'❌ Ya existe un usuario con el nombre "{personal.ci}". '
-            f'Usa "Asignar Rol" para vincularlo manualmente.'
-        )
-        return redirect('personal_detail', pk=personal_id)
+                personal = PersonalPolicial.objects.create(
+                    ci                    = ci,
+                    codigo_identificacion = ci,
+                    nombres               = nombres,
+                    apellido_paterno      = apellido_paterno,
+                    apellido_materno      = apellido_materno,
+                    expedido              = 'LP',
+                    fecha_nacimiento      = '2000-01-01',
+                    genero                = 'M',
+                    grado                 = grado,
+                    unidad                = unidad,
+                    estado_actual         = estado_actual,
+                    fecha_ingreso         = timezone.now().date(),
+                    activo                = True,
+                )
 
-    with transaction.atomic():
-        password = request.POST.get('password', '').strip() or personal.ci[::-1]
+                usuario = Usuario.objects.create(
+                    username   = ci,
+                    first_name = nombres,
+                    last_name  = f"{apellido_paterno} {apellido_materno}".strip(),
+                    email      = '',
+                    rol        = 'temporal',
+                    personal   = personal,
+                    is_active  = True,
+                    activo     = True,
+                )
+                usuario.set_password(password)
+                usuario.save()
 
-        usuario = Usuario.objects.create(
-            username   = personal.ci,
-            first_name = personal.nombres,
-            last_name  = f"{personal.apellido_paterno} {personal.apellido_materno}",
-            email      = personal.correo_institucional or '',
-            rol        = 'temporal',
-            personal   = personal,
-            is_active  = True,
-            activo     = True,
-        )
-        usuario.set_password(password)
-        usuario.save()
+                RegistroTemporal.objects.create(
+                    personal   = personal,
+                    usuario    = usuario,
+                    creado_por = request.user,
+                )
 
-        RegistroTemporal.objects.create(
-            personal   = personal,
-            usuario    = usuario,
-            creado_por = request.user,
-        )
+                registrar_log(
+                    request, 'CREAR', 'personal',
+                    f'Creó registro temporal: {personal} — usuario: {ci}',
+                    objeto=personal,
+                )
 
-        registrar_log(
-            request, 'CREAR', 'personal',
-            f'Habilitó autoregistro temporal para {personal} '
-            f'— usuario: {usuario.username}',
-            objeto=personal,
-        )
+            messages.success(
+                request,
+                f'✅ Usuario temporal creado. '
+                f'<strong>Usuario: {ci}</strong> — '
+                f'<strong>Contraseña: {password}</strong>. '
+                f'Entrégasela al policía.'
+            )
+            return redirect('autoregistro:lista_temporales')
+    else:
+        form = CrearTemporalForm()
 
-    messages.success(
-        request,
-        f'✅ Usuario temporal creado. '
-        f'Usuario: <strong>{personal.ci}</strong> — '
-        f'Contraseña: <strong>{password}</strong>. '
-        f'Entrégasela al policía para que complete su registro.'
-    )
-    return redirect('personal_detail', pk=personal_id)
+    return render(request, 'autoregistro/crear_temporal.html', {'form': form})
 
 
 # ══════════════════════════════════════════════════════════════════
-#  ADMINISTRATIVO — Lista y revisión de registros temporales
+#  ADMINISTRATIVO — Lista de registros temporales
 # ══════════════════════════════════════════════════════════════════
 
 @login_required
 def lista_temporales(request):
-    """Lista de todos los registros temporales."""
     if not request.user.puede_crear():
         messages.error(request, '❌ Acceso denegado.')
         return redirect('dashboard')
@@ -114,14 +122,14 @@ def lista_temporales(request):
     })
 
 
+# ══════════════════════════════════════════════════════════════════
+#  ADMINISTRATIVO — Revisar y aprobar registro completado
+# ══════════════════════════════════════════════════════════════════
+
 @login_required
 def revisar_registro(request, pk):
-    """
-    El administrativo revisa lo que completó el policía.
-    Puede editar directamente antes de aprobar o rechazar.
-    """
     if not request.user.puede_editar():
-        messages.error(request, '❌ No tienes permisos para revisar registros.')
+        messages.error(request, '❌ No tienes permisos.')
         return redirect('dashboard')
 
     reg      = get_object_or_404(RegistroTemporal, pk=pk)
@@ -135,18 +143,14 @@ def revisar_registro(request, pk):
             if form.is_valid():
                 with transaction.atomic():
                     form.save()
-
-                    # Promover a cuenta normal
                     reg.usuario.rol    = 'usuario_autorizado'
                     reg.usuario.activo = True
                     reg.usuario.save(update_fields=['rol', 'activo'])
-
                     reg.estado            = 'aprobado'
                     reg.revisado_por      = request.user
                     reg.fecha_aprobacion  = timezone.now()
                     reg.observaciones_rev = request.POST.get('observaciones_rev', '')
                     reg.save()
-
                     registrar_log(
                         request, 'EDITAR', 'personal',
                         f'Aprobó registro temporal de {personal}',
@@ -155,11 +159,10 @@ def revisar_registro(request, pk):
                 messages.success(
                     request,
                     f'✅ Registro de {personal.nombre_completo()} aprobado. '
-                    f'Su cuenta es ahora Usuario Autorizado.'
+                    f'Cuenta activada como Usuario Autorizado.'
                 )
                 return redirect('autoregistro:lista_temporales')
-            # Si el form tiene errores, caer al GET y mostrarlos
-        
+
         elif accion == 'rechazar':
             with transaction.atomic():
                 reg.estado            = 'rechazado'
@@ -167,10 +170,8 @@ def revisar_registro(request, pk):
                 reg.fecha_aprobacion  = timezone.now()
                 reg.observaciones_rev = request.POST.get('observaciones_rev', '')
                 reg.save()
-
                 reg.usuario.activo = False
                 reg.usuario.save(update_fields=['activo'])
-
                 registrar_log(
                     request, 'EDITAR', 'personal',
                     f'Rechazó registro temporal de {personal}',
@@ -191,15 +192,11 @@ def revisar_registro(request, pk):
 
 
 # ══════════════════════════════════════════════════════════════════
-#  POLICÍA — Completar su propio registro (rol temporal)
+#  POLICÍA — Completar su propio registro
 # ══════════════════════════════════════════════════════════════════
 
 @login_required
 def completar_registro(request):
-    """
-    Vista exclusiva para usuarios con rol 'temporal'.
-    Al iniciar sesión son redirigidos aquí automáticamente.
-    """
     if request.user.rol != 'temporal':
         return redirect('dashboard')
 
@@ -210,7 +207,6 @@ def completar_registro(request):
         messages.error(request, '❌ No se encontró tu registro. Contacta al administrador.')
         return redirect('login')
 
-    # Ya completó — mostrar pantalla de espera
     if reg.estado == 'completado':
         return render(request, 'autoregistro/espera_aprobacion.html', {
             'personal': personal,
