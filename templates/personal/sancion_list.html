@@ -1,17 +1,18 @@
 {% extends 'base.html' %}
 
-{% block app_navbar %}
-    {% include 'includes/sanciones_navbar.html' %}
-{% endblock %}
+{% block title %}Sanciones - UTEPPI{% endblock %}
 
 {% block content %}
-<div class="container-fluid mt-3">
-    <div class="card">
-        <div class="card-header d-flex justify-content-between align-items-center">
-            <h6 class="mb-0">⚖️ Registro de Sanciones Aplicadas</h6>
+<div class="container-fluid">
+
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 page-header">
+        <div>
+            <h4 class="mb-0">Registro de Sanciones Aplicadas</h4>
+        </div>
+        <div class="d-flex gap-1">
             <div class="btn-group">
                 <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                    🔍 Filtrar
+                    Filtrar
                 </button>
                 <ul class="dropdown-menu">
                     <li><a class="dropdown-item" href="?estado=activa">Activas</a></li>
@@ -20,12 +21,18 @@
                     <li><a class="dropdown-item" href="?">Todas</a></li>
                 </ul>
             </div>
+            {% if user.puede_gestionar_sanciones %}
+            <a href="{% url 'sancion_create' %}" class="btn btn-danger btn-sm">Nueva Sanción</a>
+            {% endif %}
         </div>
-        <div class="card-body">
+    </div>
+
+    <div class="panel-card">
+        <div class="panel-body p-0">
             {% if sanciones %}
             <div class="table-responsive">
-                <table class="table table-striped table-hover">
-                    <thead class="table-dark">
+                <table class="table summary-table table-hover mb-0">
+                    <thead>
                         <tr>
                             <th>Personal</th>
                             <th>Tipo Sanción</th>
@@ -40,7 +47,7 @@
                         {% for sancion in sanciones %}
                         <tr>
                             <td>
-                                <a href="{% url 'personal_detail' sancion.personal.pk %}">
+                                <a href="{% url 'personal_detail' sancion.personal.pk %}" class="text-decoration-none">
                                     {{ sancion.personal.nombre_completo }}
                                 </a>
                             </td>
@@ -71,8 +78,8 @@
                                 {% endif %}
                             </td>
                             <td>
-                                <a href="{% url 'sancion_detail' sancion.pk %}" class="btn btn-sm btn-info">👁️</a>
-                                <a href="{% url 'sancion_update' sancion.pk %}" class="btn btn-sm btn-warning">✏️</a>
+                                <a href="{% url 'sancion_detail' sancion.pk %}" class="btn btn-sm btn-outline-info">Ver</a>
+                                <a href="{% url 'sancion_update' sancion.pk %}" class="btn btn-sm btn-outline-warning">Editar</a>
                             </td>
                         </tr>
                         {% endfor %}
@@ -80,11 +87,13 @@
                 </table>
             </div>
             {% else %}
-            <div class="text-center text-muted py-4">
+            <div class="text-center text-muted py-5">
                 <p>No hay sanciones registradas.</p>
-                <a href="{% url 'sancion_create' %}" class="btn btn-danger">
-                    ➕ Registrar Primera Sanción
+                {% if user.puede_gestionar_sanciones %}
+                <a href="{% url 'sancion_create' %}" class="btn btn-danger btn-sm">
+                    Registrar Primera Sanción
                 </a>
+                {% endif %}
             </div>
             {% endif %}
         </div>

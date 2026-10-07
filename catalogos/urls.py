@@ -31,4 +31,10 @@ urlpatterns = [
     path('felicitaciones/nueva/', views.TipoFelicitacionCreateView.as_view(), name='tipofelicitacion_create'),
     path('felicitaciones/editar/<int:pk>/', views.TipoFelicitacionUpdateView.as_view(), name='tipofelicitacion_update'),
     path('felicitaciones/eliminar/<int:pk>/', views.TipoFelicitacionDeleteView.as_view(), name='tipofelicitacion_delete'),
+
+    # Cargos
+    path('cargos/', views.CargoListView.as_view(), name='cargo_list'),
+    path('cargos/nuevo/', views.CargoCreateView.as_view(), name='cargo_create'),
+    path('cargos/editar/<int:pk>/', views.CargoUpdateView.as_view(), name='cargo_update'),
+    path('cargos/eliminar/<int:pk>/', views.CargoDeleteView.as_view(), name='cargo_delete'),
 ]

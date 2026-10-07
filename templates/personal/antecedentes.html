@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+
+{% block title %}Antecedentes - {{ persona.nombre_completo }} - UTEPPI{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-3">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h5 class="mb-0">Antecedentes - {{ persona.nombre_completo }}</h5>
+        <a href="{% url 'personal_detail' persona.pk %}" class="btn btn-secondary btn-sm">Volver</a>
+    </div>
+
+    <div class="card mb-3">
+        <div class="card-header bg-danger text-white">
+            <h6 class="mb-0">Sanciones Aplicadas</h6>
+        </div>
+        <div class="card-body">
+            {% if sanciones %}
+            <div class="table-responsive">
+                <table class="table table-striped table-hover">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Fecha</th>
+                            <th>Tipo</th>
+                            <th>Motivo</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for s in sanciones %}
+                        <tr>
+                            <td>{{ s.fecha_sancion }}</td>
+                            <td>{{ s.tipo_sancion.nombre }}</td>
+                            <td>{{ s.motivo|default:"-" }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <p class="text-muted mb-0">Sin sanciones registradas.</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header bg-warning">
+            <h6 class="mb-0">Felicitaciones Aplicadas</h6>
+        </div>
+        <div class="card-body">
+            {% if felicitaciones %}
+            <div class="table-responsive">
+                <table class="table table-striped table-hover">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Fecha</th>
+                            <th>Tipo</th>
+                            <th>Motivo</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for f in felicitaciones %}
+                        <tr>
+                            <td>{{ f.fecha_felicitacion }}</td>
+                            <td>{{ f.tipo_felicitacion.nombre }}</td>
+                            <td>{{ f.motivo|default:"-" }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <p class="text-muted mb-0">Sin felicitaciones registradas.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

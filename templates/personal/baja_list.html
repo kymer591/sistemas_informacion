@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+
+{% block title %}Bajas de Personal - UTEPPI{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="page-header">
+        <h4 class="mb-0">Bajas, Retiros y Licencias Indefinidas</h4>
+    </div>
+    <div class="panel-card">
+        <div class="panel-body p-0">
+            <table class="table summary-table table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th>Personal</th>
+                        <th>Tipo</th>
+                        <th>Fecha Baja</th>
+                        <th>Resolución TDS</th>
+                        <th>Autoridad</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for baja in bajas %}
+                    <tr>
+                        <td>
+                            <a href="{% url 'personal_detail' baja.personal.pk %}" class="text-decoration-none">
+                                {{ baja.personal.nombre_completo }}
+                            </a>
+                        </td>
+                        <td><span class="badge bg-secondary">{{ baja.get_tipo_baja_display }}</span></td>
+                        <td>{{ baja.fecha_baja }}</td>
+                        <td>{{ baja.resolucion_tds|default:"—" }}</td>
+                        <td>{{ baja.autoridad_firma|default:"—" }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="5" class="text-center text-muted py-4">Sin novedad</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

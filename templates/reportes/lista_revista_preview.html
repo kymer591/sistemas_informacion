@@ -1,0 +1,221 @@
+{% extends 'base.html' %}
+
+{% block title %}Lista de Revista - UTEPPI{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="page-header">
+        <h4 class="mb-0">Lista de Revista — Vista Previa</h4>
+        <div class="subtitle">Verifica los datos antes de descargar el Excel</div>
+    </div>
+
+    <div class="panel-card mb-3">
+        <div class="panel-body">
+            <form method="get" class="row g-2 align-items-end">
+                <div class="col-md-4">
+                    <label class="form-label mb-1">Unidad</label>
+                    <select name="unidad" class="form-select form-select-sm" required>
+                        <option value="">Selecciona una unidad</option>
+                        {% for u in unidades %}
+                        <option value="{{ u.pk }}" {% if unidad_sel == u.pk|stringformat:"s" %}selected{% endif %}>
+                            {{ u.codigo }} - {{ u.nombre }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label mb-1">Desde</label>
+                    <input type="date" name="fecha_inicio" class="form-control form-control-sm" value="{{ fecha_inicio }}" required>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label mb-1">Hasta</label>
+                    <input type="date" name="fecha_fin" class="form-control form-control-sm" value="{{ fecha_fin }}" required>
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-primary btn-sm w-100">Generar</button>
+                </div>
+            </form>
+            {% if datos %}
+            <div class="mt-2 d-flex gap-2">
+                <a href="{% url 'reportes:exportar_lista_revista_excel' %}?unidad={{ unidad_sel }}&fecha_inicio={{ fecha_inicio }}&fecha_fin={{ fecha_fin }}"
+                   class="btn btn-success btn-sm">
+                    Descargar Excel (8 hojas)
+                </a>
+                <a href="{% url 'reportes:exportar_lista_revista_pdf' %}?unidad={{ unidad_sel }}&fecha_inicio={{ fecha_inicio }}&fecha_fin={{ fecha_fin }}"
+                   class="btn btn-danger btn-sm">
+                    Descargar PDF (8 secciones)
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    {% if datos %}
+    <div class="panel-card mb-3">
+        <div class="panel-header">FORM-01 — Cuadro Numérico por Cargo (todo el personal activo)</div>
+        <div class="panel-body p-0">
+            <table class="table summary-table mb-0">
+                <thead>
+                    <tr>
+                        <th>Cargo</th>
+                        {% for g in datos.form_01.grados %}<th>{{ g }}</th>{% endfor %}
+                        <th>Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for fila in datos.form_01.filas %}
+                    <tr>
+                        <td>{{ fila.cargo }}</td>
+                        {% for c in fila.carrera %}<td>{{ c }}</td>{% endfor %}
+                        <td><strong>{{ fila.total }}</strong></td>
+                    </tr>
+                    {% endfor %}
+                    <tr class="fw-bold">
+                        <td>TOTAL</td>
+                        {% for t in datos.form_01.total_carrera %}<td>{{ t }}</td>{% endfor %}
+                        <td>{{ datos.form_01.total_general }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="panel-card mb-3">
+        <div class="panel-header">FORM-02 — Sección B: Personal que NO cumple funciones</div>
+        <div class="panel-body p-0">
+            <table class="table summary-table mb-0">
+                <thead>
+                    <tr><th>Situación</th><th>Cantidad</th></tr>
+                </thead>
+                <tbody>
+                    {% for fila in datos.form_02.seccion_b.filas %}
+                    <tr><td>{{ fila.situacion }}</td><td>{{ fila.total }}</td></tr>
+                    {% empty %}
+                    <tr><td colspan="2" class="text-center text-muted py-3">Sin novedad</td></tr>
+                    {% endfor %}
+                    <tr class="fw-bold"><td>SUBTOTAL B</td><td>{{ datos.form_02.seccion_b.total }}</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="panel-card mb-3">
+        <div class="panel-header">FORM-07 — Altas por cambio de destino ({{ datos.form_07|length }})</div>
+        <div class="panel-body p-0">
+            <table class="table summary-table mb-0">
+                <thead><tr><th>Grado</th><th>Nombre</th><th>CI</th><th>Fecha</th><th>Destino Anterior</th></tr></thead>
+                <tbody>
+                    {% for f in datos.form_07 %}
+                    <tr>
+                        <td>{{ f.grado }}</td>
+                        <td>{{ f.apellido_paterno }} {{ f.apellido_materno }} {{ f.nombres }}</td>
+                        <td>{{ f.ci }}</td>
+                        <td>{{ f.fecha_destino }}</td>
+                        <td>{{ f.destino_anterior }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="5" class="text-center text-muted py-3">SIN NOVEDAD</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="panel-card mb-3">
+        <div class="panel-header">FORM-08 — Bajas por cambio de destino ({{ datos.form_08|length }})</div>
+        <div class="panel-body p-0">
+            <table class="table summary-table mb-0">
+                <thead><tr><th>Grado</th><th>Nombre</th><th>CI</th><th>Fecha</th><th>Nueva Unidad</th></tr></thead>
+                <tbody>
+                    {% for f in datos.form_08 %}
+                    <tr>
+                        <td>{{ f.grado }}</td>
+                        <td>{{ f.apellido_paterno }} {{ f.apellido_materno }} {{ f.nombres }}</td>
+                        <td>{{ f.ci }}</td>
+                        <td>{{ f.fecha_cambio }}</td>
+                        <td>{{ f.unidad_destino_nueva }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="5" class="text-center text-muted py-3">SIN NOVEDAD</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="panel-card mb-3">
+        <div class="panel-header">FORM-11 — Listado Nominal por Grado ({{ datos.form_11|length }})</div>
+        <div class="panel-body p-0">
+            <table class="table summary-table mb-0">
+                <thead><tr><th>Grado</th><th>Nombre</th><th>CI</th><th>Cargo</th></tr></thead>
+                <tbody>
+                    {% for f in datos.form_11 %}
+                    <tr>
+                        <td>{{ f.grado }}</td>
+                        <td>{{ f.apellido_paterno }} {{ f.apellido_materno }} {{ f.nombres }}</td>
+                        <td>{{ f.ci }}</td>
+                        <td>{{ f.cargo }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="4" class="text-center text-muted py-3">Sin personal activo</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="panel-card mb-3">
+        <div class="panel-header">FORM-12 — Desglosado por Cargo/Sección</div>
+        <div class="panel-body">
+            {% for seccion in datos.form_12 %}
+            <p class="fw-bold mb-1" style="font-size:.82rem;">{{ seccion.seccion }}</p>
+            <table class="table summary-table mb-3">
+                <tbody>
+                    {% for f in seccion.filas %}
+                    <tr>
+                        <td>{{ f.n_general }}</td>
+                        <td>{{ f.grado }}</td>
+                        <td>{{ f.apellido_paterno }} {{ f.apellido_materno }} {{ f.nombres }}</td>
+                        <td>{{ f.ci }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% empty %}
+            <p class="text-muted text-center py-3">Sin cargos con personal asignado</p>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="panel-card mb-3">
+        <div class="panel-header">FORM-13 — Bajas Definitivas y Fallecidos</div>
+        <div class="panel-body p-0">
+            <table class="table summary-table mb-0">
+                <thead><tr><th>Grado</th><th>Nombre</th><th>Fecha</th><th>Motivo/Causa</th></tr></thead>
+                <tbody>
+                    {% for b in datos.form_13.bajas %}
+                    <tr>
+                        <td>{{ b.grado }}</td>
+                        <td>{{ b.apellido_paterno }} {{ b.apellido_materno }} {{ b.nombres }}</td>
+                        <td>{{ b.fecha_baja }}</td>
+                        <td>{{ b.motivo }}</td>
+                    </tr>
+                    {% endfor %}
+                    {% for f in datos.form_13.fallecidos %}
+                    <tr>
+                        <td>{{ f.grado }}</td>
+                        <td>{{ f.apellido_paterno }} {{ f.apellido_materno }} {{ f.nombres }}</td>
+                        <td>{{ f.fecha_fallecimiento }}</td>
+                        <td>Fallecimiento: {{ f.causa|default:"—" }}</td>
+                    </tr>
+                    {% endfor %}
+                    {% if not datos.form_13.bajas and not datos.form_13.fallecidos %}
+                    <tr><td colspan="4" class="text-center text-muted py-3">SIN NOVEDAD</td></tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,96 @@
+{% if user.rol == 'temporal' %}
+
+    <h5 class="topbar-title">Auto-registro</h5>
+    <div class="btn-group flex-wrap" role="group">
+        <a href="{% url 'autoregistro:completar_registro' %}" class="topmenu-link active">Formulario de Auto-llenado</a>
+    </div>
+
+{% elif user.es_usuario_autorizado %}
+
+    {% if request.resolver_match.url_name == 'mi_kardex' %}
+        <h5 class="topbar-title">Kardex</h5>
+        <div class="btn-group flex-wrap" role="group">
+            <span class="topmenu-link active">Información Personal</span>
+            <span class="topmenu-link disabled" title="Se muestra dentro del listado">Destinos</span>
+            <span class="topmenu-link disabled" title="Se muestra dentro del listado">Sanciones</span>
+            <span class="topmenu-link disabled" title="Se muestra dentro del listado">Felicitaciones</span>
+            <a href="{% url 'mis_solicitudes' %}" class="topmenu-link">Permisos</a>
+        </div>
+
+    {% elif request.resolver_match.url_name == 'mis_solicitudes' or request.resolver_match.url_name == 'mi_solicitud_create' %}
+        <h5 class="topbar-title">Solicitudes</h5>
+        <div class="btn-group flex-wrap" role="group">
+            <a href="{% url 'mi_solicitud_create' %}" class="topmenu-link {% if request.resolver_match.url_name == 'mi_solicitud_create' %}active{% endif %}">Realizar Solicitud</a>
+            <a href="{% url 'mis_solicitudes' %}" class="topmenu-link {% if request.resolver_match.url_name == 'mis_solicitudes' %}active{% endif %}">Mis Solicitudes</a>
+        </div>
+
+    {% else %}
+        <h5 class="topbar-title">Inicio</h5>
+        <div class="btn-group flex-wrap" role="group">
+            <a href="{% url 'dashboard' %}" class="topmenu-link active">Resumen</a>
+        </div>
+    {% endif %}
+
+{% else %}
+
+    {% if 'asignar-roles' in request.path or 'toggle-usuario' in request.path or 'bitacora' in request.path %}
+        <h5 class="topbar-title">Seguridad</h5>
+        <div class="btn-group flex-wrap" role="group">
+            <a href="{% url 'asignar_rol_list' %}" class="topmenu-link {% if 'asignar-roles' in request.path %}active{% endif %}">Gestión de Usuarios</a>
+            <a href="{% url 'reportes:bitacora' %}" class="topmenu-link {% if 'bitacora' in request.path %}active{% endif %}">Bitácora</a>
+        </div>
+
+    {% elif 'catalogos' in request.path %}
+        <h5 class="topbar-title">Catálogos</h5>
+        <div class="btn-group flex-wrap" role="group">
+            <a href="{% url 'grado_list' %}" class="topmenu-link {% if 'grados' in request.path %}active{% endif %}">Grados</a>
+            <a href="{% url 'unidad_list' %}" class="topmenu-link {% if 'unidades' in request.path %}active{% endif %}">Unidades</a>
+            <a href="{% url 'tipoestado_list' %}" class="topmenu-link {% if 'estados' in request.path %}active{% endif %}">Estados</a>
+            <a href="{% url 'cargo_list' %}" class="topmenu-link {% if 'cargos' in request.path %}active{% endif %}">Cargos</a>
+            <span class="topmenu-link disabled" title="Próximamente">Parámetros</span>
+        </div>
+
+    {% elif 'destinos' in request.path or 'permisos' in request.path or 'sanciones' in request.path or 'felicitaciones' in request.path or 'autoregistro' in request.path or 'antecedentes' in request.path %}
+        <h5 class="topbar-title">Gestión de Personal</h5>
+        <div class="btn-group flex-wrap" role="group">
+            <a href="{% url 'destino_create' %}" class="topmenu-link {% if request.resolver_match.url_name == 'destino_create' %}active{% endif %}">Registrar Destino</a>
+            <a href="{% url 'destino_list' %}" class="topmenu-link {% if request.resolver_match.url_name == 'destino_list' %}active{% endif %}">Destinos</a>
+            <span class="topmenu-link disabled" title="Selecciona un policía desde Personal">Asignar Destino a Personal</span>
+            {% if user.puede_gestionar_sanciones %}
+            <a href="{% url 'sancion_create' %}" class="topmenu-link {% if request.resolver_match.url_name == 'sancion_create' %}active{% endif %}">Registrar Sanción</a>
+            {% endif %}
+            <a href="{% url 'felicitacion_create' %}" class="topmenu-link {% if request.resolver_match.url_name == 'felicitacion_create' %}active{% endif %}">Registrar Felicitación</a>
+            <a href="{% url 'antecedentes_buscar' %}" class="topmenu-link {% if 'antecedentes' in request.path %}active{% endif %}">Consultar Antecedentes</a>
+            <a href="{% url 'permiso_list' %}" class="topmenu-link {% if request.resolver_match.url_name == 'permiso_list' %}active{% endif %}">Solicitudes Pendientes</a>
+            <a href="{% url 'autoregistro:crear_temporal' %}" class="topmenu-link {% if request.resolver_match.url_name == 'crear_temporal' %}active{% endif %}">Generar Credencial Temporal</a>
+            <a href="{% url 'autoregistro:lista_temporales' %}" class="topmenu-link {% if request.resolver_match.url_name == 'lista_temporales' %}active{% endif %}">Listado de Credenciales</a>
+            <a href="{% url 'baja_list' %}" class="topmenu-link {% if request.resolver_match.url_name == 'baja_list' %}active{% endif %}">Bajas</a>
+            <a href="{% url 'fallecimiento_list' %}" class="topmenu-link {% if request.resolver_match.url_name == 'fallecimiento_list' %}active{% endif %}">Fallecimientos</a>
+        </div>
+
+    {% elif 'reporte' in request.path %}
+        <h5 class="topbar-title">Reportes</h5>
+        <div class="btn-group flex-wrap" role="group">
+            <a href="{% url 'reportes:reporte_personal' %}" class="topmenu-link {% if request.resolver_match.url_name == 'reporte_personal' %}active{% endif %}">Generación de Reportes</a>
+            <a href="{% url 'reportes:lista_revista_preview' %}" class="topmenu-link {% if request.resolver_match.url_name == 'lista_revista_preview' %}active{% endif %}">Lista de Revista</a>
+            <span class="topmenu-link disabled" title="Próximamente">Por Grado</span>
+            <span class="topmenu-link disabled" title="Próximamente">Por Estado</span>
+        </div>
+
+    {% elif request.path|slice:":10" == '/personal/' %}
+        <h5 class="topbar-title">Personal</h5>
+        <div class="btn-group flex-wrap" role="group">
+            {% if user.puede_crear %}
+            <a href="{% url 'personal_create' %}" class="topmenu-link {% if request.resolver_match.url_name == 'personal_create' %}active{% endif %}">Registrar Nuevo Personal</a>
+            {% endif %}
+            <a href="{% url 'personal_list' %}" class="topmenu-link {% if request.resolver_match.url_name == 'personal_list' %}active{% endif %}">Listado de Personal</a>
+        </div>
+
+    {% else %}
+        <h5 class="topbar-title">Dashboard</h5>
+        <div class="btn-group flex-wrap" role="group">
+            <a href="{% url 'dashboard' %}" class="topmenu-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">Inicio</a>
+        </div>
+    {% endif %}
+
+{% endif %}

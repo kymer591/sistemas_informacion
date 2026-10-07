@@ -1,0 +1,81 @@
+{% extends 'base.html' %}
+
+{% block title %}Cargos - UTEPPI{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center page-header">
+        <div>
+            <h4 class="mb-0">Cargos por Unidad</h4>
+            <div class="subtitle">Catálogo usado en Lista de Revista (FORM-01, 02, 03)</div>
+        </div>
+        {% if user.puede_crear %}
+        <a href="{% url 'cargo_create' %}" class="btn btn-primary btn-sm">Agregar Cargo</a>
+        {% endif %}
+    </div>
+
+    <div class="panel-card mb-3">
+        <div class="panel-body">
+            <form method="get" class="row g-2">
+                <div class="col-md-4">
+                    <select name="unidad" class="form-select form-select-sm">
+                        <option value="">Todas las unidades</option>
+                        {% for u in unidades %}
+                        <option value="{{ u.pk }}" {% if unidad_sel == u.pk|stringformat:"s" %}selected{% endif %}>
+                            {{ u.codigo }} - {{ u.nombre }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-primary btn-sm w-100">Filtrar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="panel-card">
+        <div class="panel-body p-0">
+            <table class="table summary-table table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th>Unidad</th>
+                        <th>Cargo</th>
+                        <th>Orden</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for cargo in cargos %}
+                    <tr>
+                        <td>{{ cargo.unidad.codigo }}</td>
+                        <td>{{ cargo.nombre }}</td>
+                        <td>{{ cargo.orden }}</td>
+                        <td>
+                            {% if cargo.activo %}
+                                <span class="badge bg-success">Activo</span>
+                            {% else %}
+                                <span class="badge bg-danger">Inactivo</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if user.puede_editar %}
+                            <a href="{% url 'cargo_update' cargo.pk %}" class="btn btn-sm btn-outline-warning">Editar</a>
+                            {% endif %}
+                            {% if user.puede_eliminar %}
+                            <a href="{% url 'cargo_delete' cargo.pk %}" class="btn btn-sm btn-outline-danger">Eliminar</a>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="text-center text-muted py-4">No hay cargos registrados</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

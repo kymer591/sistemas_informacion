@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}{% if object %}Editar{% else %}Agregar{% endif %} Cargo - UTEPPI{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="panel-card">
+                <div class="panel-header">
+                    {% if object %}Editar Cargo{% else %}Agregar Cargo{% endif %}
+                </div>
+                <div class="panel-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        {{ form|crispy }}
+                        <div class="mt-3 d-flex gap-2">
+                            <button type="submit" class="btn btn-primary btn-sm">Guardar</button>
+                            <a href="{% url 'cargo_list' %}" class="btn btn-outline-secondary btn-sm">Cancelar</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

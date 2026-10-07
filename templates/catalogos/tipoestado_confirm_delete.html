@@ -1,33 +1,27 @@
 {% extends 'base.html' %}
 {% load crispy_forms_tags %}
 
-{% block app_navbar %}
-    {% include 'includes/catalogos_navbar.html' %}
-{% endblock %}
+{% block title %}Eliminar Estado - UTEPPI{% endblock %}
 
 {% block content %}
 <div class="container-fluid">
     <div class="row justify-content-center">
         <div class="col-md-6">
-            <div class="card">
-                <div class="card-header bg-warning">
-                    <h4 class="mb-0">⚠️ Confirmar Eliminación</h4>
-                </div>
-                <div class="card-body">
-                    <p>¿Estás seguro de que deseas eliminar el tipo de estado?</p>
-                    <p>
+            <div class="panel-card">
+                <div class="panel-header" style="color:#b91c1c;">Confirmar Eliminación</div>
+                <div class="panel-body">
+                    <p class="mb-1" style="font-size:.85rem;">¿Estás seguro de que deseas eliminar el tipo de estado?</p>
+                    <p class="mb-3 d-flex align-items-center gap-2">
                         <strong>{{ object.nombre }}</strong>
-                        <div style="width: 30px; height: 20px; background-color: {{ object.color }}; display: inline-block; margin-left: 10px; border: 1px solid #ccc;"></div>
+                        <span style="width: 24px; height: 16px; border-radius: 4px; background-color: {{ object.color }}; border: 1px solid #e5e8ee; display: inline-block;"></span>
                     </p>
-                    
+
                     <form method="post">
                         {% csrf_token %}
-                        <button type="submit" class="btn btn-danger">
-                            🗑️ Sí, Eliminar
-                        </button>
-                        <a href="{% url 'tipoestado_list' %}" class="btn btn-secondary">
-                            ↩️ Cancelar
-                        </a>
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-danger btn-sm">Sí, Eliminar</button>
+                            <a href="{% url 'tipoestado_list' %}" class="btn btn-outline-secondary btn-sm">Cancelar</a>
+                        </div>
                     </form>
                 </div>
             </div>

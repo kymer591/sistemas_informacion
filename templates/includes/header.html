@@ -1,18 +1,19 @@
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
     <div class="container-fluid">
-        <a class="navbar-brand" href="{% url 'dashboard' %}">
+        <a class="navbar-brand"
+           href="{% if user.rol == 'temporal' %}{% url 'autoregistro:completar_registro' %}{% else %}{% url 'dashboard' %}{% endif %}">
             🛡️ SISTEMA UTEPPI
         </a>
-        
+
         <div class="navbar-nav ms-auto">
             <span class="navbar-text text-light me-3">
                 👋 {{ user.username }}
-                
-                <!-- Mostrar badge del rol -->
-                {% if user.es_administrador %}
+                {% if user.rol == 'admin' %}
                     <span class="badge bg-danger ms-2">Admin</span>
-                {% elif user.es_oficial_administrativo %}
+                {% elif user.rol == 'oficial_administrativo' %}
                     <span class="badge bg-warning text-dark ms-2">Oficial Admin</span>
+                {% elif user.rol == 'temporal' %}
+                    <span class="badge bg-warning text-dark ms-2">⏳ Temporal</span>
                 {% else %}
                     <span class="badge bg-info ms-2">Consulta</span>
                 {% endif %}

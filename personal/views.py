@@ -3,6 +3,7 @@ from django.http import HttpResponse
 from openpyxl import Workbook
 from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
 from openpyxl.utils import get_column_letter
+from django.contrib.auth.mixins import LoginRequiredMixin
 
 from django.urls import reverse_lazy
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView, DetailView
@@ -10,7 +11,7 @@ from django.utils import timezone
 from django.db.models import Q
 from django.contrib import messages
 from django.shortcuts import get_object_or_404, redirect
-from .models import PersonalPolicial, PermisoLicencia, SancionAplicada, FelicitacionAplicada, KardexDigital, DestinoPolicial
+from .models import PersonalPolicial, PermisoLicencia, SancionAplicada, FelicitacionAplicada, KardexDigital, DestinoPolicial, BajaPersonal, Fallecimiento
 
 from .models import (
     PersonalPolicial,
@@ -110,7 +111,7 @@ class PersonalCreateView(BitacoraMixin, PuedeCrearMixin, CreateView):
         'nombres', 'apellido_paterno', 'apellido_materno',
         'fecha_nacimiento', 'genero',
         'grado', 'unidad', 'estado_actual', 'fecha_ingreso',
-        'cargo_actual',
+        'cargo','tipo_carrera',
         'telefono_personal', 'telefono_emergencia',
         'correo_institucional', 'direccion_domicilio',
         'otra_profesion',
@@ -128,7 +129,7 @@ class PersonalUpdateView(BitacoraMixin, PuedeEditarMixin, UpdateView):
         'nombres', 'apellido_paterno', 'apellido_materno',
         'fecha_nacimiento', 'genero',
         'grado', 'unidad', 'estado_actual', 'fecha_ingreso',
-        'cargo_actual',
+        'cargo','tipo_carrera',
         'telefono_personal', 'telefono_emergencia',
         'correo_institucional', 'direccion_domicilio',
         'otra_profesion',
@@ -573,7 +574,7 @@ def _build_workbook(queryset):
             p.expedido,
             p.get_genero_display(),
             p.direccion_domicilio or '',
-            p.cargo_actual or '',
+            p.cargo.nombre if p.cargo else '',
             (destino_activo.unidad_destino.nombre
                 if destino_activo and destino_activo.unidad_destino
                 else (destino_activo.lugar_destino if destino_activo else '')),
@@ -705,3 +706,170 @@ def exportar_personal_excel(request):
     )
     response['Content-Disposition'] = f'attachment; filename="{filename}"'
     return response
+
+class MiKardexView(LoginRequiredMixin, ListView):
+    model = KardexDigital
+    template_name = 'personal/mi_kardex.html'
+    context_object_name = 'registros'
+
+    def dispatch(self, request, *args, **kwargs):
+        if request.user.is_authenticated and request.user.rol == 'temporal':
+            messages.info(
+                request,
+                'Primero debes completar tu registro para poder ver tu kardex.'
+            )
+            return redirect('autoregistro:completar_registro')
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_queryset(self):
+        personal = getattr(self.request.user, 'personal', None)
+        if not personal:
+            return KardexDigital.objects.none()
+        return KardexDigital.objects.filter(personal=personal)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['persona'] = getattr(self.request.user, 'personal', None)
+        return context
+
+class MisSolicitudesListView(LoginRequiredMixin, ListView):
+    model = PermisoLicencia
+    template_name = 'personal/mis_solicitudes_list.html'
+    context_object_name = 'permisos'
+
+    def dispatch(self, request, *args, **kwargs):
+        if request.user.is_authenticated and request.user.rol == 'temporal':
+            messages.info(
+                request,
+                'Primero debes completar tu registro para poder hacer solicitudes.'
+            )
+            return redirect('autoregistro:completar_registro')
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_queryset(self):
+        personal = getattr(self.request.user, 'personal', None)
+        if not personal:
+            return PermisoLicencia.objects.none()
+        return PermisoLicencia.objects.filter(personal=personal).order_by('-fecha_solicitud')
+
+
+class MiSolicitudCreateView(LoginRequiredMixin, CreateView):
+    model = PermisoLicencia
+    template_name = 'personal/mis_solicitudes_form.html'
+    fields = ['tipo_permiso', 'fecha_inicio', 'fecha_fin', 'motivo', 'documento_adjunto']
+    success_url = reverse_lazy('mis_solicitudes')
+
+    def dispatch(self, request, *args, **kwargs):
+        if request.user.is_authenticated and request.user.rol == 'temporal':
+            messages.info(
+                request,
+                'Primero debes completar tu registro para poder hacer solicitudes.'
+            )
+            return redirect('autoregistro:completar_registro')
+        return super().dispatch(request, *args, **kwargs)
+
+    def form_valid(self, form):
+        personal = getattr(self.request.user, 'personal', None)
+        if not personal:
+            messages.error(self.request, '❌ Tu usuario no está vinculado a un registro de Personal.')
+            return redirect('dashboard')
+        form.instance.personal = personal
+        messages.success(self.request, '✅ Tu solicitud fue enviada.')
+        return super().form_valid(form)
+
+
+class AntecedentesPersonalView(UsuarioAutorizadoRequiredMixin, DetailView):
+    model = PersonalPolicial
+    pk_url_kwarg = 'personal_id'
+    template_name = 'personal/antecedentes.html'
+    context_object_name = 'persona'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['sanciones'] = self.object.sanciones_aplicadas.all()
+        context['felicitaciones'] = self.object.felicitaciones_aplicadas.all()
+        return context
+
+
+class AntecedentesBuscarView(PersonalListView):
+    template_name = 'personal/antecedentes_buscar.html'
+
+
+# ===== BAJAS =====
+class BajaCreateView(BitacoraMixin, PuedeCrearMixin, CreateView):
+    bitacora_modulo = 'personal'
+    model = BajaPersonal
+    template_name = 'personal/baja_form.html'
+    fields = [
+        'tipo_baja', 'fecha_baja', 'motivo', 'resolucion_tds',
+        'numero_memo_escalafon', 'autoridad_firma', 'cargo_autoridad_firma',
+        'fecha_notificacion', 'observaciones',
+    ]
+
+    def dispatch(self, request, *args, **kwargs):
+        self.persona = get_object_or_404(PersonalPolicial, pk=kwargs['personal_id'])
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['persona'] = self.persona
+        return context
+
+    def form_valid(self, form):
+        form.instance.personal = self.persona
+        form.instance.registrado_por = self.request.user
+        messages.success(self.request, f'Baja registrada para {self.persona.nombre_completo()}.')
+        return super().form_valid(form)
+
+    def get_success_url(self):
+        return reverse_lazy('personal_detail', kwargs={'pk': self.persona.pk})
+
+
+class BajaListView(UsuarioAutorizadoRequiredMixin, ListView):
+    model = BajaPersonal
+    template_name = 'personal/baja_list.html'
+    context_object_name = 'bajas'
+    login_url = 'login'
+
+    def get_queryset(self):
+        return BajaPersonal.objects.select_related('personal', 'personal__grado').order_by('-fecha_baja')
+
+
+# ===== FALLECIMIENTOS =====
+class FallecimientoCreateView(BitacoraMixin, PuedeCrearMixin, CreateView):
+    bitacora_modulo = 'personal'
+    model = Fallecimiento
+    template_name = 'personal/fallecimiento_form.html'
+    fields = [
+        'fecha_fallecimiento', 'causa_deceso', 'numero_certificado_defuncion',
+        'entidad', 'autoridad_firma', 'numero_informe_trabajo_social',
+        'fecha_informe', 'direccion_departamental_salud', 'observaciones',
+    ]
+
+    def dispatch(self, request, *args, **kwargs):
+        self.persona = get_object_or_404(PersonalPolicial, pk=kwargs['personal_id'])
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['persona'] = self.persona
+        return context
+
+    def form_valid(self, form):
+        form.instance.personal = self.persona
+        form.instance.registrado_por = self.request.user
+        messages.success(self.request, f'Fallecimiento registrado para {self.persona.nombre_completo()}.')
+        return super().form_valid(form)
+
+    def get_success_url(self):
+        return reverse_lazy('personal_detail', kwargs={'pk': self.persona.pk})
+
+
+class FallecimientoListView(UsuarioAutorizadoRequiredMixin, ListView):
+    model = Fallecimiento
+    template_name = 'personal/fallecimiento_list.html'
+    context_object_name = 'fallecimientos'
+    login_url = 'login'
+
+    def get_queryset(self):
+        return Fallecimiento.objects.select_related('personal', 'personal__grado').order_by('-fecha_fallecimiento')

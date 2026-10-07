@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+
+{% block title %}Eliminar Cargo - UTEPPI{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="panel-card">
+                <div class="panel-header" style="color:#b91c1c;">Confirmar Eliminación</div>
+                <div class="panel-body">
+                    <p class="mb-3">¿Eliminar el cargo <strong>{{ object.nombre }}</strong> de la unidad <strong>{{ object.unidad.codigo }}</strong>?</p>
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-danger btn-sm">Sí, Eliminar</button>
+                            <a href="{% url 'cargo_list' %}" class="btn btn-outline-secondary btn-sm">Cancelar</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

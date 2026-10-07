@@ -6,6 +6,7 @@ app_name = 'autoregistro'
 urlpatterns = [
     # Admin — mismo nivel que "Agregar Personal"
     path('crear/',             views.crear_temporal,   name='crear_temporal'),
+    path('crear-usuario/<int:personal_id>/', views.crear_usuario_temporal, name='crear_usuario_temporal'),
     path('temporales/',        views.lista_temporales, name='lista_temporales'),
     path('revisar/<int:pk>/',  views.revisar_registro, name='revisar_registro'),
 

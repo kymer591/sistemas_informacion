@@ -1,30 +1,23 @@
 {% extends 'base.html' %}
 {% load crispy_forms_tags %}
 
-{% block app_navbar %}
-    {% include 'includes/personal_navbar.html' %}
-{% endblock %}
+{% block title %}{% if object %}Editar{% else %}Agregar{% endif %} Personal - UTEPPI{% endblock %}
 
 {% block content %}
 <div class="container-fluid">
     <div class="row justify-content-center">
         <div class="col-md-11">
-            <div class="card shadow-sm">
-                <div class="card-header bg-primary text-white">
-                    <h4 class="mb-0">
-                        {% if object %}✏️ Editar Personal{% else %}➕ Agregar Personal{% endif %}
-                    </h4>
+            <div class="panel-card">
+                <div class="panel-header">
+                    {% if object %}Editar Personal{% else %}Agregar Personal{% endif %}
                 </div>
-                <div class="card-body">
+                <div class="panel-body">
                     <form method="post">
                         {% csrf_token %}
 
-                        <!-- SECCIÓN 1: Identificación -->
-                        <div class="card mb-3 border-secondary">
-                            <div class="card-header bg-light">
-                                <strong>🆔 Identificación</strong>
-                            </div>
-                            <div class="card-body">
+                        <div class="panel-card mb-3">
+                            <div class="panel-header">Identificación</div>
+                            <div class="panel-body">
                                 <div class="row">
                                     <div class="col-md-4">
                                         {{ form.codigo_identificacion|as_crispy_field }}
@@ -39,12 +32,9 @@
                             </div>
                         </div>
 
-                        <!-- SECCIÓN 2: Datos personales -->
-                        <div class="card mb-3 border-secondary">
-                            <div class="card-header bg-light">
-                                <strong>👤 Datos Personales</strong>
-                            </div>
-                            <div class="card-body">
+                        <div class="panel-card mb-3">
+                            <div class="panel-header">Datos Personales</div>
+                            <div class="panel-body">
                                 <div class="row">
                                     <div class="col-md-4">
                                         {{ form.nombres|as_crispy_field }}
@@ -67,12 +57,9 @@
                             </div>
                         </div>
 
-                        <!-- SECCIÓN 3: Información laboral -->
-                        <div class="card mb-3 border-secondary">
-                            <div class="card-header bg-light">
-                                <strong>🏢 Información Laboral</strong>
-                            </div>
-                            <div class="card-body">
+                        <div class="panel-card mb-3">
+                            <div class="panel-header">Información Laboral</div>
+                            <div class="panel-body">
                                 <div class="row">
                                     <div class="col-md-3">
                                         {{ form.grado|as_crispy_field }}
@@ -89,7 +76,10 @@
                                 </div>
                                 <div class="row">
                                     <div class="col-md-6">
-                                        {{ form.cargo_actual|as_crispy_field }}
+                                        {{ form.cargo|as_crispy_field }}
+                                    </div>
+                                    <div class="col-md-4">
+                                        {{ form.tipo_carrera|as_crispy_field }}
                                     </div>
                                     <div class="col-md-3 d-flex align-items-center mt-2">
                                         {{ form.activo|as_crispy_field }}
@@ -98,12 +88,9 @@
                             </div>
                         </div>
 
-                        <!-- SECCIÓN 4: Contacto -->
-                        <div class="card mb-3 border-secondary">
-                            <div class="card-header bg-light">
-                                <strong>📞 Contacto</strong>
-                            </div>
-                            <div class="card-body">
+                        <div class="panel-card mb-3">
+                            <div class="panel-header">Contacto</div>
+                            <div class="panel-body">
                                 <div class="row">
                                     <div class="col-md-4">
                                         {{ form.telefono_personal|as_crispy_field }}
@@ -123,12 +110,9 @@
                             </div>
                         </div>
 
-                        <!-- SECCIÓN 5: Información adicional -->
-                        <div class="card mb-3 border-secondary">
-                            <div class="card-header bg-light">
-                                <strong>🎓 Información Adicional</strong>
-                            </div>
-                            <div class="card-body">
+                        <div class="panel-card mb-3">
+                            <div class="panel-header">Información Adicional</div>
+                            <div class="panel-body">
                                 <div class="row">
                                     <div class="col-md-6">
                                         {{ form.otra_profesion|as_crispy_field }}
@@ -138,11 +122,11 @@
                         </div>
 
                         <div class="d-flex gap-2">
-                            <button type="submit" class="btn btn-success">
-                                💾 {% if object %}Actualizar{% else %}Guardar{% endif %} Personal
+                            <button type="submit" class="btn btn-primary btn-sm">
+                                {% if object %}Actualizar{% else %}Guardar{% endif %} Personal
                             </button>
-                            <a href="{% url 'personal_list' %}" class="btn btn-secondary">
-                                ↩️ Cancelar
+                            <a href="{% url 'personal_list' %}" class="btn btn-outline-secondary btn-sm">
+                                Cancelar
                             </a>
                         </div>
 

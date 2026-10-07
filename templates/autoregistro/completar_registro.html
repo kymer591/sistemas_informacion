@@ -4,60 +4,89 @@
 {% block content %}
 <div class="container-fluid mt-3">
 <div class="row justify-content-center">
-<div class="col-lg-9">
+<div class="col-lg-8">
 
-  <!-- Banner de bienvenida -->
+  <!-- Banner -->
   <div class="card border-0 mb-4"
-       style="background:linear-gradient(135deg,#2c3e50,#3498db);color:white;border-radius:12px;">
+       style="background:linear-gradient(135deg,#2c3e50,#3498db);
+              color:white;border-radius:12px;">
     <div class="card-body p-4 d-flex align-items-center gap-4">
-      <div style="font-size:3.5rem;line-height:1">👮</div>
+      <div style="font-size:3rem;line-height:1">👮</div>
       <div>
-        <h4 class="mb-1">Bienvenido, {{ personal.nombre_completo }}</h4>
-        <p class="mb-1 opacity-75">{{ personal.grado.nombre }} — {{ personal.unidad.nombre }}</p>
-        <span class="badge" style="background:rgba(255,255,255,.25)">
-          Cuenta temporal — completa tu registro para activarla
-        </span>
+        <h4 class="mb-1">Bienvenido, {{ personal.nombres }} {{ personal.apellido_paterno }}</h4>
+        <p class="mb-2 opacity-75">
+          Por favor completa tu información personal.<br>
+          <small>Un administrativo revisará tus datos antes de activar tu cuenta.</small>
+        </p>
+        <!-- Barra de progreso -->
+        <div style="background:rgba(255,255,255,.2);border-radius:10px;height:8px;width:300px;max-width:100%">
+          <div style="background:#2ecc71;border-radius:10px;height:8px;width:30%"></div>
+        </div>
+        <small class="opacity-75 mt-1 d-block">Completa todos los campos para enviar</small>
       </div>
     </div>
   </div>
 
-  <!-- Indicador de progreso -->
-  <div class="card shadow-sm mb-4">
-    <div class="card-body py-3">
-      <div class="d-flex align-items-center gap-3">
-        <div class="d-flex align-items-center gap-2">
-          <div class="rounded-circle bg-success text-white d-flex align-items-center justify-content-center"
-               style="width:32px;height:32px;font-size:.8rem;font-weight:700">✓</div>
-          <span class="small fw-semibold">Datos básicos</span>
-        </div>
-        <div class="flex-grow-1 border-top border-2"></div>
-        <div class="d-flex align-items-center gap-2">
-          <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center"
-               style="width:32px;height:32px;font-size:.8rem;font-weight:700">2</div>
-          <span class="small fw-semibold text-primary">Completar información</span>
-        </div>
-        <div class="flex-grow-1 border-top border-2 border-secondary opacity-25"></div>
-        <div class="d-flex align-items-center gap-2 opacity-50">
-          <div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center"
-               style="width:32px;height:32px;font-size:.8rem;font-weight:700">3</div>
-          <span class="small">Aprobación</span>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <form method="post" enctype="multipart/form-data" novalidate>
+  <form method="post" enctype="multipart/form-data" novalidate id="form-completar">
     {% csrf_token %}
 
-    <!-- IDENTIFICACIÓN -->
+    <!-- DATOS BASE (solo lectura, puestos por el admin) -->
     <div class="card shadow-sm mb-3">
-      <div class="card-header bg-light">
-        <strong>🪪 Documento de Identidad</strong>
+      <div class="card-header bg-light d-flex justify-content-between align-items-center">
+        <strong>🆔 Datos registrados por el sistema</strong>
+        <span class="badge bg-secondary">Solo lectura</span>
       </div>
       <div class="card-body">
         <div class="row g-3">
           <div class="col-md-3">
-            <label class="form-label fw-semibold">Expedido en</label>
+            <label class="form-label small text-muted">CI</label>
+            <input class="form-control bg-light" value="{{ personal.ci }}" readonly>
+          </div>
+          <div class="col-md-5">
+            <label class="form-label small text-muted">Nombre completo</label>
+            <input class="form-control bg-light"
+                   value="{{ personal.nombres }} {{ personal.apellido_paterno }} {{ personal.apellido_materno }}"
+                   readonly>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label small text-muted">Grado</label>
+            {{ form.grado }}
+          </div>
+          <div class="col-md-6">
+            <label class="form-label small text-muted">Unidad</label>
+            {{ form.unidad }}
+          </div>
+          <div class="col-md-3">
+            <label class="form-label small text-muted">Estado</label>
+            {{ form.estado_actual }}
+          </div>
+          <div class="col-md-3">
+            <label class="form-label small text-muted">Fecha ingreso</label>
+            {{ form.fecha_ingreso }}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- IDENTIFICACIÓN -->
+    <div class="card shadow-sm mb-3">
+      <div class="card-header bg-light"><strong>🪪 Identificación</strong></div>
+      <div class="card-body">
+        <div class="row g-3">
+          <div class="col-md-5">
+            <label class="form-label fw-semibold">
+              Código de identificación
+              <span class="text-danger">*</span>
+            </label>
+            {{ form.codigo_identificacion }}
+            {% if form.codigo_identificacion.errors %}
+              <div class="text-danger small">{{ form.codigo_identificacion.errors.0 }}</div>
+            {% endif %}
+          </div>
+          <div class="col-md-3">
+            <label class="form-label fw-semibold">
+              Expedido en <span class="text-danger">*</span>
+            </label>
             {{ form.expedido }}
           </div>
         </div>
@@ -66,62 +95,84 @@
 
     <!-- DATOS PERSONALES -->
     <div class="card shadow-sm mb-3">
-      <div class="card-header bg-light">
-        <strong>👤 Datos Personales</strong>
-      </div>
+      <div class="card-header bg-light"><strong>👤 Datos Personales</strong></div>
       <div class="card-body">
         <div class="row g-3">
-          <div class="col-md-4">{{ form.fecha_nacimiento|as_crispy_field }}</div>
-          <div class="col-md-4">{{ form.genero|as_crispy_field }}</div>
+          <div class="col-md-4">
+            <label class="form-label fw-semibold">
+              Fecha de nacimiento <span class="text-danger">*</span>
+            </label>
+            {{ form.fecha_nacimiento }}
+            {% if form.fecha_nacimiento.errors %}
+              <div class="text-danger small">{{ form.fecha_nacimiento.errors.0 }}</div>
+            {% endif %}
+          </div>
+          <div class="col-md-3">
+            <label class="form-label fw-semibold">
+              Género <span class="text-danger">*</span>
+            </label>
+            {{ form.genero }}
+          </div>
         </div>
       </div>
     </div>
 
     <!-- CONTACTO -->
     <div class="card shadow-sm mb-3">
-      <div class="card-header bg-light">
-        <strong>📞 Contacto</strong>
-      </div>
+      <div class="card-header bg-light"><strong>📞 Contacto</strong></div>
       <div class="card-body">
         <div class="row g-3">
-          <div class="col-md-4">{{ form.telefono_personal|as_crispy_field }}</div>
-          <div class="col-md-4">{{ form.telefono_emergencia|as_crispy_field }}</div>
-          <div class="col-md-4">{{ form.correo_institucional|as_crispy_field }}</div>
-          <div class="col-12">{{ form.direccion_domicilio|as_crispy_field }}</div>
+          <div class="col-md-4">
+            <label class="form-label fw-semibold">Teléfono personal</label>
+            {{ form.telefono_personal }}
+          </div>
+          <div class="col-md-4">
+            <label class="form-label fw-semibold">Teléfono emergencia</label>
+            {{ form.telefono_emergencia }}
+          </div>
+          <div class="col-md-4">
+            <label class="form-label fw-semibold">Correo institucional</label>
+            {{ form.correo_institucional }}
+          </div>
+          <div class="col-12">
+            <label class="form-label fw-semibold">Dirección del domicilio</label>
+            {{ form.direccion_domicilio }}
+          </div>
         </div>
       </div>
     </div>
 
     <!-- LABORAL -->
     <div class="card shadow-sm mb-3">
-      <div class="card-header bg-light">
-        <strong>🏢 Información Laboral Adicional</strong>
-      </div>
+      <div class="card-header bg-light"><strong>🏢 Información Laboral</strong></div>
       <div class="card-body">
         <div class="row g-3">
-          <div class="col-md-6">{{ form.cargo_actual|as_crispy_field }}</div>
-          <div class="col-md-6">{{ form.otra_profesion|as_crispy_field }}</div>
+          <div class="col-md-6">
+            <label class="form-label fw-semibold">Cargo actual</label>
+            {{ form.cargo_actual }}
+          </div>
+          <div class="col-md-6">
+            <label class="form-label fw-semibold">Otra profesión (Lic./Téc.)</label>
+            {{ form.otra_profesion }}
+          </div>
         </div>
       </div>
     </div>
 
     <!-- FOTO -->
     <div class="card shadow-sm mb-4">
-      <div class="card-header bg-light">
-        <strong>📷 Foto de Perfil</strong>
-      </div>
+      <div class="card-header bg-light"><strong>📷 Foto de Perfil</strong></div>
       <div class="card-body">
         <div class="row align-items-center g-3">
           <div class="col-auto">
-            <div id="foto-preview-wrap">
+            <div id="foto-wrap"
+                 class="rounded-circle bg-light border d-flex align-items-center
+                         justify-content-center overflow-hidden"
+                 style="width:80px;height:80px;font-size:2rem">
               {% if personal.foto %}
-                <img src="{{ personal.foto.url }}" id="foto-preview"
-                     class="rounded-circle border" style="width:80px;height:80px;object-fit:cover;">
+                <img src="{{ personal.foto.url }}" style="width:100%;height:100%;object-fit:cover;">
               {% else %}
-                <div class="rounded-circle bg-light border d-flex align-items-center
-                            justify-content-center" style="width:80px;height:80px;font-size:2rem">
-                  👤
-                </div>
+                👤
               {% endif %}
             </div>
           </div>
@@ -133,20 +184,34 @@
       </div>
     </div>
 
+    <!-- Errores generales -->
+    {% if form.errors %}
+    <div class="alert alert-danger mb-3">
+      <strong>⚠️ Corrige los siguientes errores:</strong>
+      <ul class="mb-0 mt-1">
+        {% for field, errors in form.errors.items %}
+          {% for error in errors %}
+            <li>{{ field }}: {{ error }}</li>
+          {% endfor %}
+        {% endfor %}
+      </ul>
+    </div>
+    {% endif %}
+
     <div class="alert alert-warning d-flex gap-2 mb-4">
-      <span style="font-size:1.2rem">⚠️</span>
-      <div>
+      <span style="font-size:1.1rem">⚠️</span>
+      <small>
         Al enviar, tu información quedará <strong>pendiente de aprobación</strong>.
-        Un administrativo revisará tus datos antes de activar tu cuenta definitivamente.
-        <strong>Solo podrás enviar una vez</strong>, así que verifica bien antes de confirmar.
-      </div>
+        Un administrativo la revisará antes de activar tu cuenta definitivamente.
+      </small>
     </div>
 
-    <div class="d-flex gap-2">
-      <button type="submit" class="btn btn-success btn-lg">
-        📤 Enviar mi información
+    <div class="d-grid">
+      <button type="submit" class="btn btn-success btn-lg fw-bold">
+        📤 Enviar mi información para revisión
       </button>
     </div>
+
   </form>
 </div>
 </div>
@@ -155,15 +220,15 @@
 <script>
 // Vista previa de foto
 document.querySelector('input[name="foto"]')?.addEventListener('change', function(e) {
-  const file = e.target.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = ev => {
-    const wrap = document.getElementById('foto-preview-wrap');
-    wrap.innerHTML = `<img src="${ev.target.result}" class="rounded-circle border"
-      style="width:80px;height:80px;object-fit:cover;" id="foto-preview">`;
-  };
-  reader.readAsDataURL(file);
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = ev => {
+        document.getElementById('foto-wrap').innerHTML =
+            `<img src="${ev.target.result}"
+                  style="width:100%;height:100%;object-fit:cover;">`;
+    };
+    reader.readAsDataURL(file);
 });
 </script>
 {% endblock %}

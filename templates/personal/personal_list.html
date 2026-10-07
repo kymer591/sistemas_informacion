@@ -1,57 +1,48 @@
 {% extends 'base.html' %}
 
-{% block app_navbar %}
-    {% include 'includes/personal_navbar.html' %}
-{% endblock %}
+{% block title %}Personal - UTEPPI{% endblock %}
 
 {% block content %}
-<div class="container-fluid mt-3">
+<div class="container-fluid">
 
-    <!-- Encabezado -->
-    <div class="d-flex justify-content-between align-items-center mb-3">
+    <div class="d-flex justify-content-between align-items-center page-header">
         <div>
-            <h2 class="mb-0">👥 Personal Policial</h2>
-            <small class="text-muted">
+            <h4 class="mb-0">Personal Policial</h4>
+            <div class="subtitle">
                 Mostrando {{ page_obj.paginator.count }} de {{ total_general }} registros
-            </small>
+            </div>
         </div>
         {% if user.puede_crear %}
-        <a href="{% url 'personal_create' %}" class="btn btn-primary">
-            ➕ Agregar Personal
-        </a>
+        <a href="{% url 'personal_create' %}" class="btn btn-primary btn-sm">Agregar Personal</a>
         {% endif %}
     </div>
 
-    <!-- Panel de búsqueda y filtros -->
-    <div class="card shadow-sm mb-3">
-        <div class="card-header bg-light d-flex justify-content-between align-items-center"
-             style="cursor:pointer" data-bs-toggle="collapse" data-bs-target="#filtros-panel">
-            <span><strong>🔍 Búsqueda y Filtros</strong>
+    <div class="panel-card mb-3">
+        <div class="panel-header" style="cursor:pointer" data-bs-toggle="collapse" data-bs-target="#filtros-panel">
+            <span>Búsqueda y Filtros
                 {% if buscar or grado_sel or unidad_sel or estado_sel or genero_sel or activo_sel %}
                 <span class="badge bg-primary ms-2">Filtros activos</span>
                 {% endif %}
             </span>
-            <span class="text-muted small">▼ expandir / colapsar</span>
+            <span class="text-muted" style="font-size:.72rem;">expandir / colapsar</span>
         </div>
         <div class="collapse show" id="filtros-panel">
-            <div class="card-body">
+            <div class="panel-body">
                 <form method="get" id="filtros-form">
                     <div class="row g-2">
 
-                        <!-- Búsqueda libre -->
                         <div class="col-md-12 col-lg-4">
-                            <label class="form-label small fw-bold">Buscar</label>
+                            <label class="form-label mb-1">Buscar</label>
                             <input type="text"
                                    name="buscar"
-                                   class="form-control"
+                                   class="form-control form-control-sm"
                                    placeholder="Nombre, apellido, CI o código..."
                                    value="{{ buscar }}">
                         </div>
 
-                        <!-- Grado -->
                         <div class="col-md-4 col-lg-2">
-                            <label class="form-label small fw-bold">Grado</label>
-                            <select name="grado" class="form-select">
+                            <label class="form-label mb-1">Grado</label>
+                            <select name="grado" class="form-select form-select-sm">
                                 <option value="">Todos</option>
                                 {% for g in grados %}
                                 <option value="{{ g.id }}" {% if grado_sel == g.id|stringformat:"s" %}selected{% endif %}>
@@ -61,10 +52,9 @@
                             </select>
                         </div>
 
-                        <!-- Unidad -->
                         <div class="col-md-4 col-lg-2">
-                            <label class="form-label small fw-bold">Unidad</label>
-                            <select name="unidad" class="form-select">
+                            <label class="form-label mb-1">Unidad</label>
+                            <select name="unidad" class="form-select form-select-sm">
                                 <option value="">Todas</option>
                                 {% for u in unidades %}
                                 <option value="{{ u.id }}" {% if unidad_sel == u.id|stringformat:"s" %}selected{% endif %}>
@@ -74,10 +64,9 @@
                             </select>
                         </div>
 
-                        <!-- Estado -->
                         <div class="col-md-4 col-lg-2">
-                            <label class="form-label small fw-bold">Estado</label>
-                            <select name="estado" class="form-select">
+                            <label class="form-label mb-1">Estado</label>
+                            <select name="estado" class="form-select form-select-sm">
                                 <option value="">Todos</option>
                                 {% for e in estados %}
                                 <option value="{{ e.id }}" {% if estado_sel == e.id|stringformat:"s" %}selected{% endif %}>
@@ -87,10 +76,9 @@
                             </select>
                         </div>
 
-                        <!-- Género y Activo -->
                         <div class="col-md-4 col-lg-1">
-                            <label class="form-label small fw-bold">Género</label>
-                            <select name="genero" class="form-select">
+                            <label class="form-label mb-1">Género</label>
+                            <select name="genero" class="form-select form-select-sm">
                                 <option value="">Todos</option>
                                 <option value="M" {% if genero_sel == "M" %}selected{% endif %}>Masculino</option>
                                 <option value="F" {% if genero_sel == "F" %}selected{% endif %}>Femenino</option>
@@ -98,8 +86,8 @@
                         </div>
 
                         <div class="col-md-4 col-lg-1">
-                            <label class="form-label small fw-bold">Activo</label>
-                            <select name="activo" class="form-select">
+                            <label class="form-label mb-1">Activo</label>
+                            <select name="activo" class="form-select form-select-sm">
                                 <option value="">Todos</option>
                                 <option value="1" {% if activo_sel == "1" %}selected{% endif %}>Sí</option>
                                 <option value="0" {% if activo_sel == "0" %}selected{% endif %}>No</option>
@@ -108,15 +96,10 @@
 
                     </div>
 
-                    <!-- Botones -->
                     <div class="row mt-3">
                         <div class="col-12 d-flex gap-2">
-                            <button type="submit" class="btn btn-primary">
-                                🔍 Buscar
-                            </button>
-                            <a href="{% url 'personal_list' %}" class="btn btn-outline-secondary">
-                                ✖ Limpiar Filtros
-                            </a>
+                            <button type="submit" class="btn btn-primary btn-sm">Buscar</button>
+                            <a href="{% url 'personal_list' %}" class="btn btn-outline-secondary btn-sm">Limpiar Filtros</a>
                         </div>
                     </div>
                 </form>
@@ -124,12 +107,11 @@
         </div>
     </div>
 
-    <!-- Tabla de resultados -->
-    <div class="card shadow-sm">
-        <div class="card-body p-0">
+    <div class="panel-card">
+        <div class="panel-body p-0">
             <div class="table-responsive">
-                <table class="table table-hover mb-0">
-                    <thead class="table-dark">
+                <table class="table summary-table table-hover mb-0">
+                    <thead>
                         <tr>
                             <th>Código</th>
                             <th>Nombre Completo</th>
@@ -159,32 +141,31 @@
                             </td>
                             <td>
                                 {% if persona.activo %}
-                                    <span class="badge bg-success">✔</span>
+                                    <span class="badge bg-success">Sí</span>
                                 {% else %}
-                                    <span class="badge bg-danger">✖</span>
+                                    <span class="badge bg-danger">No</span>
                                 {% endif %}
                             </td>
                             <td class="text-center">
                                 <a href="{% url 'personal_detail' persona.pk %}"
-                                   class="btn btn-sm btn-info" title="Ver detalle">👁️</a>
+                                   class="btn btn-sm btn-outline-info" title="Ver detalle">Ver</a>
                                 {% if user.puede_editar %}
                                 <a href="{% url 'personal_update' persona.pk %}"
-                                   class="btn btn-sm btn-warning" title="Editar">✏️</a>
+                                   class="btn btn-sm btn-outline-warning" title="Editar">Editar</a>
                                 {% endif %}
                                 {% if user.puede_eliminar %}
                                 <a href="{% url 'personal_delete' persona.pk %}"
-                                   class="btn btn-sm btn-danger" title="Eliminar">🗑️</a>
+                                   class="btn btn-sm btn-outline-danger" title="Eliminar">Eliminar</a>
                                 {% endif %}
                             </td>
                         </tr>
                         {% empty %}
                         <tr>
                             <td colspan="8" class="text-center text-muted py-5">
-                                <div style="font-size:2.5rem" class="mb-2">🔍</div>
-                                <h5>Sin resultados</h5>
+                                <h6>Sin resultados</h6>
                                 <p class="mb-3">No se encontró personal con los filtros aplicados.</p>
                                 <a href="{% url 'personal_list' %}" class="btn btn-outline-secondary btn-sm">
-                                    ✖ Limpiar Filtros
+                                    Limpiar Filtros
                                 </a>
                             </td>
                         </tr>
@@ -195,16 +176,15 @@
         </div>
     </div>
 
-    <!-- Paginación -->
     {% if is_paginated %}
     <nav class="mt-3">
-        <ul class="pagination justify-content-center">
+        <ul class="pagination pagination-sm justify-content-center">
 
             {% if page_obj.has_previous %}
             <li class="page-item">
                 <a class="page-link"
                    href="?page=1&buscar={{ buscar }}&grado={{ grado_sel }}&unidad={{ unidad_sel }}&estado={{ estado_sel }}&genero={{ genero_sel }}&activo={{ activo_sel }}">
-                    «« Primera
+                    « Primera
                 </a>
             </li>
             <li class="page-item">
@@ -232,7 +212,7 @@
             <li class="page-item">
                 <a class="page-link"
                    href="?page={{ page_obj.paginator.num_pages }}&buscar={{ buscar }}&grado={{ grado_sel }}&unidad={{ unidad_sel }}&estado={{ estado_sel }}&genero={{ genero_sel }}&activo={{ activo_sel }}">
-                    Última »»
+                    Última »
                 </a>
             </li>
             {% endif %}

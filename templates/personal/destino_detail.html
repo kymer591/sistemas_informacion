@@ -1,37 +1,34 @@
-
-Destino templates extra · HTML
-Copy
-
-<!-- ================================================================ -->
-<!-- ARCHIVO: templates/personal/destino_detail.html                  -->
-<!-- ================================================================ -->
 {% extends 'base.html' %}
 
+{% block title %}Destino - {{ destino.personal.nombre_completo }} - UTEPPI{% endblock %}
+
 {% block content %}
-<div class="container-fluid mt-3">
-    <div class="row">
+<div class="container-fluid">
+    <div class="row g-3">
         <div class="col-md-7">
-            <div class="card shadow-sm">
-                <div class="card-header bg-primary text-white d-flex justify-content-between">
-                    <h5 class="mb-0">📍 Detalle del Destino</h5>
-                    <span class="badge {% if destino.activo %}bg-success{% else %}bg-secondary{% endif %} fs-6">
-                        {% if destino.activo %}● Activo{% else %}Histórico{% endif %}
-                    </span>
+            <div class="panel-card">
+                <div class="panel-header">
+                    <span>Detalle del Destino</span>
+                    {% if destino.activo %}
+                        <span class="badge bg-success">Activo</span>
+                    {% else %}
+                        <span class="badge bg-secondary">Histórico</span>
+                    {% endif %}
                 </div>
-                <div class="card-body">
+                <div class="panel-body">
                     <div class="row mb-3">
                         <div class="col-md-6">
-                            <p class="mb-1 text-muted small">PERSONAL</p>
-                            <h6>
-                                <a href="{% url 'personal_detail' destino.personal.pk %}">
+                            <p class="mb-1 text-muted" style="font-size:.68rem; text-transform:uppercase;">Personal</p>
+                            <h6 class="mb-0">
+                                <a href="{% url 'personal_detail' destino.personal.pk %}" class="text-decoration-none">
                                     {{ destino.personal.nombre_completo }}
                                 </a>
                             </h6>
                             <small class="text-muted">{{ destino.personal.grado.nombre }} — {{ destino.personal.unidad.nombre }}</small>
                         </div>
                         <div class="col-md-6">
-                            <p class="mb-1 text-muted small">TIPO DE DESTINO</p>
-                            <span class="badge bg-info text-dark fs-6">{{ destino.get_tipo_destino_display }}</span>
+                            <p class="mb-1 text-muted" style="font-size:.68rem; text-transform:uppercase;">Tipo de Destino</p>
+                            <span class="badge bg-info text-dark">{{ destino.get_tipo_destino_display }}</span>
                         </div>
                     </div>
 
@@ -39,44 +36,44 @@ Copy
 
                     <div class="row mb-3">
                         <div class="col-md-6">
-                            <p class="mb-1 text-muted small">LUGAR DE DESTINO</p>
-                            <h6>{{ destino.lugar_destino }}</h6>
+                            <p class="mb-1 text-muted" style="font-size:.68rem; text-transform:uppercase;">Lugar de Destino</p>
+                            <h6 class="mb-0">{{ destino.lugar_destino }}</h6>
                             {% if destino.unidad_destino %}
                             <small class="text-muted">Unidad: {{ destino.unidad_destino.nombre }}</small>
                             {% endif %}
                         </div>
                         <div class="col-md-6">
-                            <p class="mb-1 text-muted small">N° RESOLUCIÓN</p>
-                            <h6>{{ destino.numero_resolucion|default:"No registrado" }}</h6>
+                            <p class="mb-1 text-muted" style="font-size:.68rem; text-transform:uppercase;">N° Resolución</p>
+                            <h6 class="mb-0">{{ destino.numero_resolucion|default:"No registrado" }}</h6>
                         </div>
                     </div>
 
                     <div class="row mb-3">
                         <div class="col-md-4">
-                            <p class="mb-1 text-muted small">FECHA INICIO</p>
-                            <h6>{{ destino.fecha_inicio }}</h6>
+                            <p class="mb-1 text-muted" style="font-size:.68rem; text-transform:uppercase;">Fecha Inicio</p>
+                            <h6 class="mb-0">{{ destino.fecha_inicio }}</h6>
                         </div>
                         <div class="col-md-4">
-                            <p class="mb-1 text-muted small">FECHA FIN</p>
-                            <h6>{{ destino.fecha_fin|default:"Indefinido" }}</h6>
+                            <p class="mb-1 text-muted" style="font-size:.68rem; text-transform:uppercase;">Fecha Fin</p>
+                            <h6 class="mb-0">{{ destino.fecha_fin|default:"Indefinido" }}</h6>
                         </div>
                         <div class="col-md-4">
-                            <p class="mb-1 text-muted small">DURACIÓN</p>
-                            <h6>{{ destino.duracion }}</h6>
+                            <p class="mb-1 text-muted" style="font-size:.68rem; text-transform:uppercase;">Duración</p>
+                            <h6 class="mb-0">{{ destino.duracion }}</h6>
                         </div>
                     </div>
 
                     <hr>
 
-                    <p class="mb-1 text-muted small">DESCRIPCIÓN</p>
-                    <div class="border rounded p-3 bg-light mb-3">{{ destino.descripcion|linebreaks }}</div>
+                    <p class="mb-1 text-muted" style="font-size:.68rem; text-transform:uppercase;">Descripción</p>
+                    <div class="border rounded p-3 bg-light mb-3" style="font-size:.85rem;">{{ destino.descripcion|linebreaks }}</div>
 
                     {% if destino.observaciones %}
-                    <p class="mb-1 text-muted small">OBSERVACIONES</p>
-                    <div class="border rounded p-3 bg-light">{{ destino.observaciones|linebreaks }}</div>
+                    <p class="mb-1 text-muted" style="font-size:.68rem; text-transform:uppercase;">Observaciones</p>
+                    <div class="border rounded p-3 bg-light" style="font-size:.85rem;">{{ destino.observaciones|linebreaks }}</div>
                     {% endif %}
                 </div>
-                <div class="card-footer text-muted small">
+                <div class="panel-body border-top text-muted" style="font-size:.76rem;">
                     Registrado por: {{ destino.registrado_por.username|default:"Sistema" }}
                     el {{ destino.fecha_registro|date:"d/m/Y H:i" }}
                 </div>
@@ -84,20 +81,20 @@ Copy
         </div>
 
         <div class="col-md-5">
-            <div class="card shadow-sm">
-                <div class="card-header"><h6 class="mb-0">🛠️ Acciones</h6></div>
-                <div class="card-body d-grid gap-2">
-                    <a href="{% url 'destino_personal_list' destino.personal.pk %}" class="btn btn-secondary">
-                        ↩️ Volver a Destinos del Personal
+            <div class="panel-card">
+                <div class="panel-header">Acciones</div>
+                <div class="panel-body d-grid gap-2">
+                    <a href="{% url 'destino_personal_list' destino.personal.pk %}" class="btn btn-sm btn-secondary">
+                        Volver a Destinos del Personal
                     </a>
                     {% if user.puede_editar %}
-                    <a href="{% url 'destino_update' destino.pk %}" class="btn btn-warning">
-                        ✏️ Editar Destino
+                    <a href="{% url 'destino_update' destino.pk %}" class="btn btn-sm btn-warning">
+                        Editar Destino
                     </a>
                     {% endif %}
                     {% if user.puede_eliminar %}
-                    <a href="{% url 'destino_delete' destino.pk %}" class="btn btn-danger">
-                        🗑️ Eliminar
+                    <a href="{% url 'destino_delete' destino.pk %}" class="btn btn-sm btn-danger">
+                        Eliminar
                     </a>
                     {% endif %}
                 </div>
@@ -106,4 +103,3 @@ Copy
     </div>
 </div>
 {% endblock %}
-

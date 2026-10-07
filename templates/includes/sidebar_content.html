@@ -1,109 +1,120 @@
-<div class="position-sticky pt-3">
-    <h6 class="sidebar-heading px-3 mt-4 mb-1 text-white">
-        <span>NAVEGACIÓN</span>
-    </h6>
+<div class="app-sidebar-inner">
 
-    <ul class="nav flex-column">
-        <!-- Dashboard / Mi Perfil -->
+    <div class="sidebar-brand">
+        <span class="brand-mark"></span>
+        <span class="brand-text">UTEPPI</span>
+    </div>
+
+    <ul class="nav flex-column sidebar-nav">
+
+        {% if user.rol == 'temporal' %}
+
         <li class="nav-item">
-            <a class="nav-link text-white {% if request.resolver_match.url_name == 'dashboard' or request.resolver_match.url_name == 'mi_perfil' %}active{% endif %}"
+            <a class="sidebar-link {% if request.resolver_match.url_name == 'completar_registro' %}active{% endif %}"
+               href="{% url 'autoregistro:completar_registro' %}">
+                <span class="sidebar-icon"></span>
+                <span class="sidebar-label">Auto-registro</span>
+            </a>
+        </li>
+
+        {% elif user.es_usuario_autorizado %}
+
+        <li class="nav-item">
+            <a class="sidebar-link {% if request.resolver_match.url_name == 'dashboard' or request.resolver_match.url_name == 'mi_perfil' %}active{% endif %}"
                href="{% url 'dashboard' %}">
-                {% if user.es_usuario_autorizado %}
-                    👤 Mi Perfil
-                {% else %}
-                    📊 Dashboard
-                {% endif %}
-            </a>
-        </li>
-
-        {% if not user.es_usuario_autorizado %}
-        <li class="nav-item">
-            <a class="nav-link text-white {% if 'catalogos' in request.path %}active{% endif %}"
-               href="{% url 'grado_list' %}">
-                📁 Catálogos
+                <span class="sidebar-icon"></span>
+                <span class="sidebar-label">Inicio</span>
             </a>
         </li>
 
         <li class="nav-item">
-            <a class="nav-link text-white {% if 'personal' in request.path %}active{% endif %}"
-               href="{% url 'personal_list' %}">
-                👥 Personal
+            <a class="sidebar-link {% if request.resolver_match.url_name == 'mi_kardex' %}active{% endif %}"
+               href="{% url 'mi_kardex' %}">
+                <span class="sidebar-icon"></span>
+                <span class="sidebar-label">Kardex</span>
             </a>
         </li>
 
         <li class="nav-item">
-            <a class="nav-link text-white {% if 'reportes' in request.path and 'bitacora' not in request.path %}active{% endif %}"
-               href="{% url 'reportes:reporte_personal' %}">
-                📈 Reportes
+            <a class="sidebar-link {% if request.resolver_match.url_name == 'mis_solicitudes' or request.resolver_match.url_name == 'mi_solicitud_create' %}active{% endif %}"
+               href="{% url 'mis_solicitudes' %}">
+                <span class="sidebar-icon"></span>
+                <span class="sidebar-label">Solicitudes</span>
             </a>
         </li>
+
+        {% else %}
 
         <li class="nav-item">
-            <a class="nav-link text-white {% if 'permisos' in request.path %}active{% endif %}"
-               href="{% url 'permiso_list' %}">
-                🏖️ Permisos
+            <a class="sidebar-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}"
+               href="{% url 'dashboard' %}">
+                <span class="sidebar-icon"></span>
+                <span class="sidebar-label">Dashboard</span>
             </a>
         </li>
-
-        {% if user.puede_gestionar_sanciones %}
-        <li class="nav-item">
-            <a class="nav-link text-white {% if 'sanciones' in request.path %}active{% endif %}"
-               href="{% url 'sancion_list' %}">
-                ⚖️ Sanciones
-            </a>
-        </li>
-        {% endif %}
-
-        <li class="nav-item">
-            <a class="nav-link text-white {% if 'felicitaciones' in request.path %}active{% endif %}"
-               href="{% url 'felicitacion_list' %}">
-                ⭐ Felicitaciones
-            </a>
-        </li>
-
-        <li class="nav-item">
-            <a class="nav-link text-white {% if 'destinos' in request.path %}active{% endif %}"
-               href="{% url 'destino_list' %}">
-                📍 Destinos
-            </a>
-        </li>
-
-        <hr class="my-3 bg-secondary">
 
         {% if user.es_administrador %}
         <li class="nav-item">
-            <a class="nav-link text-white {% if 'asignar-roles' in request.path %}active{% endif %}"
+            <a class="sidebar-link {% if 'asignar-roles' in request.path or 'toggle-usuario' in request.path or 'bitacora' in request.path %}active{% endif %}"
                href="{% url 'asignar_rol_list' %}">
-                🔐 Asignar Roles
-            </a>
-        </li>
-
-        <li class="nav-item">
-            <a class="nav-link text-white {% if 'bitacora' in request.path %}active{% endif %}"
-               href="{% url 'reportes:bitacora' %}">
-                📋 Bitácora
+                <span class="sidebar-icon"></span>
+                <span class="sidebar-label">Seguridad</span>
             </a>
         </li>
         {% endif %}
 
-        {% endif %} {# fin not es_usuario_autorizado #}
+        <li class="nav-item">
+            <a class="sidebar-link {% if 'catalogos' in request.path %}active{% endif %}"
+               href="{% url 'grado_list' %}">
+                <span class="sidebar-icon"></span>
+                <span class="sidebar-label">Catálogos</span>
+            </a>
+        </li>
+
+        <li class="nav-item">
+            <a class="sidebar-link {% if request.path|slice:':10' == '/personal/' and 'destinos' not in request.path and 'permisos' not in request.path and 'sanciones' not in request.path and 'felicitaciones' not in request.path and 'reporte' not in request.path and 'mis-solicitudes' not in request.path and 'mi-kardex' not in request.path and 'antecedentes' not in request.path %}active{% endif %}"
+               href="{% url 'personal_list' %}">
+                <span class="sidebar-icon"></span>
+                <span class="sidebar-label">Personal</span>
+            </a>
+        </li>
+
+        <li class="nav-item">
+            <a class="sidebar-link {% if 'destinos' in request.path or 'permisos' in request.path or 'sanciones' in request.path or 'felicitaciones' in request.path or 'autoregistro' in request.path or 'antecedentes' in request.path %}active{% endif %}"
+               href="{% url 'destino_list' %}">
+                <span class="sidebar-icon"></span>
+                <span class="sidebar-label">Gestión de Personal</span>
+            </a>
+        </li>
+
+        <li class="nav-item">
+            <a class="sidebar-link {% if 'reporte' in request.path %}active{% endif %}"
+               href="{% url 'reportes:reporte_personal' %}">
+                <span class="sidebar-icon"></span>
+                <span class="sidebar-label">Reportes</span>
+            </a>
+        </li>
+
+        {% endif %}
     </ul>
 
-    <!-- Info del usuario -->
-    <div class="px-3 mt-4 pt-3 border-top border-secondary">
-        <small class="text-white-50 d-block mb-2">Sesión actual:</small>
-        <div class="text-white">
-            <strong>{{ user.username }}</strong><br>
+    <div class="sidebar-footer">
+        <div class="sidebar-user">
+            <span class="sidebar-avatar">{{ user.username|first|upper }}</span>
+            <span>{{ user.username }}</span>
             {% if user.es_administrador %}
-                <span class="badge bg-danger mt-1">🔴 Administrador</span>
+                <span class="badge bg-danger">Admin</span>
             {% elif user.es_oficial_administrativo %}
-                <span class="badge bg-warning text-dark mt-1">🟡 Oficial Admin</span>
+                <span class="badge bg-warning text-dark">Oficial</span>
+            {% elif user.es_usuario_autorizado %}
+                <span class="badge bg-info">Personal</span>
             {% else %}
-                <span class="badge bg-info mt-1">🔵 Consulta</span>
+                <span class="badge bg-secondary">Temporal</span>
             {% endif %}
         </div>
-        <a href="{% url 'logout' %}" class="btn btn-sm btn-outline-light mt-3 w-100">
-            🚪 Cerrar sesión
+        <a href="{% url 'logout' %}" class="sidebar-link logout-link">
+            <span class="sidebar-icon"></span>
+            <span class="sidebar-label">Cerrar sesión</span>
         </a>
     </div>
 </div>

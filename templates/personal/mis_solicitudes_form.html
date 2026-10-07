@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}Nueva Solicitud - UTEPPI{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-3">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="mb-0">🏖️ Nueva Solicitud de Permiso/Licencia</h4>
+                </div>
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        {{ form.tipo_permiso|as_crispy_field }}
+                        <div class="row">
+                            <div class="col-md-6">{{ form.fecha_inicio|as_crispy_field }}</div>
+                            <div class="col-md-6">{{ form.fecha_fin|as_crispy_field }}</div>
+                        </div>
+                        <div class="alert alert-info mt-2">
+                            <small><strong>💡 Info:</strong> Los días se calcularán automáticamente</small>
+                        </div>
+                        {{ form.motivo|as_crispy_field }}
+                        {{ form.documento_adjunto|as_crispy_field }}
+                        <div class="mt-4">
+                            <button type="submit" class="btn btn-success">💾 Enviar Solicitud</button>
+                            <a href="{% url 'mis_solicitudes' %}" class="btn btn-secondary">↩️ Cancelar</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

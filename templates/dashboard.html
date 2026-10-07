@@ -2,178 +2,177 @@
 
 {% block title %}Dashboard - UTEPPI{% endblock %}
 
+{% block extra_css %}
+<style>
+    .dash-header { margin-bottom: 16px; }
+    .dash-header h1 { font-weight: 600; color: #1a2234; margin-bottom: 2px; font-size: 1.25rem; }
+    .dash-header .subtitle { color: #8892a4; font-size: .8rem; }
+
+    .kpi-card {
+        background: #fff;
+        border-radius: 10px;
+        box-shadow: 0 1px 8px rgba(15,23,41,.05);
+        border: 1px solid #f0f1f4;
+        padding: 14px 16px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        height: 100%;
+    }
+    .kpi-label {
+        font-size: .65rem;
+        letter-spacing: .03em;
+        text-transform: uppercase;
+        color: #8892a4;
+        font-weight: 600;
+        margin-bottom: 4px;
+    }
+    .kpi-value { font-size: 1.4rem; font-weight: 700; color: #1a2234; line-height: 1; }
+    .kpi-icon-circle {
+        width: 34px; height: 34px;
+        border-radius: 50%;
+        flex-shrink: 0;
+    }
+    .kpi-blue   { background: #dbeafe; }
+    .kpi-green  { background: #dcfce7; }
+    .kpi-yellow { background: #fef9c3; }
+    .kpi-purple { background: #f3e8ff; }
+
+    .panel-card {
+        background: #fff;
+        border-radius: 10px;
+        box-shadow: 0 1px 8px rgba(15,23,41,.05);
+        border: 1px solid #f0f1f4;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+    .panel-card .panel-header {
+        padding: 11px 16px;
+        border-bottom: 1px solid #f0f1f4;
+        font-weight: 600;
+        color: #1a2234;
+        font-size: .82rem;
+    }
+    .panel-card .panel-body { padding: 14px 16px; flex: 1; }
+    .panel-card .panel-body.p-0 { padding: 0; }
+
+    .chart-wrap { position: relative; width: 100%; height: 200px; }
+
+    .summary-table thead th {
+        background-color: #f8f9fb;
+        color: #8892a4;
+        text-transform: uppercase;
+        font-size: .65rem;
+        letter-spacing: .02em;
+        font-weight: 600;
+        border-bottom: none;
+        padding: 9px 14px;
+        white-space: nowrap;
+    }
+    .summary-table tbody td { padding: 9px 14px; font-size: .82rem; vertical-align: middle; }
+    .summary-table tbody tr { transition: background-color .12s ease; }
+    .summary-table tbody tr:hover { background-color: #f8faff; }
+
+    @media (max-width: 767.98px) {
+        .chart-wrap { height: 180px; }
+        .kpi-value { font-size: 1.2rem; }
+        .kpi-icon-circle { width: 28px; height: 28px; }
+    }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="container-fluid">
-    <!-- Encabezado -->
-    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-        <h1 class="h2">
-            📊 Dashboard del Sistema
-        </h1>
-        <div class="btn-toolbar mb-2 mb-md-0">
-            <div class="btn-group me-2">
-                <span class="btn btn-sm btn-outline-secondary">
-                    👋 Bienvenido, {{ user.username }}
-                </span>
+<div class="container-fluid px-0">
+
+    {{ personal_por_unidad|json_script:"data-personal-por-unidad" }}
+    {{ personal_por_grado|json_script:"data-personal-por-grado" }}
+
+    <div class="dash-header">
+        <h1>Dashboard del Sistema</h1>
+        <div class="subtitle">Bienvenido, {{ user.username }}</div>
+    </div>
+
+    <div class="row g-2 mb-2">
+        <div class="col-12 col-md-6 col-xl-3">
+            <div class="kpi-card">
+                <div>
+                    <div class="kpi-label">Total de Personal</div>
+                    <div class="kpi-value">{{ total_personal }}</div>
+                </div>
+                <div class="kpi-icon-circle kpi-blue"></div>
+            </div>
+        </div>
+        <div class="col-12 col-md-6 col-xl-3">
+            <div class="kpi-card">
+                <div>
+                    <div class="kpi-label">Personal Activo</div>
+                    <div class="kpi-value">{{ personal_activo }}</div>
+                </div>
+                <div class="kpi-icon-circle kpi-green"></div>
+            </div>
+        </div>
+        <div class="col-12 col-md-6 col-xl-3">
+            <div class="kpi-card">
+                <div>
+                    <div class="kpi-label">En Licencia</div>
+                    <div class="kpi-value">{{ personal_licencia }}</div>
+                </div>
+                <div class="kpi-icon-circle kpi-yellow"></div>
+            </div>
+        </div>
+        <div class="col-12 col-md-6 col-xl-3">
+            <div class="kpi-card">
+                <div>
+                    <div class="kpi-label">Unidades Activas</div>
+                    <div class="kpi-value">{{ personal_por_unidad|length }}</div>
+                </div>
+                <div class="kpi-icon-circle kpi-purple"></div>
             </div>
         </div>
     </div>
 
-    <!-- Tarjetas de Estadísticas -->
-    <div class="row">
-        <div class="col-xl-3 col-md-6 mb-4">
-            <div class="card border-left-primary shadow h-100 py-2">
-                <div class="card-body">
-                    <div class="row no-gutters align-items-center">
-                        <div class="col mr-2">
-                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
-                                Total de Personal
-                            </div>
-                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ total_personal }}</div>
-                        </div>
-                        <div class="col-auto">
-                            <i class="fas fa-users fa-2x text-gray-300">👥</i>
-                        </div>
+    <div class="row g-2 mb-2">
+        <div class="col-12 col-lg-6">
+            <div class="panel-card">
+                <div class="panel-header">Personal por Unidad</div>
+                <div class="panel-body">
+                    {% if personal_por_unidad %}
+                    <div class="chart-wrap">
+                        <canvas id="chartUnidad"></canvas>
                     </div>
+                    {% else %}
+                    <p class="text-muted text-center mb-0 py-4">No hay datos</p>
+                    {% endif %}
                 </div>
             </div>
         </div>
-
-        <div class="col-xl-3 col-md-6 mb-4">
-            <div class="card border-left-success shadow h-100 py-2">
-                <div class="card-body">
-                    <div class="row no-gutters align-items-center">
-                        <div class="col mr-2">
-                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
-                                Personal Activo
-                            </div>
-                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ personal_activo }}</div>
-                        </div>
-                        <div class="col-auto">
-                            <i class="fas fa-user-check fa-2x text-gray-300">✅</i>
-                        </div>
+        <div class="col-12 col-lg-6">
+            <div class="panel-card">
+                <div class="panel-header">Personal por Grado</div>
+                <div class="panel-body">
+                    {% if personal_por_grado %}
+                    <div class="chart-wrap">
+                        <canvas id="chartGrado"></canvas>
                     </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-xl-3 col-md-6 mb-4">
-            <div class="card border-left-info shadow h-100 py-2">
-                <div class="card-body">
-                    <div class="row no-gutters align-items-center">
-                        <div class="col mr-2">
-                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
-                                En Licencia
-                            </div>
-                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ personal_licencia }}</div>
-                        </div>
-                        <div class="col-auto">
-                            <i class="fas fa-umbrella-beach fa-2x text-gray-300">🏖️</i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-xl-3 col-md-6 mb-4">
-            <div class="card border-left-warning shadow h-100 py-2">
-                <div class="card-body">
-                    <div class="row no-gutters align-items-center">
-                        <div class="col mr-2">
-                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
-                                Unidades Activas
-                            </div>
-                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ personal_por_unidad|length }}</div>
-                        </div>
-                        <div class="col-auto">
-                            <i class="fas fa-building fa-2x text-gray-300">🏢</i>
-                        </div>
-                    </div>
+                    {% else %}
+                    <p class="text-muted text-center mb-0 py-4">No hay datos</p>
+                    {% endif %}
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Gráficos y Tablas -->
-    <div class="row">
-        <!-- Personal por Unidad -->
-        <div class="col-xl-6 col-lg-6">
-            <div class="card shadow mb-4">
-                <div class="card-header py-3">
-                    <h6 class="m-0 font-weight-bold text-primary">👥 Personal por Unidad</h6>
-                </div>
-                <div class="card-body">
-                    <div class="table-responsive">
-                        <table class="table table-bordered table-sm">
-                            <thead class="table-light">
-                                <tr>
-                                    <th>Unidad</th>
-                                    <th>Cantidad</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for unidad in personal_por_unidad %}
-                                <tr>
-                                    <td>{{ unidad.nombre }}</td>
-                                    <td><span class="badge bg-primary">{{ unidad.total }}</span></td>
-                                </tr>
-                                {% empty %}
-                                <tr>
-                                    <td colspan="2" class="text-center text-muted">No hay datos</td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Personal por Grado -->
-        <div class="col-xl-6 col-lg-6">
-            <div class="card shadow mb-4">
-                <div class="card-header py-3">
-                    <h6 class="m-0 font-weight-bold text-primary">⭐ Personal por Grado</h6>
-                </div>
-                <div class="card-body">
-                    <div class="table-responsive">
-                        <table class="table table-bordered table-sm">
-                            <thead class="table-light">
-                                <tr>
-                                    <th>Grado</th>
-                                    <th>Cantidad</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for grado in personal_por_grado %}
-                                <tr>
-                                    <td>{{ grado.abreviatura }}</td>
-                                    <td><span class="badge bg-success">{{ grado.total }}</span></td>
-                                </tr>
-                                {% empty %}
-                                <tr>
-                                    <td colspan="2" class="text-center text-muted">No hay datos</td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Últimos registros de Kardex -->
-    <div class="row">
+    <div class="row g-2">
         <div class="col-12">
-            <div class="card shadow mb-4">
-                <div class="card-header py-3">
-                    <h6 class="m-0 font-weight-bold text-primary">📝 Últimos Registros de Kardex</h6>
-                </div>
-                <div class="card-body">
+            <div class="panel-card">
+                <div class="panel-header">Últimos Movimientos de Personal</div>
+                <div class="panel-body p-0">
                     {% if ultimos_registros %}
                     <div class="table-responsive">
-                        <table class="table table-bordered table-sm">
-                            <thead class="table-light">
+                        <table class="table summary-table mb-0">
+                            <thead>
                                 <tr>
                                     <th>Fecha</th>
                                     <th>Personal</th>
@@ -186,13 +185,11 @@
                                 <tr>
                                     <td>{{ registro.fecha_registro }}</td>
                                     <td>
-                                        <a href="{% url 'personal_detail' registro.personal.pk %}">
+                                        <a href="{% url 'personal_detail' registro.personal.pk %}" class="text-decoration-none fw-semibold">
                                             {{ registro.personal.nombre_completo }}
                                         </a>
                                     </td>
-                                    <td>
-                                        <span class="badge bg-info">{{ registro.get_tipo_registro_display }}</span>
-                                    </td>
+                                    <td><span class="badge bg-info">{{ registro.get_tipo_registro_display }}</span></td>
                                     <td>{{ registro.descripcion|truncatewords:10 }}</td>
                                 </tr>
                                 {% endfor %}
@@ -200,46 +197,98 @@
                         </table>
                     </div>
                     {% else %}
-                    <p class="text-muted text-center">No hay registros recientes</p>
+                    <p class="text-muted text-center mb-0 py-4">No hay registros recientes</p>
                     {% endif %}
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Acciones Rápidas -->
-    <div class="row">
-        <div class="col-12">
-            <div class="card shadow">
-                <div class="card-header py-3">
-                    <h6 class="m-0 font-weight-bold text-primary">🚀 Acciones Rápidas</h6>
-                </div>
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-3 mb-2">
-                            <a href="{% url 'personal_list' %}" class="btn btn-primary w-100">
-                                👥 Gestión de Personal
-                            </a>
-                        </div>
-                        <div class="col-md-3 mb-2">
-                            <a href="{% url 'grado_list' %}" class="btn btn-success w-100">
-                                📁 Catálogos
-                            </a>
-                        </div>
-                        <div class="col-md-3 mb-2">
-                            <a href="{% url 'personal_create' %}" class="btn btn-info w-100">
-                                ➕ Agregar Personal
-                            </a>
-                        </div>
-                        <div class="col-md-3 mb-2">
-                            <a href="/admin" class="btn btn-warning w-100">
-                                ⚙️ Admin Django
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+
+    const unidadEl = document.getElementById('data-personal-por-unidad');
+    if (unidadEl) {
+        const unidadRaw = JSON.parse(unidadEl.textContent);
+        const unidadLabels = unidadRaw.map(function (u) { return u.nombre; });
+        const unidadData = unidadRaw.map(function (u) { return u.total; });
+
+        const canvasUnidad = document.getElementById('chartUnidad');
+        if (canvasUnidad) {
+            new Chart(canvasUnidad, {
+                type: 'bar',
+                data: {
+                    labels: unidadLabels,
+                    datasets: [{
+                        data: unidadData,
+                        backgroundColor: '#3b82f6',
+                        borderRadius: 5,
+                        maxBarThickness: 20
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { beginAtZero: true, ticks: { precision: 0, font: { size: 10 } }, grid: { color: '#f0f1f4' } },
+                        y: { ticks: { font: { size: 10 } }, grid: { display: false } }
+                    }
+                }
+            });
+        }
+    }
+
+    const gradoEl = document.getElementById('data-personal-por-grado');
+    if (gradoEl) {
+        const gradoRaw = JSON.parse(gradoEl.textContent);
+        let gradoLabels = gradoRaw.map(function (g) { return g.abreviatura; });
+        let gradoData = gradoRaw.map(function (g) { return g.total; });
+
+        if (gradoLabels.length > 6) {
+            const combined = gradoLabels
+                .map(function (label, i) { return { label: label, value: gradoData[i] }; })
+                .sort(function (a, b) { return b.value - a.value; });
+            const top = combined.slice(0, 6);
+            const resto = combined.slice(6).reduce(function (sum, item) { return sum + item.value; }, 0);
+            gradoLabels = top.map(function (item) { return item.label; });
+            gradoData = top.map(function (item) { return item.value; });
+            if (resto > 0) {
+                gradoLabels.push('Otros');
+                gradoData.push(resto);
+            }
+        }
+
+        const canvasGrado = document.getElementById('chartGrado');
+        if (canvasGrado) {
+            new Chart(canvasGrado, {
+                type: 'doughnut',
+                data: {
+                    labels: gradoLabels,
+                    datasets: [{
+                        data: gradoData,
+                        backgroundColor: ['#3b82f6', '#16a34a', '#d97706', '#9333ea', '#0891b2', '#dc2626', '#64748b'],
+                        borderWidth: 2,
+                        borderColor: '#fff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom', labels: { boxWidth: 10, padding: 10, font: { size: 10 } } }
+                    }
+                }
+            });
+        }
+    }
+
+});
+</script>
 {% endblock %}

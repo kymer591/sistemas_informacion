@@ -1,38 +1,30 @@
 {% extends 'base.html' %}
 {% load crispy_forms_tags %}
 
-{% block app_navbar %}
-    {% include 'includes/catalogos_navbar.html' %}
-{% endblock %}
+{% block title %}Eliminar Unidad - UTEPPI{% endblock %}
 
 {% block content %}
 <div class="container-fluid">
     <div class="row justify-content-center">
         <div class="col-md-6">
-            <div class="card">
-                <div class="card-header bg-warning">
-                    <h4 class="mb-0">⚠️ Confirmar Eliminación</h4>
-                </div>
-                <div class="card-body">
-                    <p>¿Estás seguro de que deseas eliminar la unidad?</p>
-                    <p><strong>{{ object.codigo }} - {{ object.nombre }}</strong></p>
-                    
+            <div class="panel-card">
+                <div class="panel-header" style="color:#b91c1c;">Confirmar Eliminación</div>
+                <div class="panel-body">
+                    <p class="mb-1" style="font-size:.85rem;">¿Estás seguro de que deseas eliminar la unidad?</p>
+                    <p class="mb-3"><strong>{{ object.codigo }} - {{ object.nombre }}</strong></p>
+
                     {% if object.personal_policial_set.exists %}
-                    <div class="alert alert-danger">
-                        ⚠️ Esta unidad tiene personal asignado. No se puede eliminar.
+                    <div class="alert alert-danger py-2 px-3" style="font-size:.8rem;">
+                        Esta unidad tiene personal asignado. No se puede eliminar.
                     </div>
-                    <a href="{% url 'unidad_list' %}" class="btn btn-secondary">
-                        ↩️ Volver
-                    </a>
+                    <a href="{% url 'unidad_list' %}" class="btn btn-outline-secondary btn-sm">Volver</a>
                     {% else %}
                     <form method="post">
                         {% csrf_token %}
-                        <button type="submit" class="btn btn-danger">
-                            🗑️ Sí, Eliminar
-                        </button>
-                        <a href="{% url 'unidad_list' %}" class="btn btn-secondary">
-                            ↩️ Cancelar
-                        </a>
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-danger btn-sm">Sí, Eliminar</button>
+                            <a href="{% url 'unidad_list' %}" class="btn btn-outline-secondary btn-sm">Cancelar</a>
+                        </div>
                     </form>
                     {% endif %}
                 </div>

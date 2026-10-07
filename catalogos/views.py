@@ -1,7 +1,7 @@
 from django.urls import reverse_lazy
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView
 from django.contrib.auth.mixins import LoginRequiredMixin
-from .models import Grado, Unidad, TipoEstado, TipoSancion, TipoFelicitacion
+from .models import Grado, Unidad, TipoEstado, TipoSancion, TipoFelicitacion, Cargo
 
 from core.mixins import (
     UsuarioAutorizadoRequiredMixin,
@@ -55,7 +55,7 @@ class UnidadCreateView(BitacoraMixin, PuedeCrearMixin, CreateView):
     bitacora_modulo = 'catalogos'
     model = Unidad
     template_name = 'catalogos/unidad_form.html'
-    fields = ['codigo', 'nombre', 'descripcion', 'activa']
+    fields = ['codigo', 'nombre', 'descripcion', 'activa', 'ciudad', 'direccion', 'correo_electronico', 'comandante']
     success_url = reverse_lazy('unidad_list')
     login_url = 'login'
 
@@ -63,7 +63,7 @@ class UnidadUpdateView(BitacoraMixin, PuedeEditarMixin, UpdateView):
     bitacora_modulo = 'catalogos'
     model = Unidad
     template_name = 'catalogos/unidad_form.html'
-    fields = ['codigo', 'nombre', 'descripcion', 'activa']
+    fields = ['codigo', 'nombre', 'descripcion', 'activa', 'ciudad', 'direccion', 'correo_electronico', 'comandante']
     success_url = reverse_lazy('unidad_list')
     login_url = 'login'
 
@@ -85,14 +85,14 @@ class TipoEstadoCreateView(BitacoraMixin, PuedeCrearMixin, CreateView):
     bitacora_modulo = 'catalogos'
     model = TipoEstado
     template_name = 'catalogos/tipoestado_form.html'
-    fields = ['nombre', 'color']
+    fields = ['nombre', 'color', 'cumple_funciones']
     success_url = reverse_lazy('tipoestado_list')
 
 class TipoEstadoUpdateView(BitacoraMixin, PuedeEditarMixin, UpdateView):
     bitacora_modulo = 'catalogos'
     model = TipoEstado
     template_name = 'catalogos/tipoestado_form.html'
-    fields = ['nombre', 'color']
+    fields = ['nombre', 'color', 'cumple_funciones']
     success_url = reverse_lazy('tipoestado_list')
 
 class TipoEstadoDeleteView(BitacoraMixin, PuedeEliminarMixin, DeleteView):
@@ -158,3 +158,47 @@ class TipoFelicitacionDeleteView(BitacoraMixin, PuedeEliminarMixin, DeleteView):
     model = TipoFelicitacion
     template_name = 'catalogos/tipofelicitacion_confirm_delete.html'
     success_url = reverse_lazy('tipofelicitacion_list')
+
+
+# ===== CARGOS =====
+class CargoListView(UsuarioAutorizadoRequiredMixin, ListView):
+    model = Cargo
+    template_name = 'catalogos/cargo_list.html'
+    context_object_name = 'cargos'
+    login_url = 'login'
+
+    def get_queryset(self):
+        qs = Cargo.objects.select_related('unidad').order_by('unidad__nombre', 'orden')
+        unidad_id = self.request.GET.get('unidad')
+        if unidad_id:
+            qs = qs.filter(unidad_id=unidad_id)
+        return qs
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['unidades'] = Unidad.objects.filter(activa=True).order_by('nombre')
+        context['unidad_sel'] = self.request.GET.get('unidad', '')
+        return context
+
+class CargoCreateView(BitacoraMixin, PuedeCrearMixin, CreateView):
+    bitacora_modulo = 'catalogos'
+    model = Cargo
+    template_name = 'catalogos/cargo_form.html'
+    fields = ['unidad', 'nombre', 'orden', 'activo']
+    success_url = reverse_lazy('cargo_list')
+    login_url = 'login'
+
+class CargoUpdateView(BitacoraMixin, PuedeEditarMixin, UpdateView):
+    bitacora_modulo = 'catalogos'
+    model = Cargo
+    template_name = 'catalogos/cargo_form.html'
+    fields = ['unidad', 'nombre', 'orden', 'activo']
+    success_url = reverse_lazy('cargo_list')
+    login_url = 'login'
+
+class CargoDeleteView(BitacoraMixin, PuedeEliminarMixin, DeleteView):
+    bitacora_modulo = 'catalogos'
+    model = Cargo
+    template_name = 'catalogos/cargo_confirm_delete.html'
+    success_url = reverse_lazy('cargo_list')
+    login_url = 'login'

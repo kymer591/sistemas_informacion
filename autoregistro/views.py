@@ -141,6 +141,7 @@ def revisar_registro(request, pk):
         if accion == 'aprobar':
             form = CompletarRegistroForm(request.POST, request.FILES, instance=personal)
             if form.is_valid():
+                campos_editados = form.changed_data
                 with transaction.atomic():
                     form.save()
                     reg.usuario.rol    = 'usuario_autorizado'
@@ -151,6 +152,15 @@ def revisar_registro(request, pk):
                     reg.fecha_aprobacion  = timezone.now()
                     reg.observaciones_rev = request.POST.get('observaciones_rev', '')
                     reg.save()
+
+                    if campos_editados:
+                        registrar_log(
+                            request, 'EDITAR', 'personal',
+                            f'Editó datos de {personal} durante la revisión. '
+                            f'Campos modificados: {", ".join(campos_editados)}',
+                            objeto=personal,
+                        )
+
                     registrar_log(
                         request, 'EDITAR', 'personal',
                         f'Aprobó registro temporal de {personal}',
@@ -158,7 +168,7 @@ def revisar_registro(request, pk):
                     )
                 messages.success(
                     request,
-                    f'✅ Registro de {personal.nombre_completo()} aprobado. '
+                    f'Registro de {personal.nombre_completo()} aprobado. '
                     f'Cuenta activada como Usuario Autorizado.'
                 )
                 return redirect('autoregistro:lista_temporales')
@@ -230,3 +240,56 @@ def completar_registro(request):
         'personal': personal,
         'reg'     : reg,
     })
+
+# ══════════════════════════════════════════════════════════════════
+#  ADMINISTRATIVO — Habilitar autoregistro para personal YA existente
+# ══════════════════════════════════════════════════════════════════
+
+@login_required
+@require_POST
+def crear_usuario_temporal(request, personal_id):
+    if not request.user.puede_crear():
+        messages.error(request, 'No tienes permisos para crear usuarios.')
+        return redirect('personal_list')
+
+    personal = get_object_or_404(PersonalPolicial, pk=personal_id)
+
+    if hasattr(personal, 'usuario_acceso') and personal.usuario_acceso:
+        messages.error(request, f'{personal.nombre_completo()} ya tiene un usuario de acceso.')
+        return redirect('personal_detail', pk=personal.pk)
+
+    ci = personal.ci
+    password = request.POST.get('password', '').strip() or ci[::-1]
+
+    with transaction.atomic():
+        usuario = Usuario.objects.create(
+            username   = ci,
+            first_name = personal.nombres,
+            last_name  = f"{personal.apellido_paterno} {personal.apellido_materno}".strip(),
+            email      = '',
+            rol        = 'temporal',
+            personal   = personal,
+            is_active  = True,
+            activo     = True,
+        )
+        usuario.set_password(password)
+        usuario.save()
+
+        RegistroTemporal.objects.create(
+            personal   = personal,
+            usuario    = usuario,
+            creado_por = request.user,
+        )
+
+        registrar_log(
+            request, 'CREAR', 'personal',
+            f'Habilitó autoregistro para {personal} — usuario: {ci}',
+            objeto=personal,
+        )
+
+    messages.success(
+        request,
+        f'Usuario temporal creado. Usuario: {ci} — Contraseña: {password}. '
+        f'Entrégasela al policía.'
+    )
+    return redirect('personal_detail', pk=personal.pk)

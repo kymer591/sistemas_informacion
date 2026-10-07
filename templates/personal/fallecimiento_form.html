@@ -1,0 +1,33 @@
+
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}Registrar Fallecimiento - UTEPPI{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="panel-card">
+                <div class="panel-header" style="color:#b91c1c;">
+                    Registrar Fallecimiento — {{ persona.nombre_completo }}
+                </div>
+                <div class="panel-body">
+                    <div class="alert alert-warning" style="font-size:.82rem;">
+                        Al guardar, este personal pasará automáticamente a <strong>inactivo</strong>
+                        y se registrará en su Kardex.
+                    </div>
+                    <form method="post">
+                        {% csrf_token %}
+                        {{ form|crispy }}
+                        <div class="mt-3 d-flex gap-2">
+                            <button type="submit" class="btn btn-danger btn-sm">Registrar Fallecimiento</button>
+                            <a href="{% url 'personal_detail' persona.pk %}" class="btn btn-outline-secondary btn-sm">Cancelar</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+
+{% block title %}Fallecimientos - UTEPPI{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="page-header">
+        <h4 class="mb-0">Registro de Fallecimientos</h4>
+    </div>
+    <div class="panel-card">
+        <div class="panel-body p-0">
+            <table class="table summary-table table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th>Personal</th>
+                        <th>Fecha Fallecimiento</th>
+                        <th>Causa</th>
+                        <th>N° Certificado</th>
+                        <th>Entidad</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for f in fallecimientos %}
+                    <tr>
+                        <td>
+                            <a href="{% url 'personal_detail' f.personal.pk %}" class="text-decoration-none">
+                                {{ f.personal.nombre_completo }}
+                            </a>
+                        </td>
+                        <td>{{ f.fecha_fallecimiento }}</td>
+                        <td>{{ f.causa_deceso|default:"—" }}</td>
+                        <td>{{ f.numero_certificado_defuncion|default:"—" }}</td>
+                        <td>{{ f.entidad|default:"—" }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="5" class="text-center text-muted py-4">Sin novedad</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

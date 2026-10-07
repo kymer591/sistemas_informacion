@@ -69,10 +69,14 @@ class CrearTemporalForm(forms.Form):
 
 class CompletarRegistroForm(forms.ModelForm):
     """
-    Todo lo que el policía completa al iniciar sesión con su cuenta temporal.
+    Formulario que el policía completa al iniciar sesión.
+    Usa commit=False internamente y solo actualiza los campos
+    que el policía puede editar, sin tocar los campos base
+    (grado, unidad, estado_actual, etc.) que ya puso el admin.
     """
     class Meta:
         model  = PersonalPolicial
+        # Solo los campos que el policía puede completar
         fields = [
             'codigo_identificacion',
             'expedido',
@@ -86,17 +90,20 @@ class CompletarRegistroForm(forms.ModelForm):
             'telefono_emergencia',
             'correo_institucional',
             'direccion_domicilio',
-            'cargo_actual',
+            'cargo',
             'otra_profesion',
             'foto',
         ]
         widgets = {
-            'codigo_identificacion': forms.TextInput(attrs={'class': 'form-control'}),
+            'codigo_identificacion': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Código de identificación institucional',
+            }),
             'expedido': forms.Select(
                 choices=[
-                    ('LP','La Paz'), ('CB','Cochabamba'), ('SC','Santa Cruz'),
-                    ('OR','Oruro'), ('PT','Potosí'), ('CH','Chuquisaca'),
-                    ('TJ','Tarija'), ('BE','Beni'), ('PD','Pando'),
+                    ('LP', 'La Paz'),   ('CB', 'Cochabamba'), ('SC', 'Santa Cruz'),
+                    ('OR', 'Oruro'),    ('PT', 'Potosí'),     ('CH', 'Chuquisaca'),
+                    ('TJ', 'Tarija'),   ('BE', 'Beni'),       ('PD', 'Pando'),
                 ],
                 attrs={'class': 'form-select'}
             ),
@@ -106,19 +113,22 @@ class CompletarRegistroForm(forms.ModelForm):
             'unidad'              : forms.Select(attrs={'class': 'form-select'}),
             'estado_actual'       : forms.Select(attrs={'class': 'form-select'}),
             'fecha_ingreso'       : forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
-            'telefono_personal'   : forms.TextInput(attrs={'class': 'form-control'}),
-            'telefono_emergencia' : forms.TextInput(attrs={'class': 'form-control'}),
+            'telefono_personal'   : forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ej: 70012345'}),
+            'telefono_emergencia' : forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ej: 72234567'}),
             'correo_institucional': forms.EmailInput(attrs={'class': 'form-control'}),
             'direccion_domicilio' : forms.TextInput(attrs={'class': 'form-control'}),
-            'cargo_actual'        : forms.TextInput(attrs={'class': 'form-control'}),
+            'cargo'        : forms.TextInput(attrs={'class': 'form-control'}),
             'otra_profesion'      : forms.TextInput(attrs={'class': 'form-control'}),
             'foto'                : forms.FileInput(attrs={'class': 'form-control', 'accept': 'image/*'}),
         }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # Solo estos son obligatorios, el resto el policía puede dejarlo para después
-        obligatorios = {'fecha_nacimiento', 'genero', 'grado', 'unidad', 'estado_actual', 'fecha_ingreso'}
+        # Campos obligatorios para que el modelo pueda guardarse
+        obligatorios = {
+            'fecha_nacimiento', 'genero', 'grado',
+            'unidad', 'estado_actual', 'fecha_ingreso',
+        }
         for name, field in self.fields.items():
             if name not in obligatorios:
                 field.required = False

@@ -32,10 +32,22 @@ class PersonalPolicial(models.Model):
         blank=True, null=True,
         verbose_name='Dirección del domicilio'
     )
-    cargo_actual = models.CharField(
-        max_length=200,
+    cargo = models.ForeignKey(
+        'catalogos.Cargo',
+        on_delete=models.SET_NULL,
         blank=True, null=True,
-        verbose_name='Cargo actual'
+        verbose_name='Cargo actual',
+        related_name='personal_asignado'
+    )
+    TIPO_CARRERA_CHOICES = [
+        ('carrera', 'De Carrera'),
+        ('servicio', 'De Servicio'),
+    ]
+    tipo_carrera = models.CharField(
+        max_length=10,
+        choices=TIPO_CARRERA_CHOICES,
+        default='carrera',
+        verbose_name='Tipo de Personal'
     )
     otra_profesion = models.CharField(
         max_length=200,
@@ -238,3 +250,52 @@ class DestinoPolicial(models.Model):
     @property
     def estado_badge(self):
         return 'success' if self.activo else 'secondary'
+
+class BajaPersonal(models.Model):
+    TIPO_BAJA_CHOICES = [
+        ('baja_definitiva', 'Baja Definitiva de la Institución'),
+        ('retiro_temporal', 'Retiro Temporal (Cat. B)'),
+        ('licencia_indefinida', 'Licencia Indefinida'),
+    ]
+
+    personal = models.OneToOneField(PersonalPolicial, on_delete=models.CASCADE, related_name='baja')
+    tipo_baja = models.CharField(max_length=20, choices=TIPO_BAJA_CHOICES)
+    fecha_baja = models.DateField()
+    motivo = models.TextField(blank=True, null=True)
+    resolucion_tds = models.CharField(max_length=50, blank=True, null=True, verbose_name='Resolución TDS')
+    numero_memo_escalafon = models.CharField(max_length=50, blank=True, null=True, verbose_name='N° Memo. Escalafón')
+    autoridad_firma = models.CharField(max_length=200, blank=True, null=True, verbose_name='Autoridad que firma')
+    cargo_autoridad_firma = models.CharField(max_length=150, blank=True, null=True, verbose_name='Cargo de la autoridad')
+    fecha_notificacion = models.DateField(blank=True, null=True)
+    observaciones = models.TextField(blank=True, null=True)
+    registrado_por = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True)
+    fecha_registro = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = 'Baja de Personal'
+        verbose_name_plural = 'Bajas de Personal'
+
+    def __str__(self):
+        return f"{self.get_tipo_baja_display()} - {self.personal.nombre_completo()}"
+
+
+class Fallecimiento(models.Model):
+    personal = models.OneToOneField(PersonalPolicial, on_delete=models.CASCADE, related_name='fallecimiento')
+    fecha_fallecimiento = models.DateField()
+    causa_deceso = models.CharField(max_length=255, blank=True, null=True)
+    numero_certificado_defuncion = models.CharField(max_length=50, blank=True, null=True, verbose_name='N° Certificado de Defunción')
+    entidad = models.CharField(max_length=200, blank=True, null=True, help_text='Entidad que emite el certificado')
+    autoridad_firma = models.CharField(max_length=200, blank=True, null=True, verbose_name='Autoridad que firma')
+    numero_informe_trabajo_social = models.CharField(max_length=50, blank=True, null=True, verbose_name='N° Informe de Trabajo Social')
+    fecha_informe = models.DateField(blank=True, null=True)
+    direccion_departamental_salud = models.CharField(max_length=200, blank=True, null=True, verbose_name='Dir. Dptal. Salud que remite')
+    observaciones = models.TextField(blank=True, null=True)
+    registrado_por = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True)
+    fecha_registro = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = 'Fallecimiento'
+        verbose_name_plural = 'Fallecimientos'
+
+    def __str__(self):
+        return f"Fallecimiento - {self.personal.nombre_completo()}"

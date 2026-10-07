@@ -4,110 +4,204 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Sistema UTEPPI{% endblock %}</title>
-    
-    <!-- Bootstrap 5 CDN -->
+
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-    
+
     <style>
-        /* ── Sidebar escritorio ── */
-        .sidebar {
-            background-color: #2c3e50;
+        :root {
+            --sidebar-width: 200px;
+            --sidebar-width-collapsed: 56px;
+        }
+
+        html, body { height: 100%; }
+        body { background-color: #f4f6f9; font-size: .88rem; }
+
+        .app-shell {
+            display: flex;
             min-height: 100vh;
-            color: white;
+        }
+
+        .app-sidebar {
+            width: var(--sidebar-width);
+            min-width: var(--sidebar-width);
+            background: linear-gradient(180deg, #0f1729 0%, #1a2234 100%);
+            color: #fff;
             position: sticky;
             top: 0;
             height: 100vh;
             overflow-y: auto;
+            transition: width .2s ease, min-width .2s ease;
         }
 
-        .sidebar .nav-link {
-            color: #ecf0f1;
-            padding: 12px 20px;
-            margin: 2px 0;
-            border-radius: 5px;
-            text-decoration: none;
-            display: block;
+        .app-sidebar-inner {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
         }
 
-        .sidebar .nav-link:hover  { background-color: #34495e; color: white; }
-        .sidebar .nav-link.active { background-color: #3498db; }
-
-        .sidebar-heading {
-            color: #bdc3c7;
-            font-size: 0.75rem;
-            text-transform: uppercase;
-            padding: 0 20px;
-            margin-top: 20px;
-        }
-
-        /* ── Offcanvas móvil ── */
-        #sidebarOffcanvas {
-            background-color: #2c3e50;
-            color: white;
-            width: 260px;
-        }
-
-        #sidebarOffcanvas .nav-link {
-            color: #ecf0f1;
-            padding: 12px 20px;
-            margin: 2px 0;
-            border-radius: 5px;
-            text-decoration: none;
-            display: block;
-        }
-
-        #sidebarOffcanvas .nav-link:hover  { background-color: #34495e; color: white; }
-        #sidebarOffcanvas .nav-link.active  { background-color: #3498db; }
-
-        #sidebarOffcanvas .offcanvas-header {
-            border-bottom: 1px solid #34495e;
-            padding: 16px 20px;
-        }
-
-        #sidebarOffcanvas .offcanvas-header .btn-close { filter: invert(1); }
-
-        /* ── Barra superior móvil ── */
-        .mobile-topbar {
-            background-color: #2c3e50;
-            padding: 10px 16px;
+        .sidebar-brand {
             display: flex;
             align-items: center;
-            justify-content: space-between;
-        }
-
-        .mobile-topbar .app-title {
-            color: white;
+            gap: 9px;
+            padding: 16px 16px;
             font-weight: 600;
-            font-size: 1rem;
-            margin: 0;
+            font-size: .92rem;
+            letter-spacing: .03em;
+            border-bottom: 1px solid rgba(255,255,255,.07);
         }
 
-        /* ── App navbar ── */
-        .app-navbar {
-            background-color: #f8f9fa;
-            border-bottom: 1px solid #dee2e6;
-            padding: 15px 0;
+        .brand-mark {
+            width: 26px; height: 26px;
+            border-radius: 6px;
+            background: #3b82f6;
+            flex-shrink: 0;
         }
 
-        .app-navbar h5 { color: #2c3e50; font-weight: 600; margin: 0; }
+        .sidebar-nav { flex: 1; padding: 10px 8px; }
 
-        .app-navbar .btn-group .btn {
-            border-radius: 20px;
-            margin: 0 2px;
-            font-size: 0.9rem;
-            padding: 6px 12px;
-        }
-
-        /* ── Login ── */
-        .login-container {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
+        .sidebar-link {
             display: flex;
             align-items: center;
+            gap: 10px;
+            padding: 9px 10px;
+            margin: 2px 0;
+            border-radius: 7px;
+            color: #9aa4b8;
+            text-decoration: none;
+            font-size: .82rem;
+            font-weight: 500;
+            white-space: nowrap;
         }
 
-        /* ── Dashboard ── */
+        .sidebar-icon {
+            width: 18px; height: 18px;
+            border-radius: 4px;
+            border: 1.5px solid currentColor;
+            flex-shrink: 0;
+        }
+
+        .sidebar-link:hover {
+            background-color: rgba(255,255,255,.06);
+            color: #e5e9f0;
+        }
+
+        .sidebar-link.active {
+            background-color: #3b82f6;
+            color: #fff;
+        }
+        .sidebar-link.active .sidebar-icon { border-color: #fff; }
+
+        .sidebar-footer {
+            border-top: 1px solid rgba(255,255,255,.07);
+            padding: 12px;
+        }
+
+        .sidebar-user {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+            color: #fff;
+            font-size: .78rem;
+        }
+
+        .sidebar-avatar {
+            width: 26px; height: 26px;
+            border-radius: 50%;
+            background: #3b82f6;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: .72rem;
+            flex-shrink: 0;
+        }
+
+        .sidebar-user .badge { font-size: .6rem; padding: .3em .5em; }
+
+        .logout-link { color: #f3b3b3 !important; }
+        .logout-link:hover { background-color: rgba(220,53,69,.15); color: #fff !important; }
+
+        @media (max-width: 767.98px) {
+            .app-sidebar {
+                width: var(--sidebar-width-collapsed);
+                min-width: var(--sidebar-width-collapsed);
+            }
+            .sidebar-label, .brand-text, .sidebar-user span, .sidebar-user .badge {
+                display: none;
+            }
+            .sidebar-link { justify-content: center; padding: 10px 0; }
+            .sidebar-brand { justify-content: center; padding: 12px 0; }
+            .sidebar-footer { display: flex; flex-direction: column; align-items: center; }
+            .sidebar-user { margin-bottom: 8px; }
+        }
+
+        .app-main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+
+        .app-topbar {
+            background-color: #fff;
+            border-bottom: 1px solid #eceff3;
+            padding: 10px 18px;
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .topbar-title-group { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+
+        .topbar-title {
+            color: #1a2234;
+            font-weight: 600;
+            font-size: .85rem;
+            margin: 0;
+            white-space: nowrap;
+            padding-right: 12px;
+            border-right: 1px solid #eceff3;
+        }
+
+        .topmenu-link {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 16px;
+            font-size: .76rem;
+            font-weight: 500;
+            color: #5c6577;
+            text-decoration: none;
+            background-color: #f6f7f9;
+            border: 1px solid transparent;
+            margin: 2px;
+        }
+
+        .topmenu-link:hover { background-color: #eaf2ff; color: #2563eb; }
+        .topmenu-link.active { background-color: #3b82f6; color: #fff; }
+        .topmenu-link.disabled { opacity: .45; cursor: not-allowed; pointer-events: none; }
+
+        .topbar-user {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: .78rem;
+            color: #5c6577;
+            white-space: nowrap;
+        }
+        .topbar-user .badge { font-size: .62rem; }
+        .topbar-user .btn { font-size: .76rem; padding: 4px 10px; }
+
+        .app-content { padding: 16px; flex: 1; }
+
+        @media (max-width: 767.98px) {
+            .app-topbar { padding: 8px 10px; }
+            .app-content { padding: 10px 8px; }
+            .topbar-title { border-right: none; padding-right: 0; }
+        }
+
         .border-left-primary { border-left: 4px solid #4e73df !important; }
         .border-left-success { border-left: 4px solid #1cc88a !important; }
         .border-left-info    { border-left: 4px solid #36b9cc !important; }
@@ -118,220 +212,123 @@
         .text-gray-300 { color: #dddfeb !important; }
         .shadow        { box-shadow: 0 0.15rem 1.75rem 0 rgba(58,59,69,.15) !important; }
 
-        /* ── Felicitaciones ── */
+        .card { border: 1px solid #eef0f3; border-radius: 10px; box-shadow: 0 2px 10px rgba(15,23,41,.05); }
+        .card-header { border-bottom: 1px solid #eef0f3; background-color: #fff; }
+
+        .table { border-color: #eef0f3; }
+        .table thead th { border-bottom: 2px solid #eef0f3; color: #4a5568; font-size: .82rem; text-transform: uppercase; }
+
+        .page-header { margin-bottom: 16px; }
+        .page-header h1, .page-header h4 { font-weight: 600; color: #1a2234; font-size: 1.15rem; margin-bottom: 2px; }
+        .page-header .subtitle { color: #8892a4; font-size: .8rem; }
+
+        .panel-card {
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 1px 8px rgba(15,23,41,.05);
+            border: 1px solid #f0f1f4;
+        }
+        .panel-card .panel-header {
+            padding: 11px 16px;
+            border-bottom: 1px solid #f0f1f4;
+            font-weight: 600;
+            color: #1a2234;
+            font-size: .82rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .panel-card .panel-body { padding: 14px 16px; }
+        .panel-card .panel-body.p-0 { padding: 0; }
+
+        .summary-table thead th {
+            background-color: #f8f9fb;
+            color: #8892a4;
+            text-transform: uppercase;
+            font-size: .65rem;
+            letter-spacing: .02em;
+            font-weight: 600;
+            border-bottom: none;
+            padding: 9px 14px;
+            white-space: nowrap;
+        }
+        .summary-table tbody td { padding: 9px 14px; font-size: .82rem; vertical-align: middle; }
+        .summary-table tbody tr { transition: background-color .12s ease; }
+        .summary-table tbody tr:hover { background-color: #f8faff; }
+
+        .badge { font-weight: 500; font-size: .66rem; }
+        .form-label { font-size: .76rem; font-weight: 500; color: #5c6577; }
+        .form-control, .form-select { font-size: .82rem; }
+        .btn-sm { font-size: .76rem; }
+
         .badge.bg-warning { background-color: #ffc107 !important; color: #212529 !important; }
         .table-hover tbody tr:hover { background-color: rgba(255,193,7,.1) !important; }
         .card.bg-light { background-color: #f8f9fa !important; border: 1px solid #e9ecef; }
 
-        /* ================================================================
-           RESPONSIVE GLOBAL
-           ================================================================ */
-
-        /* Tablas con scroll horizontal */
-        .table-responsive {
-            overflow-x: auto;
-            -webkit-overflow-scrolling: touch;
+        .login-container {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
         }
 
-        .card-body table,
-        .container-fluid table {
-            min-width: 500px;
-        }
-
-        /* Botones nunca desbordan */
+        .table-responsive { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+        .card-body table, .container-fluid table { min-width: 500px; }
         .btn { white-space: nowrap; }
 
-        /* App navbar: botones se envuelven en móvil */
-        .app-navbar .btn-group {
-            flex-wrap: wrap;
-            gap: 4px;
-        }
-
         @media (max-width: 767.98px) {
-            /* App navbar más compacto */
-            .app-navbar {
-                padding: 10px 8px;
-            }
-
-            .app-navbar .btn-group .btn {
-                font-size: 0.78rem;
-                padding: 5px 8px;
-                margin: 2px;
-            }
-
-            /* Grupos de botones en tablas se apilan */
-            .btn-group {
-                display: flex;
-                flex-wrap: wrap;
-                gap: 4px;
-            }
-
-            .btn-group .btn {
-                border-radius: 6px !important;
-                flex: 1 1 auto;
-            }
-
-            /* Cards */
             .card-body   { padding: 12px; }
             .card-header { padding: 10px 12px; }
-
-            /* Cabeceras título + botón se apilan */
-            .d-flex.justify-content-between {
-                flex-wrap: wrap;
-                gap: 8px;
-            }
-
-            /* Filtros: cada campo ocupa el 100% */
-            .row.g-2 > [class*="col-"] {
-                width: 100% !important;
-                max-width: 100% !important;
-                flex: 0 0 100% !important;
-            }
-
-            /* Main content sin padding extra */
-            main.col-md-9,
-            main.col-lg-10 {
-                padding-left: 8px !important;
-                padding-right: 8px !important;
-            }
-
-            /* Formularios */
-            .card-body .row > [class*="col-"] { margin-bottom: 8px; }
-            .form-control, .form-select       { font-size: 0.9rem; }
-
-            /* Badges */
+            .d-flex.justify-content-between { flex-wrap: wrap; gap: 8px; }
+            .row.g-2 > [class*="col-"] { width: 100% !important; max-width: 100% !important; flex: 0 0 100% !important; }
+            .form-control, .form-select { font-size: 0.9rem; }
             .badge { font-size: 0.7rem; }
         }
 
         @media (max-width: 575.98px) {
-            /* Paginación */
-            .pagination {
-                flex-wrap: wrap;
-                justify-content: center;
-            }
-
-            /* Botones de acción en celdas */
-            td .btn, td .btn-sm {
-                display: inline-block;
-                margin-bottom: 2px;
-            }
+            .pagination { flex-wrap: wrap; justify-content: center; }
+            td .btn, td .btn-sm { display: inline-block; margin-bottom: 2px; }
         }
     </style>
+
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/material_blue.css">
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/es.js"></script>
- 
+
     <style>
-        /* ── Integración visual con Bootstrap 5 ───────────────────── */
-        .flatpickr-input {
-            background-color: #fff !important;
-            cursor: pointer;
-        }
- 
-        /* Ícono de calendario incrustado en el input */
-        .date-wrapper {
-            position: relative;
-            display: block;
-        }
-        .date-wrapper .flatpickr-input {
-            padding-right: 2.4rem;
-        }
+        .flatpickr-input { background-color: #fff !important; cursor: pointer; }
+        .date-wrapper { position: relative; display: block; }
+        .date-wrapper .flatpickr-input { padding-right: 2.4rem; }
         .date-wrapper::after {
-            content: "📅";
-            position: absolute;
-            right: 0.65rem;
-            top: 50%;
-            transform: translateY(-50%);
-            pointer-events: none;
-            font-size: 1rem;
-            line-height: 1;
+            content: "📅"; position: absolute; right: 0.65rem; top: 50%;
+            transform: translateY(-50%); pointer-events: none; font-size: 1rem; line-height: 1;
         }
- 
-        /* Calendario: colores corporativos UTEPPI (#2c3e50) */
-        .flatpickr-calendar {
-            border-radius: 10px;
-            box-shadow: 0 8px 30px rgba(0,0,0,.15);
-            border: 1px solid #dee2e6;
-            font-family: inherit;
-        }
-        .flatpickr-months {
-            background: #2c3e50;
-            border-radius: 10px 10px 0 0;
-            padding: 4px 0;
-        }
-        .flatpickr-months .flatpickr-month,
-        .flatpickr-months .flatpickr-prev-month,
-        .flatpickr-months .flatpickr-next-month {
-            color: #fff !important;
-            fill: #fff !important;
-        }
-        .flatpickr-months .flatpickr-prev-month:hover,
-        .flatpickr-months .flatpickr-next-month:hover {
-            background: rgba(255,255,255,.15);
-            border-radius: 4px;
-        }
-        .flatpickr-current-month .cur-month,
-        .flatpickr-current-month .numInputWrapper span,
-        .flatpickr-current-month input.cur-year {
-            color: #fff !important;
-        }
-        .flatpickr-weekdays {
-            background: #34495e;
-        }
-        span.flatpickr-weekday {
-            background: transparent;
-            color: #ecf0f1;
-            font-weight: 600;
-            font-size: .78rem;
-        }
-        .flatpickr-day.selected,
-        .flatpickr-day.selected:hover {
-            background: #2c3e50;
-            border-color: #2c3e50;
-        }
-        .flatpickr-day:hover {
-            background: #ecf0f1;
-            border-color: transparent;
-        }
-        .flatpickr-day.today {
-            border-color: #3498db;
-        }
-        .flatpickr-day.today:hover {
-            background: #3498db;
-            color: #fff;
-            border-color: #3498db;
-        }
- 
-        /* Animación suave de apertura */
-        .flatpickr-calendar.open {
-            animation: fpSlideDown .15s ease-out;
-        }
-        @keyframes fpSlideDown {
-            from { opacity: 0; transform: translateY(-6px); }
-            to   { opacity: 1; transform: translateY(0); }
-        }
+        .flatpickr-calendar { border-radius: 10px; box-shadow: 0 8px 30px rgba(0,0,0,.15); border: 1px solid #dee2e6; font-family: inherit; }
+        .flatpickr-months { background: #2c3e50; border-radius: 10px 10px 0 0; padding: 4px 0; }
+        .flatpickr-months .flatpickr-month, .flatpickr-months .flatpickr-prev-month, .flatpickr-months .flatpickr-next-month { color: #fff !important; fill: #fff !important; }
+        .flatpickr-months .flatpickr-prev-month:hover, .flatpickr-months .flatpickr-next-month:hover { background: rgba(255,255,255,.15); border-radius: 4px; }
+        .flatpickr-current-month .cur-month, .flatpickr-current-month .numInputWrapper span, .flatpickr-current-month input.cur-year { color: #fff !important; }
+        .flatpickr-weekdays { background: #34495e; }
+        span.flatpickr-weekday { background: transparent; color: #ecf0f1; font-weight: 600; font-size: .78rem; }
+        .flatpickr-day.selected, .flatpickr-day.selected:hover { background: #2c3e50; border-color: #2c3e50; }
+        .flatpickr-day:hover { background: #ecf0f1; border-color: transparent; }
+        .flatpickr-day.today { border-color: #3498db; }
+        .flatpickr-day.today:hover { background: #3498db; color: #fff; border-color: #3498db; }
+        .flatpickr-calendar.open { animation: fpSlideDown .15s ease-out; }
+        @keyframes fpSlideDown { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: translateY(0); } }
     </style>
- 
+
     <script>
     (function () {
-        // Configuración Flatpickr en español
         const FP_CONFIG = {
-            locale: "es",
-            dateFormat: "Y-m-d",        // formato que Django espera
-            altInput: true,             // muestra formato humano al usuario
-            altFormat: "d/m/Y",         // DD/MM/YYYY visible
-            allowInput: true,
-            disableMobile: false,       // usa picker nativo en móvil
-            nextArrow: "›",
-            prevArrow: "‹",
+            locale: "es", dateFormat: "Y-m-d", altInput: true, altFormat: "d/m/Y",
+            allowInput: true, disableMobile: false, nextArrow: "›", prevArrow: "‹",
         };
- 
         function wrapAndInit(input) {
-            // Evitar doble inicialización
             if (input._flatpickr) return;
- 
-            // Envolver en .date-wrapper para el ícono de calendario
             const parent = input.parentNode;
             if (!parent.classList.contains("date-wrapper")) {
                 const wrapper = document.createElement("div");
@@ -339,36 +336,19 @@
                 parent.insertBefore(wrapper, input);
                 wrapper.appendChild(input);
             }
- 
             flatpickr(input, FP_CONFIG);
         }
- 
         function initAll() {
-            // Selecciona todos los inputs de tipo date y los que Django genera
-            // para DateField / DateTimeField
             document.querySelectorAll(
-                'input[type="date"], ' +
-                'input.datefield, ' +
-                'input[name$="_date"], ' +
-                'input[name="fecha_inicio"], ' +
-                'input[name="fecha_fin"], ' +
-                'input[name="fecha_registro"], ' +
-                'input[name="fecha_nacimiento"], ' +
-                'input[name="fecha_ingreso"], ' +
-                'input[name="fecha_sancion"], ' +
-                'input[name="fecha_felicitacion"], ' +
-                'input[name="fecha_aprobacion"]'
+                'input[type="date"], input.datefield, input[name$="_date"], ' +
+                'input[name="fecha_inicio"], input[name="fecha_fin"], input[name="fecha_registro"], ' +
+                'input[name="fecha_nacimiento"], input[name="fecha_ingreso"], input[name="fecha_sancion"], ' +
+                'input[name="fecha_felicitacion"], input[name="fecha_aprobacion"]'
             ).forEach(wrapAndInit);
         }
- 
-        // Inicializar al cargar la página
         if (document.readyState === "loading") {
             document.addEventListener("DOMContentLoaded", initAll);
-        } else {
-            initAll();
-        }
- 
-        // Soporte para formularios cargados dinámicamente (por si hay modales AJAX)
+        } else { initAll(); }
         const observer = new MutationObserver(function (mutations) {
             mutations.forEach(function (m) {
                 m.addedNodes.forEach(function (node) {
@@ -387,58 +367,44 @@
 <body class="{% block body_class %}{% endblock %}">
 
     {% if user.is_authenticated %}
+    <div class="app-shell">
 
-    <!-- Barra superior solo en móvil -->
-    <div class="mobile-topbar d-md-none">
-        <span class="app-title">🛡️ UTEPPI</span>
-        <button class="btn btn-sm btn-outline-light"
-                type="button"
-                data-bs-toggle="offcanvas"
-                data-bs-target="#sidebarOffcanvas"
-                aria-controls="sidebarOffcanvas">
-            ☰ Menú
-        </button>
-    </div>
-
-    <!-- Offcanvas móvil -->
-    <div class="offcanvas offcanvas-start" tabindex="-1"
-         id="sidebarOffcanvas"
-         aria-labelledby="sidebarOffcanvasLabel">
-        <div class="offcanvas-header">
-            <h6 class="offcanvas-title text-white mb-0" id="sidebarOffcanvasLabel">
-                🛡️ UTEPPI
-            </h6>
-            <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
-        </div>
-        <div class="offcanvas-body p-0">
+        <nav class="app-sidebar">
             {% include 'includes/sidebar_content.html' %}
-        </div>
-    </div>
+        </nav>
 
-    {% endif %}
+        <div class="app-main">
+            <header class="app-topbar">
+                <div class="topbar-title-group">
+                    {% include 'includes/top_menu.html' %}
+                </div>
+                <div class="topbar-user">
+                    <span>{{ user.username }}</span>
+                    {% if user.es_administrador %}
+                        <span class="badge bg-danger">Admin</span>
+                    {% elif user.es_oficial_administrativo %}
+                        <span class="badge bg-warning text-dark">Oficial Admin</span>
+                    {% elif user.es_usuario_autorizado %}
+                        <span class="badge bg-info">Personal</span>
+                    {% else %}
+                        <span class="badge bg-secondary">Temporal</span>
+                    {% endif %}
+                    <a class="btn btn-outline-secondary btn-sm" href="{% url 'logout' %}">Salir</a>
+                </div>
+            </header>
 
-    <!-- Header escritorio -->
-    {% include 'includes/header.html' %}
-
-    <div class="container-fluid">
-        <div class="row">
-
-            <!-- Sidebar escritorio (oculto en móvil) -->
-            {% if user.is_authenticated %}
-            <nav class="col-md-3 col-lg-2 d-none d-md-block sidebar p-0">
-                {% include 'includes/sidebar_content.html' %}
-            </nav>
-            {% endif %}
-
-            <!-- Contenido principal -->
-            <main class="{% if user.is_authenticated %}col-md-9 ms-sm-auto col-lg-10 px-md-4 px-2{% else %}col-12{% endif %}">
-                {% block app_navbar %}{% endblock %}
+            <main class="app-content">
                 {% include 'includes/messages.html' %}
                 {% block content %}{% endblock %}
             </main>
-
         </div>
     </div>
+
+    {% else %}
+        <main>
+            {{ block.super }}
+        </main>
+    {% endif %}
 
     {% include 'includes/footer.html' %}
 

@@ -123,7 +123,7 @@
                             <td>{{ p.nombres }}</td>
                             <td>{{ p.ci }} {{ p.expedido }}</td>
                             <td>{{ p.get_genero_display }}</td>
-                            <td>{{ p.cargo_actual|default:"—" }}</td>
+                            <td>{{ p.cargo|default:"—" }}</td>
                             <td>
                                 {% for d in p.destinos.all %}{% if d.activo %}
                                 <span class="badge bg-success">

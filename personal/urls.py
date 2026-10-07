@@ -41,4 +41,17 @@ urlpatterns = [
     # Reportes
     path('reporte/',          views.ReportePersonalView.as_view(), name='reporte_personal'),
     path('reporte/exportar/', views.exportar_personal_excel,       name='exportar_personal_excel'),
-]
+
+    path('mi-kardex/', views.MiKardexView.as_view(), name='mi_kardex'),
+
+    path('mis-solicitudes/', views.MisSolicitudesListView.as_view(), name='mis_solicitudes'),
+    path('mis-solicitudes/nueva/', views.MiSolicitudCreateView.as_view(), name='mi_solicitud_create'),
+
+    path('<int:personal_id>/antecedentes/', views.AntecedentesPersonalView.as_view(), name='antecedentes_personal'),
+    path('antecedentes/', views.AntecedentesBuscarView.as_view(), name='antecedentes_buscar'),
+
+    path('<int:personal_id>/baja/', views.BajaCreateView.as_view(), name='baja_create'),
+    path('bajas/', views.BajaListView.as_view(), name='baja_list'),
+    path('<int:personal_id>/fallecimiento/', views.FallecimientoCreateView.as_view(), name='fallecimiento_create'),
+    path('fallecimientos/', views.FallecimientoListView.as_view(), name='fallecimiento_list'),
+]   

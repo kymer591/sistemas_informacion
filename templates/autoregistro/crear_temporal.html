@@ -1,27 +1,20 @@
 {% extends 'base.html' %}
 {% load crispy_forms_tags %}
 
-{% block app_navbar %}
-    {% include 'includes/personal_navbar.html' %}
-{% endblock %}
+{% block title %}Crear Usuario Temporal - UTEPPI{% endblock %}
 
 {% block content %}
-<div class="container-fluid mt-3">
+<div class="container-fluid">
 <div class="row justify-content-center">
 <div class="col-lg-5 col-md-7">
 
-  <div class="card shadow-sm">
-    <div class="card-header" style="background:#f39c12;">
-      <h5 class="mb-0 text-white fw-bold">📝 Crear Usuario Temporal</h5>
-    </div>
-    <div class="card-body p-4">
+  <div class="panel-card">
+    <div class="panel-header">Crear Usuario Temporal</div>
+    <div class="panel-body">
 
-      <div class="alert alert-info d-flex gap-2 mb-4">
-        <span style="font-size:1.2rem">ℹ️</span>
-        <small>
-          Ingresa solo los datos básicos. El policía completará
-          <strong>toda su información</strong> al iniciar sesión.
-        </small>
+      <div class="alert alert-info mb-3" style="font-size:.8rem;">
+        Ingresa solo los datos básicos. El policía completará
+        <strong>toda su información</strong> al iniciar sesión.
       </div>
 
       <form method="post" novalidate>
@@ -62,27 +55,25 @@
           <label class="form-label fw-semibold">Contraseña temporal</label>
           <div class="input-group">
             {{ form.password }}
-            <button class="btn btn-outline-secondary" type="button"
+            <button class="btn btn-outline-secondary btn-sm" type="button"
                     onclick="generarPassword()">
-              🔀 Generar
+              Generar
             </button>
           </div>
           <div class="form-text">{{ form.password.help_text }}</div>
         </div>
 
-        <div class="alert alert-warning py-2 mt-3 mb-4">
-          <small>
-            ⚠️ <strong>Anota la contraseña</strong> y entrégasela
-            personalmente al policía antes de cerrar esta página.
-          </small>
+        <div class="alert alert-warning py-2 mt-3 mb-4" style="font-size:.78rem;">
+          <strong>Anota la contraseña</strong> y entrégasela
+          personalmente al policía antes de cerrar esta página.
         </div>
 
         <div class="d-grid gap-2">
-          <button type="submit" class="btn btn-warning btn-lg fw-bold">
-            ✅ Crear usuario temporal
+          <button type="submit" class="btn btn-primary btn-sm">
+            Crear usuario temporal
           </button>
-          <a href="{% url 'personal_list' %}" class="btn btn-outline-secondary">
-            ↩️ Cancelar
+          <a href="{% url 'personal_list' %}" class="btn btn-outline-secondary btn-sm">
+            Cancelar
           </a>
         </div>
 

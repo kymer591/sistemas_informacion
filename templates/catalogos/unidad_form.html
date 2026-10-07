@@ -1,31 +1,23 @@
 {% extends 'base.html' %}
 {% load crispy_forms_tags %}
 
-{% block app_navbar %}
-    {% include 'includes/catalogos_navbar.html' %}
-{% endblock %}
+{% block title %}{% if object %}Editar{% else %}Agregar{% endif %} Unidad - UTEPPI{% endblock %}
 
 {% block content %}
 <div class="container-fluid">
     <div class="row justify-content-center">
         <div class="col-md-8">
-            <div class="card">
-                <div class="card-header">
-                    <h4 class="mb-0">
-                        {% if object %}✏️ Editar Unidad{% else %}➕ Agregar Unidad{% endif %}
-                    </h4>
+            <div class="panel-card">
+                <div class="panel-header">
+                    {% if object %}Editar Unidad{% else %}Agregar Unidad{% endif %}
                 </div>
-                <div class="card-body">
+                <div class="panel-body">
                     <form method="post">
                         {% csrf_token %}
                         {{ form|crispy }}
-                        <div class="mt-3">
-                            <button type="submit" class="btn btn-success">
-                                💾 Guardar
-                            </button>
-                            <a href="{% url 'unidad_list' %}" class="btn btn-secondary">
-                                ↩️ Cancelar
-                            </a>
+                        <div class="mt-3 d-flex gap-2">
+                            <button type="submit" class="btn btn-primary btn-sm">Guardar</button>
+                            <a href="{% url 'unidad_list' %}" class="btn btn-outline-secondary btn-sm">Cancelar</a>
                         </div>
                     </form>
                 </div>

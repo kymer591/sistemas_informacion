@@ -96,8 +96,8 @@ def dashboard(request):
         'total_personal'    : total_personal,
         'personal_activo'   : personal_activo,
         'personal_licencia' : personal_licencia,
-        'personal_por_unidad': personal_por_unidad,
-        'personal_por_grado': personal_por_grado,
+        'personal_por_unidad': list(personal_por_unidad),
+        'personal_por_grado': list(personal_por_grado),
         'ultimos_registros' : ultimos_registros,
     }
     return render(request, 'dashboard.html', context)

@@ -1,10 +1,15 @@
 import io
 from datetime import date
+from .lista_revista import generar_lista_revista
 
 from .utils import registrar_log
 from django.db.models import Q
 from core.mixins import AdminRequiredMixin
 from .models import BitacoraLog
+
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
 
 from django.core.exceptions import PermissionDenied
 from django.db.models import Q
@@ -123,7 +128,7 @@ def _build_workbook(queryset):
             p.expedido,
             p.get_genero_display(),
             p.direccion_domicilio or '',
-            p.cargo_actual or '',
+            p.cargo.nombre if p.cargo else '',
             (destino_activo.unidad_destino.nombre
                 if destino_activo and destino_activo.unidad_destino
                 else (destino_activo.lugar_destino if destino_activo else '')),
@@ -216,14 +221,6 @@ def exportar_personal_excel(request):
     response['Content-Disposition'] = f'attachment; filename="{filename}"'
     return response
 
-# ================================================================
-# Agregar al final de reportes/views.py
-# ================================================================
-# Agregar también este import al inicio de reportes/views.py:
-#   from .models import BitacoraLog
-# ================================================================
-
-
 
 class BitacoraView(AdminRequiredMixin, ListView):
     model               = BitacoraLog
@@ -278,6 +275,7 @@ class BitacoraView(AdminRequiredMixin, ListView):
         })
         return context
 
+
 def exportar_bitacora_pdf(request):
     """
     Exporta la bitácora filtrada a PDF.
@@ -285,10 +283,10 @@ def exportar_bitacora_pdf(request):
     """
     if not request.user.is_authenticated or not request.user.es_administrador():
         raise PermissionDenied
- 
+
     # Aplicar los mismos filtros que la vista de bitácora
     qs = BitacoraLog.objects.select_related('usuario')
- 
+
     buscar = request.GET.get('buscar', '').strip()
     if buscar:
         qs = qs.filter(
@@ -306,18 +304,18 @@ def exportar_bitacora_pdf(request):
         qs = qs.filter(fecha_hora__date__gte=request.GET['fecha_desde'])
     if request.GET.get('fecha_hasta'):
         qs = qs.filter(fecha_hora__date__lte=request.GET['fecha_hasta'])
- 
+
     # Registrar la exportación en la propia bitácora
     registrar_log(
         request, 'OTRO', 'reportes',
         f'Exportó bitácora en PDF ({qs.count()} registros)',
     )
- 
+
     # ── Construir PDF ──────────────────────────────────────────────
     response = HttpResponse(content_type='application/pdf')
     filename = f"bitacora_{date.today().strftime('%Y%m%d')}.pdf"
     response['Content-Disposition'] = f'attachment; filename="{filename}"'
- 
+
     doc = SimpleDocTemplate(
         response,
         pagesize=landscape(A4),
@@ -326,9 +324,9 @@ def exportar_bitacora_pdf(request):
         topMargin=2*cm,
         bottomMargin=2*cm,
     )
- 
+
     styles = getSampleStyleSheet()
- 
+
     # Estilos personalizados
     estilo_titulo = ParagraphStyle(
         'titulo',
@@ -352,9 +350,9 @@ def exportar_bitacora_pdf(request):
         fontSize=7,
         leading=9,
     )
- 
+
     elementos = []
- 
+
     # Título
     elementos.append(Paragraph('UTEPPI — BITÁCORA DEL SISTEMA', estilo_titulo))
     elementos.append(Paragraph(
@@ -362,7 +360,7 @@ def exportar_bitacora_pdf(request):
         f'por {request.user.username} · {qs.count()} registros',
         estilo_subtitulo,
     ))
- 
+
     # Encabezados de tabla
     encabezados = [
         Paragraph('<b>FECHA Y HORA</b>', estilo_celda),
@@ -373,7 +371,7 @@ def exportar_bitacora_pdf(request):
         Paragraph('<b>OBJETO AFECTADO</b>', estilo_celda),
         Paragraph('<b>IP</b>', estilo_celda),
     ]
- 
+
     # Colores por acción
     COLORES_ACCION = {
         'LOGIN'   : colors.HexColor('#198754'),
@@ -384,11 +382,11 @@ def exportar_bitacora_pdf(request):
         'ERROR'   : colors.HexColor('#212529'),
         'OTRO'    : colors.HexColor('#6c757d'),
     }
- 
+
     # Filas de datos
     filas = [encabezados]
     colores_filas = [None]  # fila de encabezado no tiene color de acción
- 
+
     for log in qs:
         filas.append([
             Paragraph(log.fecha_hora.strftime('%d/%m/%Y %H:%M:%S'), estilo_celda),
@@ -400,12 +398,12 @@ def exportar_bitacora_pdf(request):
             Paragraph(log.ip_address or '—', estilo_celda),
         ])
         colores_filas.append(COLORES_ACCION.get(log.accion, colors.grey))
- 
+
     # Anchos de columna (landscape A4 ≈ 25.7cm útil)
     anchos = [3.5*cm, 2.5*cm, 2*cm, 2*cm, 8*cm, 4*cm, 2.5*cm]
- 
+
     tabla = Table(filas, colWidths=anchos, repeatRows=1)
- 
+
     # Estilo base de la tabla
     estilo_tabla = TableStyle([
         # Encabezado
@@ -425,16 +423,116 @@ def exportar_bitacora_pdf(request):
         ('LEFTPADDING',  (0, 0), (-1, -1), 4),
         ('RIGHTPADDING', (0, 0), (-1, -1), 4),
     ])
- 
+
     # Colorear la columna ACCIÓN por tipo
     for i, color_accion in enumerate(colores_filas[1:], start=1):
         if color_accion:
             estilo_tabla.add('TEXTCOLOR', (2, i), (2, i), color_accion)
             estilo_tabla.add('FONTNAME',  (2, i), (2, i), 'Helvetica-Bold')
- 
+
     tabla.setStyle(estilo_tabla)
     elementos.append(tabla)
- 
+
     doc.build(elementos)
     return response
- 
+
+
+@login_required
+def lista_revista_preview(request):
+    if not (request.user.es_administrador() or request.user.es_oficial_administrativo()):
+        messages.error(request, 'No tienes permisos para ver este reporte.')
+        return redirect('dashboard')
+
+    unidades = Unidad.objects.filter(activa=True).order_by('nombre')
+    unidad_id = request.GET.get('unidad')
+    fecha_inicio = request.GET.get('fecha_inicio')
+    fecha_fin = request.GET.get('fecha_fin')
+
+    datos = None
+    unidad_sel = None
+
+    if unidad_id and fecha_inicio and fecha_fin:
+        unidad_sel = get_object_or_404(Unidad, pk=unidad_id)
+        datos = generar_lista_revista(unidad_sel, fecha_inicio, fecha_fin)
+
+    return render(request, 'reportes/lista_revista_preview.html', {
+        'unidades': unidades,
+        'unidad_sel': unidad_id,
+        'fecha_inicio': fecha_inicio or '',
+        'fecha_fin': fecha_fin or date.today().isoformat(),
+        'datos': datos,
+    })
+
+from .lista_revista_excel import generar_excel_lista_revista
+
+
+@login_required
+def exportar_lista_revista_excel(request):
+    if not (request.user.es_administrador() or request.user.es_oficial_administrativo()):
+        raise PermissionDenied
+
+    unidad_id = request.GET.get('unidad')
+    fecha_inicio = request.GET.get('fecha_inicio')
+    fecha_fin = request.GET.get('fecha_fin')
+
+    if not (unidad_id and fecha_inicio and fecha_fin):
+        messages.error(request, 'Selecciona unidad y periodo antes de exportar.')
+        return redirect('reportes:lista_revista_preview')
+
+    unidad = get_object_or_404(Unidad, pk=unidad_id)
+    datos = generar_lista_revista(unidad, fecha_inicio, fecha_fin)
+
+    wb = generar_excel_lista_revista(datos, request.user, date.today())
+
+    output = io.BytesIO()
+    wb.save(output)
+    output.seek(0)
+
+    nombre_unidad = unidad.codigo.replace(' ', '_')
+    filename = f"LISTA_REVISTA_{nombre_unidad}_{fecha_inicio}_{fecha_fin}_{date.today().isoformat()}.xlsx"
+
+    registrar_log(
+        request, 'OTRO', 'reportes',
+        f'Exportó Lista de Revista de {unidad} ({fecha_inicio} a {fecha_fin})',
+    )
+
+    response = HttpResponse(
+        output,
+        content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    )
+    response['Content-Disposition'] = f'attachment; filename="{filename}"'
+    return response
+
+
+from .lista_revista_pdf import generar_pdf_lista_revista
+
+
+@login_required
+def exportar_lista_revista_pdf(request):
+    if not (request.user.es_administrador() or request.user.es_oficial_administrativo()):
+        raise PermissionDenied
+
+    unidad_id = request.GET.get('unidad')
+    fecha_inicio = request.GET.get('fecha_inicio')
+    fecha_fin = request.GET.get('fecha_fin')
+
+    if not (unidad_id and fecha_inicio and fecha_fin):
+        messages.error(request, 'Selecciona unidad y periodo antes de exportar.')
+        return redirect('reportes:lista_revista_preview')
+
+    unidad = get_object_or_404(Unidad, pk=unidad_id)
+    datos = generar_lista_revista(unidad, fecha_inicio, fecha_fin)
+
+    nombre_unidad = unidad.codigo.replace(' ', '_')
+    filename = f"LISTA_REVISTA_{nombre_unidad}_{fecha_inicio}_{fecha_fin}_{date.today().isoformat()}.pdf"
+
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="{filename}"'
+
+    generar_pdf_lista_revista(response, datos, request.user, date.today())
+
+    registrar_log(
+        request, 'OTRO', 'reportes',
+        f'Exportó Lista de Revista en PDF de {unidad} ({fecha_inicio} a {fecha_fin})',
+    )
+    return response

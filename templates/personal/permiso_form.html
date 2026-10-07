@@ -1,32 +1,28 @@
 {% extends 'base.html' %}
 {% load crispy_forms_tags %}
 
-{% block app_navbar %}
-    {% include 'includes/permisos_navbar.html' %}
-{% endblock %}
+{% block title %}{% if object %}Editar{% else %}Nuevo{% endif %} Permiso - UTEPPI{% endblock %}
 
 {% block content %}
-<div class="container-fluid mt-3">
+<div class="container-fluid">
     <div class="row justify-content-center">
         <div class="col-md-8">
-            <div class="card">
-                <div class="card-header">
-                    <h4 class="mb-0">
-                        {% if object %}✏️ Editar Permiso{% else %}🏖️ Nuevo Permiso/Licencia{% endif %}
-                    </h4>
+            <div class="panel-card">
+                <div class="panel-header">
+                    {% if object %}Editar Permiso{% else %}Nuevo Permiso / Licencia{% endif %}
                 </div>
-                <div class="card-body">
+                <div class="panel-body">
                     <form method="post" enctype="multipart/form-data">
                         {% csrf_token %}
-                        
+
                         <div class="row">
                             <div class="col-md-6">
-                                <h6>👤 Información del Personal</h6>
+                                <p class="fw-semibold mb-2" style="font-size:.82rem;">Información del Personal</p>
                                 {{ form.personal|as_crispy_field }}
                                 {{ form.tipo_permiso|as_crispy_field }}
                             </div>
                             <div class="col-md-6">
-                                <h6>📅 Fechas del Permiso</h6>
+                                <p class="fw-semibold mb-2" style="font-size:.82rem;">Fechas del Permiso</p>
                                 <div class="row">
                                     <div class="col-md-6">
                                         {{ form.fecha_inicio|as_crispy_field }}
@@ -35,57 +31,55 @@
                                         {{ form.fecha_fin|as_crispy_field }}
                                     </div>
                                 </div>
-                                <div class="alert alert-info mt-2">
-                                    <small>
-                                        <strong>💡 Info:</strong> Los días se calcularán automáticamente
-                                    </small>
+                                <div class="alert alert-info py-2 px-3 mb-0" style="font-size:.78rem;">
+                                    Los días se calcularán automáticamente
                                 </div>
                             </div>
                         </div>
 
-                        <div class="row mt-3">
+                        <div class="row mt-2">
                             <div class="col-md-12">
-                                <h6>📝 Detalles del Permiso</h6>
+                                <p class="fw-semibold mb-2" style="font-size:.82rem;">Detalles del Permiso</p>
                                 {{ form.motivo|as_crispy_field }}
                             </div>
                         </div>
 
-                        <div class="row mt-3">
+                        <div class="row mt-2">
                             <div class="col-md-6">
-                                <h6>📎 Documentación</h6>
+                                <p class="fw-semibold mb-2" style="font-size:.82rem;">Documentación</p>
                                 {{ form.numero_oficio|as_crispy_field }}
                                 {{ form.documento_adjunto|as_crispy_field }}
                                 {% if object and object.documento_adjunto %}
-                                <div class="mt-2">
-                                    <small class="text-muted">
-                                        Archivo actual: 
+                                <div class="mt-2" style="font-size:.78rem;">
+                                    <span class="text-muted">
+                                        Archivo actual:
                                         <a href="{{ object.documento_adjunto.url }}" target="_blank">
                                             {{ object.documento_adjunto.name }}
                                         </a>
-                                    </small>
+                                    </span>
                                 </div>
                                 {% endif %}
                             </div>
                             <div class="col-md-6">
-                                <div class="alert alert-warning">
-                                    <h6>📋 Tipos de Permiso:</h6>
-                                    <ul class="mb-0">
-                                        <li><strong>Administrativo:</strong> Trámites personales</li>
-                                        <li><strong>Médico:</strong> Consultas o tratamiento</li>
-                                        <li><strong>Personal:</strong> Asuntos particulares</li>
-                                        <li><strong>Comisión:</strong> Servicio oficial</li>
-                                        <li><strong>Vacaciones:</strong> Descanso anual</li>
+                                <div class="alert alert-warning mb-0" style="font-size:.78rem;">
+                                    <strong>Tipos de Permiso:</strong>
+                                    <ul class="mb-0 mt-1">
+                                        <li>Administrativo: trámites personales</li>
+                                        <li>Médico: consultas o tratamiento</li>
+                                        <li>Personal: asuntos particulares</li>
+                                        <li>Comisión: servicio oficial</li>
+                                        <li>Vacaciones: descanso anual</li>
                                     </ul>
                                 </div>
                             </div>
                         </div>
 
-                        <div class="mt-4">
-                            <button type="submit" class="btn btn-success">
-                                💾 {% if object %}Actualizar{% else %}Crear{% endif %} Permiso
+                        <div class="mt-3 d-flex gap-2">
+                            <button type="submit" class="btn btn-primary btn-sm">
+                                {% if object %}Actualizar{% else %}Crear{% endif %} Permiso
                             </button>
-                            <a href="{% url 'permiso_list' %}" class="btn btn-secondary">
-                                ↩️ Cancelar
+                            <a href="{% url 'permiso_list' %}" class="btn btn-outline-secondary btn-sm">
+                                Cancelar
                             </a>
                         </div>
                     </form>

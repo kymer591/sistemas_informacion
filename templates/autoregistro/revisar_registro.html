@@ -1,99 +1,118 @@
 {% extends 'base.html' %}
 {% load crispy_forms_tags %}
 
-{% block content %}
-<div class="container-fluid mt-3">
+{% block title %}Revisar Registro - UTEPPI{% endblock %}
 
-  <div class="d-flex align-items-center gap-3 mb-3">
+{% block extra_css %}
+<style>
+    .ro-row { display: flex; padding: 7px 0; border-bottom: 1px solid #f0f1f4; font-size: .82rem; }
+    .ro-row:last-child { border-bottom: none; }
+    .ro-label { width: 180px; flex-shrink: 0; color: #8892a4; font-size: .72rem; text-transform: uppercase; letter-spacing: .02em; }
+    .ro-value { color: #1a2234; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+
+  <div class="d-flex align-items-center gap-3 flex-wrap page-header">
     <a href="{% url 'autoregistro:lista_temporales' %}" class="btn btn-sm btn-outline-secondary">
-      ↩️ Volver
+      Volver
     </a>
     <div>
-      <h4 class="mb-0">⚙️ Revisar Registro — {{ personal.nombre_completo }}</h4>
-      <small class="text-muted">
+      <h4 class="mb-0">Revisar Registro — {{ personal.nombre_completo }}</h4>
+      <div class="subtitle">
         {{ personal.grado.nombre }} — {{ personal.unidad.nombre }} |
         Enviado: {{ reg.fecha_completado|date:"d/m/Y H:i" }}
-      </small>
+      </div>
     </div>
     {% if reg.estado == 'completado' %}
-    <span class="badge bg-info ms-auto fs-6">📋 Pendiente de revisión</span>
+    <span class="badge bg-info ms-auto">Pendiente de revisión</span>
     {% elif reg.estado == 'aprobado' %}
-    <span class="badge bg-success ms-auto fs-6">✅ Aprobado</span>
+    <span class="badge bg-success ms-auto">Aprobado</span>
     {% elif reg.estado == 'rechazado' %}
-    <span class="badge bg-danger ms-auto fs-6">❌ Rechazado</span>
+    <span class="badge bg-danger ms-auto">Rechazado</span>
     {% endif %}
   </div>
 
   <form method="post" enctype="multipart/form-data">
     {% csrf_token %}
-    <div class="row g-4">
+    <div class="row g-3">
 
-      <!-- Columna izquierda: datos editables -->
       <div class="col-lg-8">
 
-        <div class="card shadow-sm mb-3">
-          <div class="card-header bg-light fw-bold">
-            🪪 Identificación y Datos Personales
+        <div class="panel-card mb-3">
+          <div class="panel-header">
+            <span>Información enviada por el policía</span>
             {% if reg.estado == 'completado' %}
-            <small class="text-primary ms-2">(puedes editar antes de aprobar)</small>
+            <button type="button" id="btnToggleEdicion" class="btn btn-sm btn-outline-warning">
+                Editar información
+            </button>
             {% endif %}
           </div>
-          <div class="card-body">
+
+          <div class="panel-body" id="vistaLectura">
+            <div class="ro-row"><div class="ro-label">Expedido</div><div class="ro-value">{{ personal.expedido }}</div></div>
+            <div class="ro-row"><div class="ro-label">Fecha de Nacimiento</div><div class="ro-value">{{ personal.fecha_nacimiento }}</div></div>
+            <div class="ro-row"><div class="ro-label">Género</div><div class="ro-value">{{ personal.get_genero_display }}</div></div>
+            <div class="ro-row"><div class="ro-label">Teléfono Personal</div><div class="ro-value">{{ personal.telefono_personal|default:"No registrado" }}</div></div>
+            <div class="ro-row"><div class="ro-label">Teléfono Emergencia</div><div class="ro-value">{{ personal.telefono_emergencia|default:"No registrado" }}</div></div>
+            <div class="ro-row"><div class="ro-label">Correo Institucional</div><div class="ro-value">{{ personal.correo_institucional|default:"No registrado" }}</div></div>
+            <div class="ro-row"><div class="ro-label">Dirección</div><div class="ro-value">{{ personal.direccion_domicilio|default:"No registrado" }}</div></div>
+            <div class="ro-row"><div class="ro-label">Cargo Actual</div><div class="ro-value">{{ personal.cargo_actual|default:"No registrado" }}</div></div>
+            <div class="ro-row"><div class="ro-label">Otra Profesión</div><div class="ro-value">{{ personal.otra_profesion|default:"No registrado" }}</div></div>
+          </div>
+
+          <div class="panel-body d-none" id="vistaEdicion">
+            {% if reg.estado == 'completado' %}
+            <div class="alert alert-warning py-2 mb-3" style="font-size:.78rem;">
+                Estás editando los datos enviados por el policía. Este cambio quedará registrado en la bitácora.
+            </div>
+            {% endif %}
             <div class="row g-3">
               <div class="col-md-3">{{ form.expedido|as_crispy_field }}</div>
               <div class="col-md-4">{{ form.fecha_nacimiento|as_crispy_field }}</div>
               <div class="col-md-3">{{ form.genero|as_crispy_field }}</div>
             </div>
-          </div>
-        </div>
-
-        <div class="card shadow-sm mb-3">
-          <div class="card-header bg-light fw-bold">📞 Contacto</div>
-          <div class="card-body">
             <div class="row g-3">
               <div class="col-md-4">{{ form.telefono_personal|as_crispy_field }}</div>
               <div class="col-md-4">{{ form.telefono_emergencia|as_crispy_field }}</div>
               <div class="col-md-4">{{ form.correo_institucional|as_crispy_field }}</div>
               <div class="col-12">{{ form.direccion_domicilio|as_crispy_field }}</div>
-            </div>
-          </div>
-        </div>
-
-        <div class="card shadow-sm mb-3">
-          <div class="card-header bg-light fw-bold">🏢 Laboral</div>
-          <div class="card-body">
-            <div class="row g-3">
               <div class="col-md-6">{{ form.cargo_actual|as_crispy_field }}</div>
               <div class="col-md-6">{{ form.otra_profesion|as_crispy_field }}</div>
             </div>
+            <button type="button" id="btnCancelarEdicion" class="btn btn-sm btn-outline-secondary mt-2">
+                Cancelar edición
+            </button>
           </div>
         </div>
 
-        <div class="card shadow-sm mb-3">
-          <div class="card-header bg-light fw-bold">📷 Foto</div>
-          <div class="card-body d-flex align-items-center gap-4">
+        <div class="panel-card mb-3">
+          <div class="panel-header">Foto</div>
+          <div class="panel-body d-flex align-items-center gap-4">
             {% if personal.foto %}
               <img src="{{ personal.foto.url }}" class="rounded-circle border"
-                   style="width:80px;height:80px;object-fit:cover;">
+                   style="width:72px;height:72px;object-fit:cover;">
             {% else %}
-              <div class="rounded-circle bg-light border d-flex align-items-center
-                          justify-content-center" style="width:80px;height:80px;font-size:2rem">👤</div>
+              <div class="rounded-circle bg-light border" style="width:72px;height:72px;"></div>
             {% endif %}
-            <div class="flex-grow-1">{{ form.foto }}</div>
+            <div class="flex-grow-1 d-none" id="campoFoto">{{ form.foto }}</div>
+            <span class="text-muted" id="fotoHint" style="font-size:.78rem;">
+                {% if personal.foto %}Foto ya cargada{% else %}Sin foto cargada{% endif %}
+            </span>
           </div>
         </div>
 
       </div>
 
-      <!-- Columna derecha: acción -->
       <div class="col-lg-4">
-        <div class="card shadow-sm sticky-top" style="top:80px">
-          <div class="card-header bg-dark text-white fw-bold">🔍 Decisión</div>
-          <div class="card-body">
+        <div class="panel-card sticky-top" style="top:80px">
+          <div class="panel-header">Decisión</div>
+          <div class="panel-body">
 
-            <!-- Info básica del policía (creada por el admin, solo lectura) -->
-            <div class="mb-3 p-3 bg-light rounded">
-              <p class="text-muted small mb-1 fw-bold text-uppercase">Datos del sistema</p>
+            <div class="mb-3 p-3 bg-light rounded" style="font-size:.8rem;">
+              <p class="text-muted mb-1" style="font-size:.68rem; text-transform:uppercase;">Datos del sistema</p>
               <p class="mb-1"><strong>CI:</strong> {{ personal.ci }} {{ personal.expedido }}</p>
               <p class="mb-1"><strong>Código:</strong> {{ personal.codigo_identificacion }}</p>
               <p class="mb-1"><strong>Grado:</strong> {{ personal.grado.nombre }}</p>
@@ -103,33 +122,33 @@
 
             <div class="mb-3">
               <label class="form-label fw-semibold">Observaciones (opcional)</label>
-              <textarea name="observaciones_rev" class="form-control" rows="3"
+              <textarea name="observaciones_rev" class="form-control form-control-sm" rows="3"
                         placeholder="Notas internas sobre este registro...">{{ reg.observaciones_rev|default:'' }}</textarea>
             </div>
 
             {% if reg.estado == 'completado' %}
-            <div class="alert alert-info py-2 small mb-3">
+            <div class="alert alert-info py-2 mb-3" style="font-size:.78rem;">
               Al <strong>aprobar</strong>, el usuario pasará a ser
               <strong>Usuario Autorizado</strong> con acceso normal al sistema.
             </div>
             <div class="d-grid gap-2">
               <button type="submit" name="accion" value="aprobar"
-                      class="btn btn-success btn-lg"
+                      class="btn btn-success btn-sm"
                       onclick="return confirm('¿Aprobar el registro de {{ personal.nombre_completo }}?')">
-                ✅ Aprobar y activar cuenta
+                Aprobar y activar cuenta
               </button>
               <button type="submit" name="accion" value="rechazar"
-                      class="btn btn-outline-danger"
+                      class="btn btn-outline-danger btn-sm"
                       onclick="return confirm('¿Rechazar este registro?')">
-                ❌ Rechazar
+                Rechazar
               </button>
             </div>
             {% elif reg.estado == 'pendiente' %}
-            <div class="alert alert-warning py-2 small mb-0">
-              ⏳ El policía aún no ha completado su información.
+            <div class="alert alert-warning py-2 mb-0" style="font-size:.78rem;">
+              El policía aún no ha completado su información.
             </div>
             {% else %}
-            <div class="alert alert-secondary py-2 small mb-0">
+            <div class="alert alert-secondary py-2 mb-0" style="font-size:.78rem;">
               Este registro ya fue <strong>{{ reg.get_estado_display }}</strong>.
               {% if reg.revisado_por %}
               Revisado por {{ reg.revisado_por.username }}
@@ -144,4 +163,32 @@
     </div>
   </form>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const btnEditar = document.getElementById('btnToggleEdicion');
+    const btnCancelar = document.getElementById('btnCancelarEdicion');
+    const vistaLectura = document.getElementById('vistaLectura');
+    const vistaEdicion = document.getElementById('vistaEdicion');
+    const campoFoto = document.getElementById('campoFoto');
+    const fotoHint = document.getElementById('fotoHint');
+
+    function activarEdicion() {
+        vistaLectura.classList.add('d-none');
+        vistaEdicion.classList.remove('d-none');
+        if (campoFoto) campoFoto.classList.remove('d-none');
+        if (fotoHint) fotoHint.classList.add('d-none');
+    }
+
+    function volverLectura() {
+        vistaLectura.classList.remove('d-none');
+        vistaEdicion.classList.add('d-none');
+        if (campoFoto) campoFoto.classList.add('d-none');
+        if (fotoHint) fotoHint.classList.remove('d-none');
+    }
+
+    if (btnEditar) btnEditar.addEventListener('click', activarEdicion);
+    if (btnCancelar) btnCancelar.addEventListener('click', volverLectura);
+});
+</script>
 {% endblock %}
