@@ -54,12 +54,24 @@
     <div class="panel-card mb-3">
         <div class="panel-header">FORM-01 — Cuadro Numérico por Cargo (todo el personal activo)</div>
         <div class="panel-body p-0">
-            <table class="table summary-table mb-0">
+            {% if datos.form_01.grados_sin_columna %}
+            <div class="alert alert-warning m-2">
+                <strong>Atención:</strong> estos grados no tienen columna en el formato oficial y no se están contando:
+                {{ datos.form_01.grados_sin_columna|join:", " }}.
+            </div>
+            {% endif %}
+            <div style="overflow-x:auto;">
+            <table class="table summary-table mb-0" style="font-size:.78rem;">
                 <thead>
                     <tr>
-                        <th>Cargo</th>
+                        <th rowspan="2">Cargo</th>
+                        <th colspan="{{ datos.form_01.grados|length }}" class="text-center">PERSONAL DE CARRERA</th>
+                        <th colspan="{{ datos.form_01.grados_servicio|length }}" class="text-center">PERSONAL DE SERVICIO</th>
+                        <th rowspan="2">Total</th>
+                    </tr>
+                    <tr>
                         {% for g in datos.form_01.grados %}<th>{{ g }}</th>{% endfor %}
-                        <th>Total</th>
+                        {% for g in datos.form_01.grados_servicio %}<th>{{ g }}</th>{% endfor %}
                     </tr>
                 </thead>
                 <tbody>
@@ -67,16 +79,19 @@
                     <tr>
                         <td>{{ fila.cargo }}</td>
                         {% for c in fila.carrera %}<td>{{ c }}</td>{% endfor %}
+                        {% for c in fila.servicio %}<td>{{ c }}</td>{% endfor %}
                         <td><strong>{{ fila.total }}</strong></td>
                     </tr>
                     {% endfor %}
                     <tr class="fw-bold">
                         <td>TOTAL</td>
                         {% for t in datos.form_01.total_carrera %}<td>{{ t }}</td>{% endfor %}
+                        {% for t in datos.form_01.total_servicio %}<td>{{ t }}</td>{% endfor %}
                         <td>{{ datos.form_01.total_general }}</td>
                     </tr>
                 </tbody>
             </table>
+            </div>
         </div>
     </div>
 

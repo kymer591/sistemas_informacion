@@ -2,60 +2,97 @@ from collections import OrderedDict
 
 from catalogos.models import Grado, Cargo
 from personal.models import PersonalPolicial, DestinoPolicial, BajaPersonal, Fallecimiento
+from .formato_oficial import (
+    CLAVES_GRADO, ENCABEZADOS_CARRERA, ENCABEZADOS_SERVICIO,
+    SITUACIONES_OFICIALES, clave_grado, indice_situacion, nombres_split,
+)
 
 
-def _grados_activos():
-    return list(Grado.objects.filter(activo=True).order_by('orden'))
+def _vacio():
+    return OrderedDict((k, 0) for k in CLAVES_GRADO)
 
 
-def _cuadro_por_cargo(unidad, solo_carrera=False):
+def _cuadro_por_cargo(unidad, solo_carrera=False, solo_cumple=False):
     """
-    Motor común para FORM-01 (todo el personal activo) y FORM-03 (solo de carrera).
-    Filas = cargos de la unidad, columnas = grados (separadas carrera/servicio).
+    Motor común para FORM-01 (todo el personal que cumple funciones) y FORM-03 (solo de carrera).
+    Filas = cargos de la unidad. Columnas = las 14 jerarquías oficiales, en dos bloques:
+    personal de carrera y personal de servicio. Los grados del catálogo que no se
+    puedan asociar a una columna oficial se informan en 'grados_sin_columna'.
     """
-    grados = _grados_activos()
     cargos = list(Cargo.objects.filter(unidad=unidad, activo=True).order_by('orden'))
 
-    qs = PersonalPolicial.objects.filter(unidad=unidad, activo=True, cargo__isnull=False)
+    qs = PersonalPolicial.objects.filter(
+        unidad=unidad, activo=True, cargo__isnull=False,
+    ).select_related('grado')
+    if solo_cumple:     # solo FORM-02 sección A, para que A + B no cuente dos veces a la misma persona
+        qs = qs.filter(estado_actual__cumple_funciones=True)
     if solo_carrera:
         qs = qs.filter(tipo_carrera='carrera')
 
     filas = []
-    totales_carrera = OrderedDict((g.pk, 0) for g in grados)
-    totales_servicio = OrderedDict((g.pk, 0) for g in grados)
+    totales_carrera, totales_servicio = _vacio(), _vacio()
     total_general = 0
+    sin_columna = set()
 
     for cargo in cargos:
-        personal_cargo = qs.filter(cargo=cargo).select_related('grado')
-        conteo_carrera = OrderedDict((g.pk, 0) for g in grados)
-        conteo_servicio = OrderedDict((g.pk, 0) for g in grados)
+        conteo_carrera, conteo_servicio = _vacio(), _vacio()
         subtotal_fila = 0
-
-        for persona in personal_cargo:
-            if persona.grado_id not in conteo_carrera:
+        for persona in qs.filter(cargo=cargo):
+            clave = clave_grado(persona.grado)
+            if clave is None:
+                sin_columna.add(persona.grado.nombre)
                 continue
             if persona.tipo_carrera == 'servicio':
-                conteo_servicio[persona.grado_id] += 1
-                totales_servicio[persona.grado_id] += 1
+                conteo_servicio[clave] += 1
+                totales_servicio[clave] += 1
             else:
-                conteo_carrera[persona.grado_id] += 1
-                totales_carrera[persona.grado_id] += 1
+                conteo_carrera[clave] += 1
+                totales_carrera[clave] += 1
             subtotal_fila += 1
             total_general += 1
 
         filas.append({
             'cargo': cargo.nombre,
-            'carrera': [conteo_carrera[g.pk] for g in grados],
-            'servicio': [conteo_servicio[g.pk] for g in grados],
+            'carrera': list(conteo_carrera.values()),
+            'servicio': list(conteo_servicio.values()),
+            'total': subtotal_fila,
+        })
+
+    # Personal de la unidad cuyo cargo NO está en el catálogo de cargos de esa unidad
+    # (cargo de otra unidad, inactivo, etc.): se muestra en una fila aparte en vez de perderse.
+    otros = qs.exclude(cargo__in=cargos)
+    if otros.exists():
+        conteo_carrera, conteo_servicio = _vacio(), _vacio()
+        subtotal_fila = 0
+        for persona in otros:
+            clave = clave_grado(persona.grado)
+            if clave is None:
+                sin_columna.add(persona.grado.nombre)
+                continue
+            if persona.tipo_carrera == 'servicio':
+                conteo_servicio[clave] += 1
+                totales_servicio[clave] += 1
+            else:
+                conteo_carrera[clave] += 1
+                totales_carrera[clave] += 1
+            subtotal_fila += 1
+            total_general += 1
+        filas.append({
+            'cargo': 'OTROS (cargo fuera del catálogo de la unidad)',
+            'carrera': list(conteo_carrera.values()),
+            'servicio': list(conteo_servicio.values()),
             'total': subtotal_fila,
         })
 
     return {
-        'grados': [g.abreviatura for g in grados],
+        # 'grados' se mantiene (14 encabezados de carrera) para la vista previa y el PDF
+        'grados': list(ENCABEZADOS_CARRERA),
+        'grados_servicio': list(ENCABEZADOS_SERVICIO),
         'filas': filas,
-        'total_carrera': [totales_carrera[g.pk] for g in grados],
-        'total_servicio': [totales_servicio[g.pk] for g in grados],
+        'total_carrera': list(totales_carrera.values()),
+        'total_servicio': list(totales_servicio.values()),
         'total_general': total_general,
+        'grados_sin_columna': sorted(sin_columna),
     }
 
 
@@ -71,39 +108,52 @@ def generar_form_03(unidad):
 
 def generar_form_02(unidad):
     """
-    Sección A: personal con estado_actual.cumple_funciones=True (igual que FORM-01).
-    Sección B: personal con estado_actual.cumple_funciones=False, agrupado por TipoEstado.
+    Sección A: personal que cumple funciones, por cargo (igual que FORM-01).
+    Sección B: las 15 situaciones fijas del formulario oficial. Cada TipoEstado con
+    cumple_funciones=False se ubica en la fila oficial que corresponda por su nombre
+    (ver formato_oficial.indice_situacion). Los que no coincidan con ninguna se
+    suman a la última fila ('COMISION DIR. NAL. Y OTROS') y quedan listados en
+    'estados_sin_fila' para que el usuario ajuste el nombre del estado.
     """
-    grados = _grados_activos()
-    seccion_a = _cuadro_por_cargo(unidad, solo_carrera=False)
+    seccion_a = _cuadro_por_cargo(unidad, solo_carrera=False, solo_cumple=True)
 
     personal_no_activo = PersonalPolicial.objects.filter(
         unidad=unidad, estado_actual__cumple_funciones=False
     ).select_related('grado', 'estado_actual')
 
-    por_estado = OrderedDict()
+    filas_b = [{
+        'situacion': etiqueta, 'color': color,
+        'carrera': [0] * len(CLAVES_GRADO), 'servicio': [0] * len(CLAVES_GRADO),
+        'total': 0,
+    } for etiqueta, _claves, color in SITUACIONES_OFICIALES]
+
+    estados_sin_fila, grados_sin_columna = set(), set()
     for persona in personal_no_activo:
-        estado_nombre = persona.estado_actual.nombre if persona.estado_actual else 'Sin estado'
-        if estado_nombre not in por_estado:
-            por_estado[estado_nombre] = OrderedDict((g.pk, 0) for g in grados)
-        if persona.grado_id in por_estado[estado_nombre]:
-            por_estado[estado_nombre][persona.grado_id] += 1
+        clave = clave_grado(persona.grado)
+        if clave is None:
+            grados_sin_columna.add(persona.grado.nombre)
+            continue
+        idx = indice_situacion(persona.estado_actual.nombre)
+        if idx is None:
+            estados_sin_fila.add(persona.estado_actual.nombre)
+            idx = 10
+        bloque = 'servicio' if persona.tipo_carrera == 'servicio' else 'carrera'
+        filas_b[idx][bloque][CLAVES_GRADO.index(clave)] += 1
+        filas_b[idx]['total'] += 1
 
-    filas_b, total_b = [], 0
-    for estado_nombre, conteo in por_estado.items():
-        subtotal = sum(conteo.values())
-        total_b += subtotal
-        filas_b.append({
-            'situacion': estado_nombre,
-            'cantidades': [conteo[g.pk] for g in grados],
-            'total': subtotal,
-        })
+    for f in filas_b:
+        # compatibilidad con la vista previa / PDF: cantidades = carrera + servicio por jerarquía
+        f['cantidades'] = [a + b for a, b in zip(f['carrera'], f['servicio'])]
 
+    total_b = sum(f['total'] for f in filas_b)
     return {
-        'grados': [g.abreviatura for g in grados],
+        'grados': list(ENCABEZADOS_CARRERA),
+        'grados_servicio': list(ENCABEZADOS_SERVICIO),
         'seccion_a': seccion_a,
         'seccion_b': {'filas': filas_b, 'total': total_b},
         'total_general': seccion_a['total_general'] + total_b,
+        'estados_sin_fila': sorted(estados_sin_fila),
+        'grados_sin_columna': sorted(grados_sin_columna | set(seccion_a['grados_sin_columna'])),
     }
 
 
@@ -123,6 +173,8 @@ def generar_form_07(unidad, fecha_inicio, fecha_fin):
             'apellido_paterno': p.apellido_paterno,
             'apellido_materno': p.apellido_materno,
             'nombres': p.nombres,
+            'nombre1': nombres_split(p.nombres)[0],
+            'nombre2': nombres_split(p.nombres)[1],
             'ci': p.ci,
             'expedido': p.expedido,
             'direccion': p.direccion_domicilio,
@@ -158,11 +210,14 @@ def generar_form_08(unidad, fecha_inicio, fecha_fin):
             'apellido_paterno': p.apellido_paterno,
             'apellido_materno': p.apellido_materno,
             'nombres': p.nombres,
+            'nombre1': nombres_split(p.nombres)[0],
+            'nombre2': nombres_split(p.nombres)[1],
             'ci': p.ci,
             'expedido': p.expedido,
             'direccion': p.direccion_domicilio,
             'cargo': p.cargo.nombre if p.cargo else '',
             'fecha_cambio': d.fecha_fin,
+            'unidad_actual': unidad.nombre,
             'unidad_destino_nueva': p.unidad.nombre if p.unidad_id != unidad.pk else 'No registrado',
             'celular': p.telefono_personal,
             'correo': p.correo_institucional,
@@ -185,6 +240,8 @@ def generar_form_11(unidad):
             'apellido_paterno': p.apellido_paterno,
             'apellido_materno': p.apellido_materno,
             'nombres': p.nombres,
+            'nombre1': nombres_split(p.nombres)[0],
+            'nombre2': nombres_split(p.nombres)[1],
             'ci': p.ci,
             'expedido': p.expedido,
             'direccion': p.direccion_domicilio,
@@ -218,6 +275,8 @@ def generar_form_12(unidad):
                 'apellido_paterno': p.apellido_paterno,
                 'apellido_materno': p.apellido_materno,
                 'nombres': p.nombres,
+                'nombre1': nombres_split(p.nombres)[0],
+                'nombre2': nombres_split(p.nombres)[1],
                 'ci': p.ci,
                 'expedido': p.expedido,
                 'sexo': p.get_genero_display(),
@@ -253,13 +312,18 @@ def generar_form_13(unidad, fecha_inicio, fecha_fin):
         'apellido_paterno': b.personal.apellido_paterno,
         'apellido_materno': b.personal.apellido_materno,
         'nombres': b.personal.nombres,
+        'nombre1': nombres_split(b.personal.nombres)[0],
+        'nombre2': nombres_split(b.personal.nombres)[1],
         'ci': b.personal.ci,
+        'expedido': b.personal.expedido,
         'fecha_baja': b.fecha_baja,
         'motivo': b.get_tipo_baja_display(),
         'resolucion_tds': b.resolucion_tds,
         'numero_memo': b.numero_memo_escalafon,
         'autoridad_firma': b.autoridad_firma,
+        'cargo_autoridad': b.cargo_autoridad_firma,
         'fecha_notificacion': b.fecha_notificacion,
+        'observaciones': b.observaciones,
     } for b in bajas]
 
     filas_fallecidos = [{
@@ -267,11 +331,18 @@ def generar_form_13(unidad, fecha_inicio, fecha_fin):
         'apellido_paterno': f.personal.apellido_paterno,
         'apellido_materno': f.personal.apellido_materno,
         'nombres': f.personal.nombres,
+        'nombre1': nombres_split(f.personal.nombres)[0],
+        'nombre2': nombres_split(f.personal.nombres)[1],
         'ci': f.personal.ci,
+        'expedido': f.personal.expedido,
         'fecha_fallecimiento': f.fecha_fallecimiento,
         'causa': f.causa_deceso,
         'numero_certificado': f.numero_certificado_defuncion,
         'entidad': f.entidad,
+        'autoridad_firma': f.autoridad_firma,
+        'numero_informe': f.numero_informe_trabajo_social,
+        'fecha_informe': f.fecha_informe,
+        'dir_salud': f.direccion_departamental_salud,
     } for f in fallecidos]
 
     return {'bajas': filas_bajas, 'fallecidos': filas_fallecidos}
